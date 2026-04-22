@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Keeper of Chronicles" type="MiniBoss">
+  </creature>
+  <creature name="Keeper of the Unbroken Circle" type="Boss">
+  </creature>
+</creatures>

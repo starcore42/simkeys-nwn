@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Arcanaloth" />
+  <creature name="Baernaloth" />
+  <creature name="Black Moliator" />
+  <creature name="Book of Pain" />
+  <creature name="Canoloth" />
+  <creature name="Greater Canoloth" base="Canoloth" type="Greater" />
+  <creature name="Superior Canoloth" base="Canoloth" type="Superior" />
+  <creature name="Elite Canoloth" base="Canoloth" type="Elite" />
+  <creature name="Creeping Despair" />
+  <creature name="Death of the Body" />
+  <creature name="Death of the Soul" />
+  <creature name="Dergholoth" />
+  <creature name="Greater Dergholoth" base="Dergholoth" type="Greater" />
+  <creature name="Superior Dergholoth" base="Dergholoth" type="Superior" />
+  <creature name="Elite Dergholoth" base="Dergholoth" type="Elite" />
+  <creature name="Ember Wisp" />
+  <creature name="Gloom of Destruction" />
+  <creature name="Gloom of Lies" />
+  <creature name="Gloom of Tears" />
+  <creature name="Grey Moliator" />
+  <creature name="Guardian of Khin-Oin" />
+  <creature name="Hadean Leech" />
+  <creature name="Greater Hadean Leech" base="Hadean Leech" type="Greater" />
+  <creature name="Superior Hadean Leech" base="Hadean Leech" type="Superior" />
+  <creature name="Elite Hadean Leech" base="Hadean Leech" type="Elite" />
+  <creature name="Hand of Mydianchlarus" />
+  <creature name="Hydroloth" />
+  <creature name="Greater Hydroloth" base="Hydroloth" type="Greater" />
+  <creature name="Superior Hydroloth" base="Hydroloth" type="Superior" />
+  <creature name="Elite Hydroloth" base="Hydroloth" type="Elite" />
+  <creature name="Marraenoloth" />
+  <creature name="Greater Marraenoloth" base="Marraenoloth" type="Greater" />
+  <creature name="Superior Marraenoloth" base="Marraenoloth" type="Superior" />
+  <creature name="Elite Marraenoloth" base="Marraenoloth" type="Elite" />
+  <creature name="Meenlock Biter" />
+  <creature name="Meenlock Gouger" />
+  <creature name="Meenlock Hater" />
+  <creature name="Meenlock Spitter" />
+  <creature name="Mezzoloth" />
+  <creature name="Greater Mezzoloth" base="Mezzoloth" type="Greater" />
+  <creature name="Superior Mezzoloth" base="Mezzoloth" type="Superior" />
+  <creature name="Elite Mezzoloth" base="Mezzoloth" type="Elite" />
+  <creature name="Moliation Vine" />
+  <creature name="Nycaloth" />
+  <creature name="Greater Nycaloth" base="Nycaloth" type="Greater" />
+  <creature name="Superior Nycaloth" base="Nycaloth" type="Superior" />
+  <creature name="Elite Nycaloth" base="Nycaloth" type="Elite" />
+  <creature name="Piscoloth" />
+  <creature name="Greater Piscoloth" base="Piscoloth" type="Greater" />
+  <creature name="Superior Piscoloth" base="Piscoloth" type="Superior" />
+  <creature name="Elite Piscoloth" base="Piscoloth" type="Elite" />
+  <creature name="Plutonean Golem" />
+  <creature name="Red Moliator" />
+  <creature name="Wasting Sickness" />
+  <creature name="Yagnoloth" />
+  <creature name="Greater Yagnoloth" base="Yagnoloth" type="Greater" />
+  <creature name="Superior Yagnoloth" base="Yagnoloth" type="Superior" />
+  <creature name="Elite Yagnoloth" base="Yagnoloth" type="Elite" />
+</creatures>

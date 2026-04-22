@@ -1,0 +1,347 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Elite Abrian" base="Abrian" type="Elite" />
+  <creature name="Elite Abyssal Ant Swarm" base="Abyssal Ant Swarm" type="Elite" />
+  <creature name="Elite Abyssal Drake" base="Abyssal Drake" type="Elite">
+    <damageImmunities>
+	  <damage type="Fire" healing="10" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Abyssal Ghoul" base="Abyssal Ghoul" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Abyssal Sunbeam" base="Abyssal Sunbeam" type="Elite">
+    <damageImmunities>
+	  <damage type="Cold" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Abyssal Zombie" base="Abyssal Zombie" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Adaru" base="Adaru" type="Elite" />
+  <creature name="Elite Alkilith" base="Alkilith" type="Elite">
+    <damageImmunities>
+	  <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Anzu" base="Anzu" type="Elite" />
+  <creature name="Elite Arcane Ooze" base="Arcane Ooze" type="Elite">
+    <damageImmunities>
+	  <damage type="Magical" healing="10" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Armanite" base="Armanite" type="Elite" />
+  <creature name="Elite Arrowhawk" base="Arrowhawk" type="Elite">
+    <damageImmunities>
+	  <damage type="Electrical" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Artaaglith" base="Artaaglith" type="Elite" />
+  <creature name="Elite Babau" base="Babau" type="Elite" />
+  <creature name="Elite Balor" base="Balor" type="Elite">
+    <damageImmunities>
+	  <damage type="Fire" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Bar-Lgura" base="Bar-Lgura" type="Elite" />
+  <creature name="Elite Bebelith" base="Bebelith" type="Elite" />
+  <creature name="Elite Black Pudding" base="Black Pudding" type="Elite">
+    <damageImmunities>
+	  <damage type="Cold" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Blood Wind" base="Blood Wind" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Bodak" base="Bodak" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Bone Moss" base="Bone Moss" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Bone Ooze" base="Bone Ooze" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Bonesinger" base="Bonesinger" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Brood Keeper" base="Brood Keeper" type="Elite" />
+  <creature name="Elite Broodswarm" base="Broodswarm" type="Elite">
+    <damageImmunities>
+	  <damage type="Fire" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Bulezau" base="Bulezau" type="Elite">
+    <damageImmunities>
+	  <damage type="Sonic" healing="6" />
+    </damageImmunities></creature>
+  <creature name="Elite Caligrosto" base="Caligrosto" type="Elite" />
+  <creature name="Elite Carcass Eater" base="Carcass Eater" type="Elite" />
+  <creature name="Elite Caustic Fountain" base="Caustic Fountain" type="Elite">
+    <damageImmunities>
+	  <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Chasme" base="Chasme" type="Elite" />
+  <creature name="Elite Chelicera" base="Chelicera" type="Elite" />
+  <creature name="Elite Crypt Thing" base="Crypt Thing" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Deadborn Vulture" base="Deadborn Vulture" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="6" />
+    </damageImmunities></creature>
+  <creature name="Elite Death Knight" base="Death Knight" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="11" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Draudnu" base="Draudnu" type="Elite" />
+  <creature name="Elite Dread Ram" base="Dread Ram" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Dretch" base="Dretch" type="Elite" />
+  <creature name="Elite Dustman Necromancer" base="Dustman Necromancer" type="Elite" />
+  <creature name="Elite Dustman Slinger" base="Dustman Slinger" type="Elite" />
+  <creature name="Elite Dust Wight" base="Dust Wight" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Dybbuk" base="Dybbuk" type="Elite">
+	<damageImmunities>
+	  <damage type="Sonic" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Ekolid Builder" base="Ekolid Builder" type="Elite">
+    <damageImmunities>
+	  <damage type="Electrical" healing="5" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Ekolid Chitterer" base="Ekolid Chitterer" type="Elite">
+    <damageImmunities>
+	  <damage type="Electrical" healing="5" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Ekolid Devourer" base="Ekolid Devourer" type="Elite">
+    <damageImmunities>
+	  <damage type="Electrical" healing="5" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Ekolid Reaver" base="Ekolid Reaver" type="Elite">
+    <damageImmunities>
+	  <damage type="Electrical" healing="5" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Fiendish Aboleth" base="Fiendish Aboleth" type="Elite" />
+  <creature name="Elite Fiendish Barracuda" base="Fiendish Barracuda" type="Elite">
+    <damageImmunities>
+	  <damage type="Positive" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Fiendish Boar" base="Fiendish Boar" type="Elite" />
+  <creature name="Elite Fiendish Frog" base="Fiendish Frog" type="Elite" />
+  <creature name="Elite Fiendish Fungus" base="Fiendish Fungus" type="Elite">
+    <damageImmunities>
+	  <damage type="Fire" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Fiendish Otyugh" base="Fiendish Otyugh" type="Elite" />
+  <creature name="Elite Fiendish Raptor" base="Fiendish Raptor" type="Elite" />
+  <creature name="Elite Fiendish Render" base="Fiendish Render" type="Elite" />
+  <creature name="Elite Fiendish Roc" base="Fiendish Roc" type="Elite" />
+  <creature name="Elite Fiendish Slug" base="Fiendish Slug" type="Elite">
+    <damageImmunities>
+	  <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Flesh Jelly" base="Flesh Jelly" type="Elite">
+    <damageImmunities>
+	  <damage type="Electrical" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Gadacro" base="Gadacro" type="Elite" />
+  <creature name="Elite Giant Scorpion Flayer" base="Giant Scorpion Flayer" type="Elite" />
+  <creature name="Elite Giant Scorpion Stinger" base="Giant Scorpion Stinger" type="Elite" />
+  <creature name="Elite Glabrezu" base="Glabrezu" type="Elite" />
+  <creature name="Elite Golothoma" base="Golothoma" type="Elite" />
+  <creature name="Elite Goristro" base="Goristro" type="Elite">
+    <damageImmunities>
+	  <damage type="Positive" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Guecubu" base="Guecubu" type="Elite">
+    <damageImmunities>
+	  <damage type="Electrical" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Hezrou" base="Hezrou" type="Elite" />
+  <creature name="Elite Incubus" base="Incubus" type="Elite" />
+  <creature name="Elite Ixitxachitl Cultist" base="Ixitxachitl Cultist" type="Elite" />
+  <creature name="Elite Ixitxachitl Darter" base="Ixitxachitl Darter" type="Elite" />
+  <creature name="Elite Ixitxachitl Priest" base="Ixitxachitl Priest" type="Elite" />
+  <creature name="Elite Jarilith" base="Jarilith" type="Elite">
+    <damageImmunities>
+	  <damage type="Positive" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Jovoc" base="Jovoc" type="Elite" />
+  <creature name="Elite Kelvezu" base="Kelvezu" type="Elite" />
+  <creature name="Elite Laghathti" base="Laghathti" type="Elite" />
+  <creature name="Elite Lemorian Scream" base="Lemorian Scream" type="Elite">
+    <damageImmunities>
+	  <damage type="Sonic" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Living Holocaust" base="Living Holocaust" type="Elite">
+    <damageImmunities>
+	  <damage type="Fire" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Mane" base="Mane" type="Elite" />
+  <creature name="Elite Manitou" base="Manitou" type="Elite" />
+  <creature name="Elite Marilith Blackguard" base="Marilith" type="Elite">
+    <damageImmunities>
+	  <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Maurezhi" base="Maurezhi" type="Elite" />
+  <creature name="Elite Merchurion" base="Merchurion" type="Elite" />
+  <creature name="Elite Black Molydeus" base="Molydeus" type="Elite">
+    <damageImmunities>
+	  <damage type="Divine" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Myrmyxicus" base="Myrmyxicus" type="Elite" />
+  <creature name="Elite Nabassu" base="Nabassu" type="Elite" />
+  <creature name="Elite Nalfeshnee" base="Nalfeshnee" type="Elite">
+    <damageImmunities>
+	  <damage type="Electrical" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Palrethee" base="Palrethee" type="Elite">
+    <damageImmunities>
+	  <damage type="Fire" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Phycomid" base="Phycomid" type="Elite" />
+  <creature name="Elite Quasit" base="Quasit" type="Elite" />
+  <creature name="Elite Resin Golem" base="Resin Golem" type="Elite">
+    <damageImmunities>
+	  <damage type="Acid" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Resinous Geyser" base="Resinous Geyser" type="Elite">
+    <damageImmunities>
+	  <damage type="Acid" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Resinous Ooze" base="Resinous Ooze" type="Elite">
+    <damageImmunities>
+	  <damage type="Acid" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Retriever" base="Retriever" type="Elite" />
+  <creature name="Elite Rutterkin" base="Rutterkin" type="Elite" />
+  <creature name="Elite Sanguineous Drinker" base="Sanguineous Drinker" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Sibriex" base="Sibriex" type="Elite">
+    <damageImmunities>
+	  <damage type="Magical" healing="6" />
+	</damageImmunities>
+  </creature>
+  <creature name="Elite Skeletal Rat" base="Skeletal Rat" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Skulvyn" base="Skulvyn" type="Elite" />
+  <creature name="Elite Sporebat" base="Sporebat" type="Elite" />
+  <creature name="Elite Succubus" base="Succubus" type="Elite">
+    <damageImmunities>
+	  <damage type="Positive" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Tiefling Archer" base="Tiefling Archer" type="Elite" />
+  <creature name="Elite Tiefling Assassin" base="Tiefling Assassin" type="Elite" />
+  <creature name="Elite Tiefling Sorceress" base="Tiefling Sorceress" type="Elite"/>
+  <creature name="Elite Tomb Mote" base="Tomb Mote" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Tombstone Golem" base="Tombstone Golem" type="Elite" />
+  <creature name="Elite Uridezu" base="Uridezu" type="Elite" />
+  <creature name="Elite Uzollru" base="Uzollru" type="Elite" />
+  <creature name="Elite Vampiric Ixitxachitl" base="Vampiric Ixitxachitl" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Varrangoin Arcanist" base="Varrangoin Arcanist" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="6" />
+	</damageImmunities>
+  </creature>
+  <creature name="Elite Varrangoin Hurler" base="Varrangoin Hurler" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="6" />
+	</damageImmunities>
+  </creature>
+  <creature name="Elite Varrangoin Rager" base="Varrangoin Rager" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="6" />
+	</damageImmunities>
+  </creature>
+  <creature name="Elite Varrangoin Scout" base="Varrangoin Scout" type="Elite">
+    <damageImmunities>
+	  <damage type="Negative" healing="6" />
+	</damageImmunities>
+  </creature>
+  <creature name="Elite Verakia" base="Verakia" type="Elite">
+    <damageImmunities>
+	  <damage type="Fire" healing="6" />
+	</damageImmunities>
+  </creature>
+  <creature name="Elite Violet Fungus" base="Violet Fungus" type="Elite" />
+  <creature name="Elite Viper Tree" base="Viper Tree" type="Elite" />
+  <creature name="Elite Vorr" base="Vorr" type="Elite" />
+  <creature name="Elite Filthy Vrock" base="Vrock" type="Elite">
+    <damageImmunities>
+	  <damage type="Sonic" healing="6" />
+	</damageImmunities>
+  </creature>
+  <creature name="Elite Wastrilith" base="Wastrilith" type="Elite" />
+  <creature name="Elite Yuan-Ti Huntress" base="Yuan-Ti Huntress" type="Elite">
+    <damageImmunities>
+	  <damage type="Acid" healing="6" />
+	</damageImmunities>
+  </creature>
+  <creature name="Elite Yuan-Ti Sorceress" base="Yuan-Ti Sorceress" type="Elite">
+    <damageImmunities>
+	  <damage type="Acid" healing="6" />
+	</damageImmunities>
+  </creature>
+  <creature name="Elite Zovvut" base="Zovvut" type="Elite" />
+</creatures>

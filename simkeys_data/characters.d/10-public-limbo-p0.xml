@@ -1,0 +1,330 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Complete" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="20" />
+      <damage type="Piercing" immunity="40" resistance="20" />
+      <damage type="Slashing" immunity="40" resistance="20" />
+      <damage type="Acid" immunity="70" resistance="20" />
+      <damage type="Cold" immunity="0" resistance="20" />
+      <damage type="Electrical" immunity="0" resistance="20" />
+      <damage type="Fire" immunity="0" resistance="20" />
+      <damage type="Sonic" immunity="70" resistance="20" />
+      <damage type="Divine" immunity="80" resistance="15" />
+      <damage type="Magical" immunity="80" resistance="35" />
+      <damage type="Negative" immunity="30" resistance="15" />
+      <damage type="Positive" immunity="30" resistance="15" />
+      <damage type="Ectoplasmic" immunity="15" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="40" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="27" resistance="0" />
+      <damage type="Axiomatic" immunity="27" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Amorphion" race="Construct" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Anarchic Basilisk" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Anarchic Fox" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Anarchic Serpent" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Anarchic Storm Giant" race="Giant" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Arucha" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Black Slaad" race="Outsider" timeStamp="2016-04-04T07:15:00.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Bloodthorn" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Blue Slaad" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Chaond Primalist" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Chaond Vandal" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Chaos Drake" race="Unknown" timeStamp="2016-04-04T07:15:00.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Chaos Phage Swarm" race="Unknown" timeStamp="2016-04-04T07:15:00.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Chaos Roc" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Death Slaad" race="Outsider" timeStamp="2016-04-04T07:15:00.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Discordant Soul" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Doppelganger" race="Monstrous Humanoid" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Entropic Reaper" race="Unknown" timeStamp="2016-04-04T07:15:00.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Eolian" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Feral Elf Archer" race="Elf" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Feral Elf Skinwalker" race="Elf" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Feral Elf Skirmisher" race="Elf" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Feral Elf Stormwarden" race="Elf" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Gibbering Mouther" timeStamp="2012-03-16T09:37:30.8732802Z" race="Aberration" kickback="Area" >
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="80" resistance="15" />
+      <damage type="Piercing" immunity="0" resistance="10" />
+      <damage type="Slashing" immunity="0" resistance="20" />
+      <damage type="Acid" immunity="100" resistance="10" />
+      <damage type="Cold" immunity="80" resistance="10" />
+      <damage type="Electrical" immunity="20" resistance="10" />
+      <damage type="Fire" immunity="50" resistance="10" />
+      <damage type="Sonic" immunity="100" resistance="10" kickback="true" />
+      <damage type="Divine" immunity="100" resistance="10" />
+      <damage type="Magical" immunity="20" resistance="0" kickback="true" />
+      <damage type="Negative" immunity="70" resistance="10" />
+      <damage type="Positive" immunity="60" resistance="0" />
+      <damage type="Ectoplasmic" immunity="32" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="10" resistance="0" />
+      <damage type="Sacred" immunity="50" resistance="0" />
+      <damage type="Vile" immunity="50" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="50" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Gibbering Orb" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Gith-attala" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Githyanki Avenger" race="Humanoid" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Githzerai Chaosweaver" race="Humanoid" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Githzerai Monast" race="Humanoid" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Githzerai Stalker" race="Humanoid" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Githzerai Zerth" race="Humanoid" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Green Slaad" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Gremlin" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Grey Slaad" race="Outsider" timeStamp="2016-04-04T07:15:00.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Hagunemnon" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Howler" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Imentesh" race="Shapechanger" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Kaorti Alienist" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z" kickback="Area" special="AvoidHit">
+    <damageImmunities>
+      <damage type="Psionic" immunity="0" resistance="0" kickback="true" />
+    </damageImmunities>
+  </creature>
+  <creature name="Kaorti Nullifier" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Kaorti Mocker" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Keketar" race="Shapechanger" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Khayal" race="Unknown" timeStamp="2016-04-03T20:20:13.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Lillend" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Limbo Stalker" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Mageripper Swarm" race="Unknown" timeStamp="2016-04-04T07:15:00.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Mimic" race="Aberration" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Mud Slaad" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Naunet" race="Shapechanger" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Nightseed" race="Unknown" timeStamp="2016-04-04T07:15:00.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Nishruu" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Pelagastr" race="Shapechanger" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Phasm" race="Aberration" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Quark" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Red Slaad" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Shadow Jelly" race="Unknown" timeStamp="2016-04-04T07:15:00.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Shardsoul Slayer" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Taunting Haunt" race="Unknown" timeStamp="2016-04-04T07:15:00.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Trilloch" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Unfinished Minotaur" race="Giant" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Unfinished Titan" race="Giant" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Voidworm School" race="Shapechanger" timeStamp="2016-03-19T19:33:35.3454112Z" kickback="Area">
+    <damageImmunities>
+      <damage type="Anarchic" immunity="0" resistance="0" kickback="true" />
+    </damageImmunities>
+  </creature>
+  <creature name="Warp Drifter" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Weaver" race="Unknown" timeStamp="2016-04-03T20:20:13.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="White Slaad" race="Outsider" timeStamp="2016-04-04T07:15:00.000000Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Windrazor" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Windscythe Confessor" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Windscythe Tyrant" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Xag-Az" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Zeugalak" race="Aberration" timeStamp="2016-03-19T19:33:35.3454112Z">
+    <damageImmunities>
+      <damage type="Electrical" immunity="0" resistance="0" healing="6"/>
+    </damageImmunities>
+  </creature>
+</creatures>

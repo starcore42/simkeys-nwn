@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Arendagrost" />
+  <creature name="Belcheresk" />
+  <creature name="Cctchk'tik'ca the Lord of Maggots" />
+  <creature name="Dagon" />
+  <creature name="Darkness Given Hunger" />
+  <creature name="Demogorgon" />
+  <creature name="Fo-oon-fol the Twister of Forms" />
+  <creature name="Fraz Urb'luu" />
+  <creature name="Fulgoz" />
+  <creature name="Glyphimhor" />
+  <creature name="Golothoma" />
+  <creature name="Graz'zt" />
+  <creature name="Harthoon" />
+  <creature name="Juiblex" />
+  <creature name="Kargoth the Betrayer" />
+  <creature name="Karizmodus the Carver" />
+  <creature name="Malcanthet" />
+  <creature name="Malice Dexter" />
+  <creature name="Malice Sinister" />
+  <creature name="Malidune" />
+  <creature name="Malphas the Outcast" />
+  <creature name="Obox-ob" />
+  <creature name="Oixhacual" />
+  <creature name="Orcus" />
+  <creature name="Orwantz" />
+  <creature name="Pale Night" />
+  <creature name="Pazuzu" />
+  <creature name="Qolsorron the Negator of Leng" />
+  <creature name="Quah-Nomag the Skull-King" />
+  <creature name="Shade of Miska" />
+  <creature name="Teratomorph" />
+  <creature name="Thraxxia" />
+  <creature name="Ufridez" />
+  <creature name="Verin" />
+  <creature name="Yelbonaa" />
+  <creature name="Zhelamiss" />
+  <creature name="Zuggtmoy" />
+</creatures>

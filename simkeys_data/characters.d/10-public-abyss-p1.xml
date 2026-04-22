@@ -1,0 +1,317 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Greater Abrian" base="Abrian" type="Greater">
+  </creature>
+  <creature name="Greater Abyssal Ant Swarm" base="Abyssal Ant Swarm" type="Greater">
+  </creature>
+  <creature name="Greater Abyssal Drake" base="Abyssal Drake" type="Greater">
+    <damageImmunities>
+	  <damage type="Fire" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Abyssal Ghoul" base="Abyssal Ghoul" type="Greater">
+    <damageImmunities>
+	  <damage type="Negative" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Abyssal Sunbeam" base="Abyssal Sunbeam" type="Greater">
+  </creature>
+  <creature name="Greater Abyssal Zombie" base="Abyssal Zombie" type="Greater">
+    <damageImmunities>
+	  <damage type="Negative" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Adaru" base="Adaru" type="Greater">
+  </creature>
+  <creature name="Greater Alkilith" base="Alkilith" type="Greater">
+  </creature>
+  <creature name="Greater Anzu" base="Anzu" type="Greater">
+  </creature>
+  <creature name="Greater Arcane Ooze" base="Arcane Ooze" type="Greater">
+    <damageImmunities>
+	  <damage type="Magical" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Armanite" base="Armanite" type="Greater">
+  </creature>
+  <creature name="Greater Arrowhawk" base="Arrowhawk" type="Greater">
+    <damageImmunities>
+	  <damage type="Electrical" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Artaaglith" base="Artaaglith" type="Greater">
+  </creature>
+  <creature name="Greater Babau" base="Babau" type="Greater">
+  </creature>
+  <creature name="Greater Balor" base="Balor" type="Greater">
+  </creature>
+  <creature name="Greater Bar-Lgura" base="Bar-Lgura" type="Greater">
+  </creature>
+  <creature name="Greater Bebelith" base="Bebelith" type="Greater">
+  </creature>
+  <creature name="Greater Black Pudding" base="Black Pudding" type="Greater">
+    <damageImmunities>
+	  <damage type="Cold" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Blood Wind" base="Blood Wind" type="Greater">
+  </creature>
+  <creature name="Greater Bodak" base="Bodak" type="Greater">
+    <damageImmunities>
+	  <damage type="Negative" healing="7" />
+    </damageImmunities>
+</creature>
+  <creature name="Greater Bone Moss" base="Bone Moss" type="Greater">
+  </creature>
+  <creature name="Greater Bone Ooze" base="Bone Ooze" type="Greater">
+  </creature>
+  <creature name="Greater Bonesinger" base="Bonesinger" type="Greater">
+    <damageImmunities>
+	  <damage type="Negative" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Brood Keeper" base="Brood Keeper" type="Greater">
+  </creature>
+  <creature name="Greater Broodswarm" base="Broodswarm" type="Greater">
+    <damageImmunities>
+	  <damage type="Fire" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Bulezau" base="Bulezau" type="Greater">
+  </creature>
+  <creature name="Greater Caligrosto" base="Caligrosto" type="Greater">
+  </creature>
+  <creature name="Greater Carcass Eater" base="Carcass Eater" type="Greater">
+  </creature>
+  <creature name="Greater Caustic Fountain" base="Caustic Fountain" type="Greater">
+  </creature>
+  <creature name="Greater Chasme" base="Chasme" type="Greater">
+  </creature>
+  <creature name="Greater Chelicera" base="Chelicera" type="Greater">
+  </creature>
+  <creature name="Greater Crypt Thing" base="Crypt Thing" type="Greater">
+    <damageImmunities>
+	  <damage type="Negative" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Deadborn Vulture" base="Deadborn Vulture" type="Greater">
+  </creature>
+  <creature name="Greater Death Knight" base="Death Knight" type="Greater">
+    <damageImmunities>
+	  <damage type="Negative" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Draudnu" base="Draudnu" type="Greater">
+  </creature>
+  <creature name="Greater Dread Ram" base="Dread Ram" type="Greater">
+    <damageImmunities>
+	  <damage type="Negative" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Dretch" base="Dretch" type="Greater">
+  </creature>
+  <creature name="Greater Dustman Necromancer" base="Dustman Necromancer" type="Greater">
+  </creature>
+  <creature name="Greater Dustman Slinger" base="Dustman Slinger" type="Greater">
+  </creature>
+  <creature name="Greater Dust Wight" base="Dust Wight" type="Greater">
+    <damageImmunities>
+	  <damage type="Negative" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Dybbuk" base="Dybbuk" type="Greater">
+  </creature>
+  <creature name="Greater Ekolid Builder" base="Ekolid Builder" type="Greater">
+    <damageImmunities>
+	  <damage type="Electrical" healing="3" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Ekolid Chitterer" base="Ekolid Chitterer" type="Greater">
+    <damageImmunities>
+	  <damage type="Electrical" healing="3" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Ekolid Devourer" base="Ekolid Devourer" type="Greater">
+    <damageImmunities>
+	  <damage type="Electrical" healing="3" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Ekolid Reaver" base="Ekolid Reaver" type="Greater">
+    <damageImmunities>
+	  <damage type="Electrical" healing="3" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Fiendish Aboleth" base="Fiendish Aboleth" type="Greater">
+  </creature>
+  <creature name="Greater Fiendish Barracuda" base="Fiendish Barracuda" type="Greater">
+  </creature>
+  <creature name="Greater Fiendish Boar" base="Fiendish Boar" type="Greater">
+  </creature>
+  <creature name="Greater Fiendish Frog" base="Fiendish Frog" type="Greater">
+  </creature>
+  <creature name="Greater Fiendish Fungus" base="Fiendish Fungus" type="Greater">
+    <damageImmunities>
+	  <damage type="Fire" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Fiendish Otyugh" base="Fiendish Otyugh" type="Greater">
+  </creature>
+  <creature name="Greater Fiendish Raptor" base="Fiendish Raptor" type="Greater">
+  </creature>
+  <creature name="Greater Fiendish Render" base="Fiendish Render" type="Greater">
+  </creature>
+  <creature name="Greater Fiendish Roc" base="Fiendish Roc" type="Greater">
+  </creature>
+  <creature name="Greater Fiendish Slug" base="Fiendish Slug" type="Greater">
+  </creature>
+  <creature name="Greater Flesh Jelly" base="Flesh Jelly" type="Greater">
+    <damageImmunities>
+	  <damage type="Electrical" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Gadacro" base="Gadacro" type="Greater">
+  </creature>
+  <creature name="Greater Giant Scorpion Flayer" base="Giant Scorpion Flayer" type="Greater">
+  </creature>
+  <creature name="Greater Giant Scorpion Stinger" base="Giant Scorpion Stinger" type="Greater">
+  </creature>
+  <creature name="Greater Glabrezu" base="Glabrezu" type="Greater">
+  </creature>
+  <creature name="Greater Golothoma" base="Golothoma" type="Greater">
+  </creature>
+  <creature name="Greater Goristro" base="Goristro" type="Greater">
+  </creature>
+  <creature name="Greater Guecubu" base="Guecubu" type="Greater">
+    <damageImmunities>
+	  <damage type="Electrical" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Hezrou" base="Hezrou" type="Greater">
+  </creature>
+  <creature name="Greater Incubus" base="Incubus" type="Greater">
+  </creature>
+  <creature name="Greater Ixitxachitl Cultist" base="Ixitxachitl Cultist" type="Greater">
+  </creature>
+  <creature name="Greater Ixitxachitl Darter" base="Ixitxachitl Darter" type="Greater">
+  </creature>
+  <creature name="Greater Ixitxachitl Priest" base="Ixitxachitl Priest" type="Greater">
+  </creature>
+  <creature name="Greater Jarilith" base="Jarilith" type="Greater">
+  </creature>
+  <creature name="Greater Jovoc" base="Jovoc" type="Greater">
+  </creature>
+  <creature name="Greater Kelvezu" base="Kelvezu" type="Greater">
+  </creature>
+  <creature name="Greater Laghathti" base="Laghathti" type="Greater">
+  </creature>
+  <creature name="Greater Lemorian Scream" base="Lemorian Scream" type="Greater">
+  </creature>
+  <creature name="Greater Living Holocaust" base="Living Holocaust" type="Greater">
+    <damageImmunities>
+	  <damage type="Fire" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Mane" base="Mane" type="Greater">
+  </creature>
+  <creature name="Greater Manitou" base="Manitou" type="Greater">
+  </creature>
+  <creature name="Marilith Blackguard" base="Marilith" type="Greater">
+  </creature>
+  <creature name="Greater Maurezhi" base="Maurezhi" type="Greater">
+  </creature>
+  <creature name="Greater Merchurion" base="Merchurion" type="Greater">
+  </creature>
+  <creature name="Black Molydeus" base="Molydeus" type="Greater">
+  </creature>
+  <creature name="Greater Myrmyxicus" base="Myrmyxicus" type="Greater">
+  </creature>
+  <creature name="Greater Nabassu" base="Nabassu" type="Greater">
+  </creature>
+  <creature name="Greater Nalfeshnee" base="Nalfeshnee" type="Greater">
+  </creature>
+  <creature name="Greater Palrethee" base="Palrethee" type="Greater">
+    <damageImmunities>
+	  <damage type="Fire" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Phycomid" base="Phycomid" type="Greater">
+  </creature>
+  <creature name="Greater Quasit" base="Quasit" type="Greater">
+  </creature>
+  <creature name="Greater Resin Golem" base="Resin Golem" type="Greater">
+  </creature>
+  <creature name="Greater Resinous Geyser" base="Resinous Geyser" type="Greater">
+  </creature>
+  <creature name="Greater Resinous Ooze" base="Resinous Ooze" type="Greater">
+    <damageImmunities>
+	  <damage type="Acid" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Retriever" base="Retriever" type="Greater">
+  </creature>
+  <creature name="Greater Rutterkin" base="Rutterkin" type="Greater">
+  </creature>
+  <creature name="Greater Sanguineous Drinker" base="Sanguineous Drinker" type="Greater">
+    <damageImmunities>
+	  <damage type="Negative" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Sibriex" base="Sibriex" type="Greater">
+  </creature>
+  <creature name="Greater Skeletal Rat" base="Skeletal Rat" type="Greater">
+  </creature>
+  <creature name="Greater Skulvyn" base="Skulvyn" type="Greater">
+  </creature>
+  <creature name="Greater Sporebat" base="Sporebat" type="Greater">
+  </creature>
+  <creature name="Greater Succubus" base="Succubus" type="Greater">
+  </creature>
+  <creature name="Greater Tiefling Archer" base="Tiefling Archer" type="Greater">
+  </creature>
+  <creature name="Greater Tiefling Assassin" base="Tiefling Assassin" type="Greater">
+  </creature>
+  <creature name="Greater Tiefling Sorceress" base="Tiefling Sorceress" type="Greater">
+  </creature>
+  <creature name="Greater Tomb Mote" base="Tomb Mote" type="Greater">
+    <damageImmunities>
+	  <damage type="Negative" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Tombstone Golem" base="Tombstone Golem" type="Greater">
+  </creature>
+  <creature name="Greater Uridezu" base="Uridezu" type="Greater">
+  </creature>
+  <creature name="Greater Uzollru" base="Uzollru" type="Greater">
+  </creature>
+  <creature name="Greater Vampiric Ixitxachitl" base="Vampiric Ixitxachitl" type="Greater">
+    <damageImmunities>
+	  <damage type="Negative" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Varrangoin Arcanist" base="Varrangoin Arcanist" type="Greater">
+  </creature>
+  <creature name="Greater Varrangoin Hurler" base="Varrangoin Hurler" type="Greater">
+  </creature>
+  <creature name="Greater Varrangoin Rager" base="Varrangoin Rager" type="Greater">
+  </creature>
+  <creature name="Greater Varrangoin Scout" base="Varrangoin Scout" type="Greater">
+  </creature>
+  <creature name="Greater Verakia" base="Verakia" type="Greater">
+  </creature>
+  <creature name="Greater Violet Fungus" base="Violet Fungus" type="Greater">
+  </creature>
+  <creature name="Greater Viper Tree" base="Viper Tree" type="Greater">
+  </creature>
+  <creature name="Greater Vorr" base="Vorr" type="Greater">
+  </creature>
+  <creature name="Filthy Vrock" base="Vrock" type="Greater">
+  </creature>
+  <creature name="Greater Wastrilith" base="Wastrilith" type="Greater">
+  </creature>
+  <creature name="Greater Yuan-Ti Huntress" base="Yuan-Ti Huntress" type="Greater">
+  </creature>
+  <creature name="Greater Yuan-Ti Sorceress" base="Yuan-Ti Sorceress" type="Greater">
+  </creature>
+  <creature name="Greater Zovvut" base="Zovvut" type="Greater">
+  </creature>
+</creatures>

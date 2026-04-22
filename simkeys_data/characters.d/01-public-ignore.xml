@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+	<creature name="Blue Mushroom Spores" type="Ignore" />
+	<creature name="Box, Black" type="Ignore" /> 
+    <creature name="Box, Black 2" type="Ignore" /> 
+	<creature name="Campfire, With Large Pot" type="Ignore" />
+	<creature name="Case" type="Ignore" />
+	<creature name="Cloud of Light" type="Ignore" />
+	<creature name="Cocoon" type="Ignore" />
+	<creature name="Corrosive Slime" type="Ignore" />
+	<creature name="Glassteel Tube" type="Ignore" />
+	<creature name="Debris" type="Ignore" />
+	<creature name="Electricity" type="Ignore" /> 
+	<creature name="Green Mushroom Spores" type="Ignore" />
+	<creature name="Fire Medium Red" type="Ignore" />
+	<creature name="Kelp" type="Ignore" />
+	<creature name="Legendary Shadow" type="Ignore" />
+	<creature name="Lightshaft, Blue" type="Ignore" />
+	<creature name="Ooze Puddle" type="Ignore" />
+	<creature name="Ooze Remnants" type="Ignore" />
+	<creature name="Pedestal of the Planar Traveler" type="Ignore" />
+	<creature name="Persistent Wound" type="Ignore" />
+	<creature name="Pile of Gold" type="Ignore" />
+	<creature name="Poison" type="Ignore" /> 
+    <creature name="Portal" type="Ignore" />
+	<creature name="Potted Flower - Aloe" type="Ignore" />
+	<creature name="Potted Tree - tall spire" type="Ignore" />
+	<creature name="Raven" type="Ignore" />
+	<creature name="Resin Block" type="Ignore" />
+	<creature name="Rod of Wonder" type="Ignore" />
+	<creature name="Scattered Debris" type="Ignore" />
+	<creature name="Seaweed" type="Ignore" />
+	<creature name="Shaft of Light" type="Ignore" />
+	<creature name="Skull Pole" type="Ignore" />
+	<creature name="Slime Splatter" type="Ignore" />
+	<creature name="Someone" type="Ignore" />
+	<creature name="Soporific Flowers" type="Ignore" /> 
+	<creature name="Storm Sprite" type="Ignore" />
+	<creature name="Summoned Succubus" type="Ignore" />
+	<creature name="Summoned Shadow Fiend" type="Ignore" />
+	<creature name="Weapon Rack" type="Ignore" />
+	<creature name="Yellow Mushroom Spores" type="Ignore" />
+</creatures>

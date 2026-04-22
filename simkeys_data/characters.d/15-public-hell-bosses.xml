@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+	<!-- Avernus -->
+	<creature name="Piraz" base="Red Abishai" type="MiniBoss">
+		<damageImmunities>
+			<damage type="Fire" healing="6" />
+		</damageImmunities>
+	</creature>
+	<creature name="Baddabuz" base="Barbazu" type="MiniBoss" />
+	<creature name="T'kritz" base="Cornugon" type="MiniBoss" />
+	<creature name="Consort of Acid" type="Boss" />
+	<creature name="Consort of Bolts" type="Boss" />
+	<creature name="Consort of Flames" type="Boss" />
+	<creature name="Consort of Fumes" type="Boss" />
+	<creature name="Consort of Ice" type="Boss" />
+	<creature name="Tiamat" type="Boss" />
+
+	<!-- Dis -->
+	<creature name="Sasyi" base="Erinyes" type="MiniBoss" />
+	<creature name="Dazgud" base="Black Abishai" type="MiniBoss">
+		<damageImmunities>
+			<damage type="Acid" healing="6" />
+		</damageImmunities>
+	</creature>
+	<creature name="Veldavora" base="Erinyes" type="MiniBoss" />
+	<creature name="Absklarg" base="Kocrachon" type="MiniBoss" />
+	<creature name="Ca'ctiik" base="Hamatuls" type="MiniBoss" />
+	<creature name="Gob'daktan" base="Pit Fiend" type="MiniBoss" />
+	<creature name="Archduke Dispater" type="Boss" />
+
+	<!-- Minauros -->
+	<creature name="Ngdril" base="Kyton" type="MiniBoss" />
+	<creature name="Fodorz" base="Kyton" type="MiniBoss" />
+	<creature name="Quimath" type="Boss" />
+
+	<!-- Phleg -->
+	<creature name="Sbikta" base="Osyluth" type="MiniBoss" />
+	<creature name="Zgdros" base="Hamatula" type="MiniBoss" />
+	<creature name="Ysgret" base="Hamatula" type="MiniBoss" />
+	<creature name="Beshi'bak" base="Cornugon" type="MiniBoss" />
+	<creature name="Dogruuk" base="Osyluth" type="MiniBoss" />
+	<creature name="Gazra" base="Pit Fiend" type="MiniBoss" />
+	<creature name="Belial" type="Boss" />
+	<creature name="Fierna" type="Boss" />
+
+	<!-- Stygia -->
+	<creature name="Drakiz'niz" base="Amnizu" type="MiniBoss" />
+	<creature name="Krakta'kri" base="Gelugon" type="MiniBoss" />
+	<creature name="The Nameless Pit Fiend" type="Boss" />
+
+	<!-- Malboge -->
+	<creature name="Galya" base="Erinyes" type="MiniBoss" />
+	<creature name="Ancient Baatorian" type="Boss" />
+
+	<!-- Maladomini -->
+	<creature name="Qaddal" base="Cornugon" type="MiniBoss" />
+	<creature name="Farzgri" base="Pit Fiend" type="MiniBoss" />
+	<creature name="Pazdolg" base="Cornugon" type="MiniBoss" />
+	<creature name="Rk'trizib" base="Pit Fiend" type="MiniBoss" />
+	<creature name="Baalzebul" type="Boss" />
+
+	<!-- Cania -->
+	<creature name="Padzaz" base="Gelugon" type="MiniBoss" />
+	<creature name="Cho'dsak" base="Pit Fiend" type="MiniBoss" />
+	<creature name="Mephistopheles" type="Boss" />
+
+	<!-- Nessus -->
+	<creature name="Shazdrak" base="Pit Fiend" type="MiniBoss" />
+	<creature name="Ygdriz" base="Pit Fiend" type="MiniBoss" />
+	<creature name="Plag" base="Brood Serpent" type="MiniBoss" />
+	<creature name="Asmodeus" type="Boss" />
+</creatures>

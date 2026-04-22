@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+<creature name="Marraenoloth" timeStamp="2016-06-12T08:46:32.000000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="0" resistance="5" />
+		<damage type="Piercing" immunity="50" resistance="5" />
+		<damage type="Slashing" immunity="0" resistance="15" />
+		<damage type="Magical" immunity="70" resistance="10" />
+		<damage type="Acid" immunity="90" resistance="20" />
+		<damage type="Cold" immunity="0" resistance="0" />
+		<damage type="Divine" immunity="50" resistance="10" />
+		<damage type="Electrical" immunity="60" resistance="15" />
+		<damage type="Fire" immunity="100" resistance="10" />
+		<damage type="Negative" immunity="40" resistance="5" />
+		<damage type="Positive" immunity="30" resistance="5" />
+		<damage type="Sonic" immunity="40" resistance="5" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="17" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="25" resistance="0" />
+		<damage type="Vile" immunity="25" resistance="0" />
+		<damage type="Primal" immunity="25" resistance="0" />
+		<damage type="Anarchic" immunity="27" resistance="0" />
+		<damage type="Axiomatic" immunity="25" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Movement Speed Decrease" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Greater Marraenoloth" timeStamp="2016-06-12T08:57:26.000000Z" race="Outsider" base="Marraenoloth" type="Greater">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="0" resistance="5" />
+		<damage type="Piercing" immunity="50" resistance="5" />
+		<damage type="Slashing" immunity="0" resistance="15" />
+		<damage type="Magical" immunity="80" resistance="10" />
+		<damage type="Acid" immunity="100" resistance="20" />
+		<damage type="Cold" immunity="10" resistance="0" />
+		<damage type="Divine" immunity="60" resistance="10" />
+		<damage type="Electrical" immunity="70" resistance="15" />
+		<damage type="Fire" immunity="110" resistance="10" />
+		<damage type="Negative" immunity="50" resistance="5" />
+		<damage type="Positive" immunity="40" resistance="5" />
+		<damage type="Sonic" immunity="50" resistance="5" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="22" resistance="0" />
+		<damage type="Psionic" immunity="40" resistance="0" />
+		<damage type="Sacred" immunity="30" resistance="0" />
+		<damage type="Vile" immunity="30" resistance="0" />
+		<damage type="Primal" immunity="30" resistance="0" />
+		<damage type="Anarchic" immunity="32" resistance="0" />
+		<damage type="Axiomatic" immunity="30" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Dominate" />
+		<add name="Movement Speed Decrease" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Mezzoloth" timeStamp="2016-06-12T09:09:07.000000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="30" resistance="10" />
+		<damage type="Piercing" immunity="30" resistance="10" />
+		<damage type="Slashing" immunity="10" resistance="10" />
+		<damage type="Magical" immunity="50" resistance="15" />
+		<damage type="Acid" immunity="72" resistance="20" />
+		<damage type="Cold" immunity="18" resistance="0" />
+		<damage type="Divine" immunity="50" resistance="5" />
+		<damage type="Electrical" immunity="42" resistance="15" />
+		<damage type="Fire" immunity="82" resistance="10" />
+		<damage type="Negative" immunity="40" resistance="5" />
+		<damage type="Positive" immunity="50" resistance="5" />
+		<damage type="Sonic" immunity="22" resistance="5" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="22" resistance="0" />
+		<damage type="Psionic" immunity="25" resistance="0" />
+		<damage type="Sacred" immunity="25" resistance="0" />
+		<damage type="Vile" immunity="25" resistance="0" />
+		<damage type="Primal" immunity="25" resistance="0" />
+		<damage type="Anarchic" immunity="22" resistance="0" />
+		<damage type="Axiomatic" immunity="25" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Implosion" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Death Magic" />
+	</otherImmunities>
+</creature>
+</creatures>

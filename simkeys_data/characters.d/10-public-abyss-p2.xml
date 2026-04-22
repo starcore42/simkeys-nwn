@@ -1,0 +1,347 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Superior Abrian" base="Abrian" type="Superior" />
+  <creature name="Superior Abyssal Ant Swarm" base="Abyssal Ant Swarm" type="Superior" />
+  <creature name="Superior Abyssal Drake" base="Abyssal Drake" type="Superior">
+    <damageImmunities>
+	  <damage type="Fire" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Abyssal Ghoul" base="Abyssal Ghoul" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Abyssal Sunbeam" base="Abyssal Sunbeam" type="Superior">
+    <damageImmunities>
+	  <damage type="Cold" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Abyssal Zombie" base="Abyssal Zombie" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Adaru" base="Adaru" type="Superior" />
+  <creature name="Superior Alkilith" base="Alkilith" type="Superior">
+    <damageImmunities>
+	  <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Anzu" base="Anzu" type="Superior" />
+  <creature name="Superior Arcane Ooze" base="Arcane Ooze" type="Superior">
+    <damageImmunities>
+	  <damage type="Magical" healing="9" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Armanite" base="Armanite" type="Superior" />
+  <creature name="Superior Arrowhawk" base="Arrowhawk" type="Superior">
+    <damageImmunities>
+	  <damage type="Electrical" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Artaaglith" base="Artaaglith" type="Superior" />
+  <creature name="Superior Babau" base="Babau" type="Superior" />
+  <creature name="Superior Balor" base="Balor" type="Superior">
+    <damageImmunities>
+	  <damage type="Fire" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Bar-Lgura" base="Bar-Lgura" type="Superior" />
+  <creature name="Superior Bebelith" base="Bebelith" type="Superior" />
+  <creature name="Superior Black Pudding" base="Black Pudding" type="Superior">
+    <damageImmunities>
+	  <damage type="Cold" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Blood Wind" base="Blood Wind" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Bodak" base="Bodak" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Bone Moss" base="Bone Moss" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Bone Ooze" base="Bone Ooze" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Bonesinger" base="Bonesinger" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Brood Keeper" base="Brood Keeper" type="Superior" />
+  <creature name="Superior Broodswarm" base="Broodswarm" type="Superior">
+    <damageImmunities>
+	  <damage type="Fire" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Bulezau" base="Bulezau" type="Superior">
+    <damageImmunities>
+	  <damage type="Sonic" healing="4" />
+    </damageImmunities></creature>
+  <creature name="Superior Caligrosto" base="Caligrosto" type="Superior" />
+  <creature name="Superior Carcass Eater" base="Carcass Eater" type="Superior" />
+  <creature name="Superior Caustic Fountain" base="Caustic Fountain" type="Superior">
+    <damageImmunities>
+	  <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Chasme" base="Chasme" type="Superior" />
+  <creature name="Superior Chelicera" base="Chelicera" type="Superior" />
+  <creature name="Superior Crypt Thing" base="Crypt Thing" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Deadborn Vulture" base="Deadborn Vulture" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="4" />
+    </damageImmunities></creature>
+  <creature name="Superior Death Knight" base="Death Knight" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="10" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Draudnu" base="Draudnu" type="Superior" />
+  <creature name="Superior Dread Ram" base="Dread Ram" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Dretch" base="Dretch" type="Superior" />
+  <creature name="Superior Dustman Necromancer" base="Dustman Necromancer" type="Superior" />
+  <creature name="Superior Dustman Slinger" base="Dustman Slinger" type="Superior" />
+  <creature name="Superior Dust Wight" base="Dust Wight" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Dybbuk" base="Dybbuk" type="Superior">
+    <damageImmunities>
+	  <damage type="Sonic" healing="4" />
+	</damageImmunities>
+  </creature>
+  <creature name="Superior Ekolid Builder" base="Ekolid Builder" type="Superior">
+    <damageImmunities>
+	  <damage type="Electrical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Ekolid Chitterer" base="Ekolid Chitterer" type="Superior">
+    <damageImmunities>
+	  <damage type="Electrical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Ekolid Devourer" base="Ekolid Devourer" type="Superior">
+    <damageImmunities>
+	  <damage type="Electrical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Ekolid Reaver" base="Ekolid Reaver" type="Superior">
+    <damageImmunities>
+	  <damage type="Electrical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Fiendish Aboleth" base="Fiendish Aboleth" type="Superior" />
+  <creature name="Superior Fiendish Barracuda" base="Fiendish Barracuda" type="Superior">
+    <damageImmunities>
+	  <damage type="Positive" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Fiendish Boar" base="Fiendish Boar" type="Superior" />
+  <creature name="Superior Fiendish Frog" base="Fiendish Frog" type="Superior" />
+  <creature name="Superior Fiendish Fungus" base="Fiendish Fungus" type="Superior">
+    <damageImmunities>
+	  <damage type="Fire" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Fiendish Otyugh" base="Fiendish Otyugh" type="Superior" />
+  <creature name="Superior Fiendish Raptor" base="Fiendish Raptor" type="Superior" />
+  <creature name="Superior Fiendish Render" base="Fiendish Render" type="Superior" />
+  <creature name="Superior Fiendish Roc" base="Fiendish Roc" type="Superior" />
+  <creature name="Superior Fiendish Slug" base="Fiendish Slug" type="Superior">
+    <damageImmunities>
+	  <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Flesh Jelly" base="Flesh Jelly" type="Superior">
+    <damageImmunities>
+	  <damage type="Electrical" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Gadacro" base="Gadacro" type="Superior" />
+  <creature name="Superior Giant Scorpion Flayer" base="Giant Scorpion Flayer" type="Superior" />
+  <creature name="Superior Giant Scorpion Stinger" base="Giant Scorpion Stinger" type="Superior" />
+  <creature name="Superior Glabrezu" base="Glabrezu" type="Superior" />
+  <creature name="Superior Golothoma" base="Golothoma" type="Superior" />
+  <creature name="Superior Goristro" base="Goristro" type="Superior">
+    <damageImmunities>
+	  <damage type="Positive" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Guecubu" base="Guecubu" type="Superior">
+    <damageImmunities>
+	  <damage type="Electrical" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Hezrou" base="Hezrou" type="Superior" />
+  <creature name="Superior Incubus" base="Incubus" type="Superior" />
+  <creature name="Superior Ixitxachitl Cultist" base="Ixitxachitl Cultist" type="Superior" />
+  <creature name="Superior Ixitxachitl Darter" base="Ixitxachitl Darter" type="Superior" />
+  <creature name="Superior Ixitxachitl Priest" base="Ixitxachitl Priest" type="Superior" />
+  <creature name="Superior Jarilith" base="Jarilith" type="Superior">
+    <damageImmunities>
+	  <damage type="Positive" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Jovoc" base="Jovoc" type="Superior" />
+  <creature name="Superior Kelvezu" base="Kelvezu" type="Superior" />
+  <creature name="Superior Laghathti" base="Laghathti" type="Superior" />
+  <creature name="Superior Lemorian Scream" base="Lemorian Scream" type="Superior">
+    <damageImmunities>
+	  <damage type="Sonic" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Living Holocaust" base="Living Holocaust" type="Superior">
+    <damageImmunities>
+	  <damage type="Fire" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Mane" base="Mane" type="Superior" />
+  <creature name="Superior Manitou" base="Manitou" type="Superior" />
+  <creature name="Superior Marilith Blackguard" base="Marilith" type="Superior">
+    <damageImmunities>
+	  <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Maurezhi" base="Maurezhi" type="Superior" />
+  <creature name="Superior Merchurion" base="Merchurion" type="Superior" />
+  <creature name="Superior Black Molydeus" base="Molydeus" type="Superior">
+    <damageImmunities>
+	  <damage type="Divine" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Myrmyxicus" base="Myrmyxicus" type="Superior" />
+  <creature name="Superior Nabassu" base="Nabassu" type="Superior" />
+  <creature name="Superior Nalfeshnee" base="Nalfeshnee" type="Superior">
+    <damageImmunities>
+	  <damage type="Electrical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Palrethee" base="Palrethee" type="Superior">
+    <damageImmunities>
+	  <damage type="Fire" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Phycomid" base="Phycomid" type="Superior" />
+  <creature name="Superior Quasit" base="Quasit" type="Superior" />
+  <creature name="Superior Resin Golem" base="Resin Golem" type="Superior">
+    <damageImmunities>
+	  <damage type="Acid" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Resinous Geyser" base="Resinous Geyser" type="Superior">
+    <damageImmunities>
+	  <damage type="Acid" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Resinous Ooze" base="Resinous Ooze" type="Superior">
+    <damageImmunities>
+	  <damage type="Acid" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Retriever" base="Retriever" type="Superior" />
+  <creature name="Superior Rutterkin" base="Rutterkin" type="Superior" />
+  <creature name="Superior Sanguineous Drinker" base="Sanguineous Drinker" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Sibriex" base="Sibriex" type="Superior">
+    <damageImmunities>
+	  <damage type="Magical" healing="4" />
+	</damageImmunities>
+  </creature>
+  <creature name="Superior Skeletal Rat" base="Skeletal Rat" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="7" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Skulvyn" base="Skulvyn" type="Superior" />
+  <creature name="Superior Sporebat" base="Sporebat" type="Superior" />
+  <creature name="Superior Succubus" base="Succubus" type="Superior">
+    <damageImmunities>
+	  <damage type="Positive" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Tiefling Archer" base="Tiefling Archer" type="Superior" />
+  <creature name="Superior Tiefling Assassin" base="Tiefling Assassin" type="Superior" />
+  <creature name="Superior Tiefling Sorceress" base="Tiefling Sorceress" type="Superior"/>
+  <creature name="Superior Tomb Mote" base="Tomb Mote" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Tombstone Golem" base="Tombstone Golem" type="Superior" />
+  <creature name="Superior Uridezu" base="Uridezu" type="Superior" />
+  <creature name="Superior Uzollru" base="Uzollru" type="Superior" />
+  <creature name="Superior Vampiric Ixitxachitl" base="Vampiric Ixitxachitl" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="8" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Varrangoin Arcanist" base="Varrangoin Arcanist" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="4" />
+	</damageImmunities>
+  </creature>
+  <creature name="Superior Varrangoin Hurler" base="Varrangoin Hurler" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="4" />
+	</damageImmunities>
+  </creature>
+  <creature name="Superior Varrangoin Rager" base="Varrangoin Rager" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="4" />
+	</damageImmunities>
+  </creature>
+  <creature name="Superior Varrangoin Scout" base="Varrangoin Scout" type="Superior">
+    <damageImmunities>
+	  <damage type="Negative" healing="4" />
+	</damageImmunities>
+  </creature>
+  <creature name="Superior Verakia" base="Verakia" type="Superior">
+    <damageImmunities>
+	  <damage type="Fire" healing="4" />
+	</damageImmunities>
+  </creature>
+  <creature name="Superior Violet Fungus" base="Violet Fungus" type="Superior" />
+  <creature name="Superior Viper Tree" base="Viper Tree" type="Superior" />
+  <creature name="Superior Vorr" base="Vorr" type="Superior" />
+  <creature name="Superior Filthy Vrock" base="Vrock" type="Superior">
+    <damageImmunities>
+	  <damage type="Sonic" healing="4" />
+	</damageImmunities>
+  </creature>
+  <creature name="Superior Wastrilith" base="Wastrilith" type="Superior" />
+  <creature name="Superior Yuan-Ti Huntress" base="Yuan-Ti Huntress" type="Superior">
+    <damageImmunities>
+	  <damage type="Acid" healing="4" />
+	</damageImmunities>
+  </creature>
+  <creature name="Superior Yuan-Ti Sorceress" base="Yuan-Ti Sorceress" type="Superior">
+    <damageImmunities>
+	  <damage type="Acid" healing="4" />
+	</damageImmunities>
+  </creature>
+  <creature name="Superior Zovvut" base="Zovvut" type="Superior" />
+</creatures>

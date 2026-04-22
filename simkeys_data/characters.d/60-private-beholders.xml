@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+<!-- Please add a closing </creatures> manually -->
+<creature name="Devotee of the Eye" timeStamp="2016-05-08T09:07:20.000000Z" race="Aberration">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="50" resistance="5" />
+		<damage type="Piercing" immunity="100" resistance="25" />
+		<damage type="Slashing" immunity="50" resistance="5" />
+		<damage type="Magical" immunity="0" resistance="0" />
+		<damage type="Acid" immunity="0" resistance="0" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="0" />
+		<damage type="Electrical" immunity="50" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="0" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="0" resistance="0" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+	</otherImmunities>
+</creature>
+<creature name="Firegrub" timeStamp="2016-05-08T09:07:27.000000Z" race="Animal">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="25" resistance="10" />
+		<damage type="Piercing" immunity="10" resistance="0" />
+		<damage type="Slashing" immunity="50" resistance="40" />
+		<damage type="Magical" immunity="0" resistance="30" />
+		<damage type="Acid" immunity="50" resistance="0" />
+		<damage type="Cold" immunity="0" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="5" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="100" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="0" />
+		<damage type="Positive" immunity="0" resistance="30" />
+		<damage type="Sonic" immunity="75" resistance="0" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Critical Hits" />
+	</otherImmunities>
+</creature>
+<creature name="Death's Kiss" timeStamp="2016-05-08T09:07:45.000000Z" race="Aberration">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="25" resistance="5" />
+		<damage type="Piercing" immunity="100" resistance="25" />
+		<damage type="Slashing" immunity="75" resistance="5" />
+		<damage type="Magical" immunity="0" resistance="0" />
+		<damage type="Acid" immunity="0" resistance="0" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="0" />
+		<damage type="Electrical" immunity="50" resistance="0" />
+		<damage type="Fire" immunity="50" resistance="0" />
+		<damage type="Negative" immunity="100" resistance="0" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="0" resistance="0" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+</creature>
+<creature name="Putrescent Orb" timeStamp="2016-05-08T09:09:27.000000Z" race="Aberration">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="50" resistance="30" />
+		<damage type="Piercing" immunity="50" resistance="10" />
+		<damage type="Slashing" immunity="50" resistance="30" />
+		<damage type="Magical" immunity="0" resistance="30" />
+		<damage type="Acid" immunity="0" resistance="0" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="5" />
+		<damage type="Electrical" immunity="50" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="40" />
+		<damage type="Positive" immunity="0" resistance="30" />
+		<damage type="Sonic" immunity="0" resistance="0" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+	</otherImmunities>
+</creature>
+<creature name="Acolyte of the Eye" timeStamp="2016-05-08T09:14:50.000000Z" race="Aberration">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="50" resistance="5" />
+		<damage type="Piercing" immunity="100" resistance="25" />
+		<damage type="Slashing" immunity="50" resistance="5" />
+		<damage type="Magical" immunity="0" resistance="0" />
+		<damage type="Acid" immunity="0" resistance="0" />
+		<damage type="Cold" immunity="50" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="0" />
+		<damage type="Electrical" immunity="50" resistance="0" />
+		<damage type="Fire" immunity="50" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="0" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="0" resistance="0" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Knockdown" />
+	</otherImmunities>
+</creature>
+<creature name="Zorbgot the All Seeing Eye" timeStamp="2016-05-08T09:41:27.000000Z" race="Aberration" type="Boss">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="50" resistance="5" />
+		<damage type="Piercing" immunity="100" resistance="40" />
+		<damage type="Slashing" immunity="50" resistance="5" />
+		<damage type="Magical" immunity="0" resistance="0" />
+		<damage type="Acid" immunity="0" resistance="0" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="0" />
+		<damage type="Electrical" immunity="50" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="0" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="0" resistance="0" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Spells of level 3 and lower" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+	</otherImmunities>
+</creature>
+</creatures>

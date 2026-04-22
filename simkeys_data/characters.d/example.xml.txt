@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Black Abishai" timeStamp="2011-07-30T13:58:55.0000000Z" race="Outsider" type="Normal">
+  <!--
+    name [required] = exact spelling of the creature
+    timeStamp [optional] = timestamp when this record was created
+	base [optional] = the name of the creature from which this one inherits all immunities
+    race [optional] = race of the creature
+    type [optional] = paragon level of the creature, possible values are "Normal", "Greater", "Superior", "Elite", "Boss" and "Ignore"
+  -->
+    <damageImmunities>
+    <!-- a list of damage immunities, resistances and healing modifiers -->
+      <damage type="Bludgeoning" immunity="60" resistance="5" healing="0" />
+	  <!--
+        type [required] = the damage type, you see all the possible values in the list below
+        immunity [optional] = the immunity in percent. if not given the value is assumed to be unknown
+        resistance [optional] = the damage resistance. if not given the value is assumed to be unknown
+        healing [optional] = the healing modifier. if not given the value is assumed to be 0
+      -->
+      <damage type="Piercing" immunity="40" resistance="10"  healing="0" />
+      <damage type="Slashing" immunity="20" resistance="15"  healing="0" />
+      <damage type="Acid" immunity="100" resistance="0"  healing="0" />
+      <damage type="Cold" immunity="20" resistance="0"  healing="0" />
+      <damage type="Electrical" immunity="100" resistance="0"  healing="0" />
+      <damage type="Fire" immunity="30" resistance="0"  healing="0" />
+      <damage type="Sonic" immunity="50" resistance="0"  healing="0" />
+      <damage type="Divine" immunity="20" resistance="0"  healing="0" />
+      <damage type="Magical" immunity="100" resistance="0"  healing="0" />
+      <damage type="Negative" immunity="100" resistance="0"  healing="0" />
+      <damage type="Positive" immunity="70" resistance="0"  healing="0" />
+      <damage type="Ectoplasmic" immunity="42" resistance="0"  healing="0" />
+      <damage type="Internal" immunity="0" resistance="0"  healing="0" />
+      <damage type="Psionic" immunity="50" resistance="0"  healing="0" />
+      <damage type="Sacred" immunity="10" resistance="0"  healing="0" />
+      <damage type="Vile" immunity="10" resistance="0"  healing="0" />
+    </damageImmunities>
+    <otherImmunities>
+	  <!-- a list of "Other Immunities", which is given in the output of the Know Vulnerability spell -->
+      <add name="Mind Spells" />
+      <add name="Death Magic" />
+    </otherImmunities>
+    <spellImmunities>
+      <!-- a list of "Spell Immunities", which is given in the output of the Know Vulnerability spell -->
+      <add name="Harm" />
+      <add name="Mass Harm" />
+      <add name="Spell Resistance" />
+    </spellImmunities>
+  </creature>
+</creatures>

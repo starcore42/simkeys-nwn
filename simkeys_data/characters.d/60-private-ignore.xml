@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+	<creature name="Altar" type="Ignore" />
+	<creature name="Lightshaft, Blue" type="Ignore" />
+	<creature name="Treasure" type="Ignore" />
+</creatures>

@@ -1,0 +1,269 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Elite Amorphion" base="Amorphion" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Anarchic Basilisk" base="Anarchic Basilisk" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Anarchic Fox" base="Anarchic Fox" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Anarchic Serpent" base="Anarchic Serpent" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Anarchic Storm Giant" base="Anarchic Storm Giant" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Arucha" base="Arucha" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Black Slaad" base="Black Slaad" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Bloodthorn" base="Bloodthorn" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Blue Slaad" base="Blue Slaad" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Chaond Primalist" base="Chaond Primalist" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Chaond Vandal" base="Chaond Vandal" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Chaos Drake" base="Chaos Drake" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Chaos Phage Swarm" base="Chaos Phage Swarm" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Chaos Roc" base="Chaos Roc" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Death Slaad" base="Death Slaad" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Discordant Soul" base="Discordant Soul" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Doppelganger" base="Doppelganger" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Entropic Reaper" base="Entropic Reaper" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Eolian" base="Eolian" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Feral Elf Archer" base="Feral Elf Archer" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Feral Elf Skinwalker" base="Feral Elf Skinwalker" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Feral Elf Skirmisher" base="Feral Elf Skirmisher" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Feral Elf Stormwarden" base="Feral Elf Stormwarden" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Gibbering Orb" base="Gibbering Orb" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Gith-attala" base="Gith-attala" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Githyanki Avenger" base="Githyanki Avenger" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Githzerai Chaosweaver" base="Githzerai Chaosweaver" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Githzerai Monast" base="Githzerai Monast" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Githzerai Stalker" base="Githzerai Stalker" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Githzerai Zerth" base="Githzerai Zerth" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Green Slaad" base="Green Slaad" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Gremlin" base="Gremlin" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Grey Slaad" base="Grey Slaad" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Hagunemnon" base="Hagunemnon" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Howler" base="Howler" type="Elite">
+    <damageImmunities>
+	  <damage type="Sonic" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Imentesh" base="Imentesh" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Kaorti Alienist" base="Kaorti Alienist" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Kaorti Nullifier" base="Kaorti Nullifier" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Kaorti Mocker" base="Kaorti Mocker" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Keketar" base="Keketar" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Khayal" base="Khayal" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Lillend" base="Lillend" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Limbo Stalker" base="Limbo Stalker" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Mimic" base="Mimic" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Mageripper Swarm" base="Mageripper Swarm" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Mud Slaad" base="Mud Slaad" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Naunet" base="Naunet" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Nightseed" base="Nightseed" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Nishruu" base="Nishruu" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Phasm" base="Phasm" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Quark" base="Quark" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Red Slaad" base="Red Slaad" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Shadow Jelly" base="Shadow Jelly" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Shardsoul Slayer" base="Shardsoul Slayer" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Taunting Haunt" base="Taunting Haunt" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Trilloch" base="Trilloch" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Unfinished Minotaur" base="Unfinished Minotaur" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Unfinished Titan" base="Unfinished Titan" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Voidworm School" base="Voidworm School" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Warp Drifter" base="Warp Drifter" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Weaver" base="Weaver" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite White Slaad" base="White Slaad" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Windrazor" base="Windrazor" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Windscythe Confessor" base="Windscythe Confessor" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Windscythe Tyrant" base="Windscythe Tyrant" type="Elite">
+    <damageImmunities>
+	  <damage type="Electrical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Zeugalak" base="Zeugalak" type="Elite">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+</creatures>

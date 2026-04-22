@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+<!-- Please add a closing </creatures> manually -->
+<creature name="Nandaxalus the Frost Lich" timeStamp="2016-05-09T20:06:08.000000Z" race="Undead" type="Boss">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="5" />
+		<damage type="Piercing" immunity="60" resistance="15" />
+		<damage type="Slashing" immunity="60" resistance="15" />
+		<damage type="Magical" immunity="70" resistance="10" />
+		<damage type="Acid" immunity="50" resistance="10" />
+		<damage type="Cold" immunity="90" resistance="0" />
+		<damage type="Divine" immunity="30" resistance="10" />
+		<damage type="Electrical" immunity="50" resistance="15" />
+		<damage type="Fire" immunity="20" resistance="0" />
+		<damage type="Negative" immunity="100" resistance="0" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="90" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="15" resistance="0" />
+		<damage type="Vile" immunity="15" resistance="0" />
+		<damage type="Primal" immunity="15" resistance="0" />
+		<damage type="Anarchic" immunity="42" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Spells of level 3 and lower" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Ability Decrease" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Uroboros, Great Wyrm of the Northern Wastes" timeStamp="2016-06-10T21:31:57.000000Z" race="Dragon" type="Boss">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="0" resistance="15" />
+		<damage type="Piercing" immunity="0" resistance="15" />
+		<damage type="Slashing" immunity="0" resistance="15" />
+		<damage type="Magical" immunity="40" resistance="20" />
+		<damage type="Acid" immunity="80" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="40" resistance="20" />
+		<damage type="Electrical" immunity="60" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="30" resistance="10" />
+		<damage type="Positive" immunity="30" resistance="15" />
+		<damage type="Sonic" immunity="80" resistance="20" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="15" resistance="0" />
+		<damage type="Psionic" immunity="20" resistance="0" />
+		<damage type="Sacred" immunity="20" resistance="0" />
+		<damage type="Vile" immunity="20" resistance="0" />
+		<damage type="Primal" immunity="20" resistance="0" />
+		<damage type="Anarchic" immunity="17" resistance="0" />
+		<damage type="Axiomatic" immunity="17" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Word of Faith" />
+		<add name="Word of Balance" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Ability Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Xixecal" timeStamp="2018-09-18T18:38:43.988000Z" race="Outsider" type="Boss">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="5" />
+		<damage type="Piercing" immunity="40" resistance="15" />
+		<damage type="Slashing" immunity="40" resistance="15" />
+		<damage type="Magical" immunity="60" resistance="10" />
+		<damage type="Acid" immunity="80" resistance="5" />
+		<damage type="Cold" immunity="0" resistance="0" healing="7" />
+		<damage type="Divine" immunity="30" resistance="0" />
+		<damage type="Electrical" immunity="70" resistance="10" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="30" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="20" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="10" resistance="0" />
+		<damage type="Psionic" immunity="30" resistance="0" />
+		<damage type="Sacred" immunity="15" resistance="0" />
+		<damage type="Vile" immunity="15" resistance="0" />
+		<damage type="Primal" immunity="15" resistance="0" />
+		<damage type="Anarchic" immunity="22" resistance="0" />
+		<damage type="Axiomatic" immunity="17" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Word of Faith" />
+		<add name="Word of Balance" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Ability Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+</creatures>

@@ -1,0 +1,675 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+<creature name="Revenant Arcanist" timeStamp="2016-06-03T21:52:41.000000Z" race="Undead">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="10" />
+		<damage type="Acid" immunity="50" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="0" />
+		<damage type="Electrical" immunity="50" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="50" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Drown" />
+		<add name="Implosion" />
+		<add name="Undeath to Death" />
+		<add name="Word of Faith" />
+		<add name="Disintegrate" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+	</otherImmunities>
+</creature>
+<creature name="The Headmaster" timeStamp="2016-06-03T21:54:26.000000Z" race="Undead">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="10" />
+		<damage type="Acid" immunity="50" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="0" />
+		<damage type="Electrical" immunity="50" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="50" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Drown" />
+		<add name="Implosion" />
+		<add name="Undeath to Death" />
+		<add name="Word of Faith" />
+		<add name="Disintegrate" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Ssithrak M'hasst B'sr" timeStamp="2016-04-20T19:24:41.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+  <creature name="Ssithrak M'nag" timeStamp="2015-01-20T23:19:19.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="Ssithrak M'hasst" timeStamp="2015-01-20T23:19:39.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="Ssithrak S'jab" timeStamp="2015-01-20T23:23:50.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="Ssithrak B'ssgir" timeStamp="2015-01-20T23:24:19.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="16" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="Gesst'wa" timeStamp="2015-01-20T23:29:47.000000Z" race="Animal">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="Gesst'wa Hatchling" timeStamp="2015-01-20T23:30:17.000000Z" race="Animal">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="Ssithrak S'jab S'gra" timeStamp="2015-01-20T23:32:43.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="Ssithrak M'hasst S'gra" timeStamp="2015-01-20T23:33:03.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="S'Gob Slia" timeStamp="2015-01-20T23:35:53.000000Z" race="Construct">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Drown" />
+		<add name="Harm" />
+		<add name="Implosion" />
+		<add name="Word of Faith" />
+		<add name="Disintegrate" />
+		<add name="Mass Harm" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+	</otherImmunities>
+</creature>
+<creature name="Ssithrak B'ssgir S'gra" timeStamp="2015-01-20T23:40:05.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="Ssithrak B'ssgir Sescrom" timeStamp="2015-01-20T23:43:27.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="Ssithrak S'bassa" timeStamp="2015-01-20T23:48:11.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="Ssithrak G'sssyt" timeStamp="2015-01-20T23:51:10.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="Ssithrak S'zhost" timeStamp="2015-01-20T23:58:31.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<!-- the spell and other immunity list is wrong. this is while he is under the orb`s protection. -->
+<creature name="Ssithrak S'jab Z'hedi" timeStamp="2015-01-20T23:59:30.000000Z" race="Reptilian Humanoid" type="MiniBoss">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Drown" />
+		<add name="Harm" />
+		<add name="Implosion" />
+		<add name="Word of Faith" />
+		<add name="Disintegrate" />
+		<add name="Mass Harm" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Traps" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Silence" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Curses" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Attack Decrease" />
+		<add name="Damage Decrease" />
+		<add name="Damage Immunity Decrease" />
+		<add name="AC Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Saving Throw Decrease" />
+		<add name="Spell Resistance Decrease" />
+		<add name="Skill Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+	</otherImmunities>
+</creature>
+<creature name="Ssithrak G'sssyt S'gra" timeStamp="2015-01-21T00:00:49.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="10" />
+		<damage type="Piercing" immunity="75" resistance="10" />
+		<damage type="Slashing" immunity="75" resistance="10" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="20" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="0" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<otherImmunities>
+		<add name="Negative Levels" />
+	</otherImmunities>
+</creature>
+<creature name="Ssssy'is, Goddess-Empress of Ssithra and Devourer of Worlds" timeStamp="2015-01-21T00:03:37.000000Z" race="Dragon" type="Boss">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="75" resistance="0" />
+		<damage type="Piercing" immunity="75" resistance="0" />
+		<damage type="Slashing" immunity="75" resistance="0" />
+		<damage type="Magical" immunity="0" resistance="0" />
+		<damage type="Acid" immunity="0" resistance="0" />
+		<damage type="Cold" immunity="100" resistance="0" />
+		<damage type="Divine" immunity="0" resistance="0" />
+		<damage type="Electrical" immunity="100" resistance="0" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="0" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="0" resistance="0" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="0" resistance="0" />
+		<damage type="Axiomatic" immunity="0" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Bigbys Forceful Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Clenched Fist" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Drown" />
+		<add name="Harm" />
+		<add name="Implosion" />
+		<add name="Word of Faith" />
+		<add name="Disintegrate" />
+		<add name="Mass Harm" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+</creatures>

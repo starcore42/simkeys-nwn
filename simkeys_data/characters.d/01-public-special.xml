@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Evard's Black Tentacles" type="Special" />
+  <creature name="Orb" type="Special" />
+  <creature name="Blade Barrier" type="Special" />
+</creatures>

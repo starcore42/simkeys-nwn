@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Chosen of Tiamat" race="Outsider" type="Greater" />  
+  <creature name="Swarm Master" base="Advespa" type="Greater" />
+  <creature name="Frostweaver" base="Arachill" type="Greater" />
+  <creature name="Ayperobos Horde" base="Ayperobos Swarm" type="Greater" />
+  <creature name="Ephasiarch" base="Amnizu" type="Greater" />
+  <creature name="Masterwork Baatorian Green Steel Golem" base="Baatorian Green Steel Golem" type="Greater" />
+  <creature name="Barbazu Razor" base="Barbazu" type="Greater" />
+  <creature name="Bezekira Prideleader" base="Bezekira" type="Greater" />
+  <creature name="Brachina Seductrix" base="Brachina" type="Greater" />
+  <creature name="Firstborn" base="Brood Serpent" type="Greater" />
+  <creature name="Magebane" base="Bueroza" type="Greater" />
+  <creature name="Cinderscale Broodmother" base="Cinderscale" type="Greater" />
+  <creature name="Rimeforged Assembly" base="Coldforge Construct" type="Greater" />
+  <creature name="Cornugon Taskmaster" base="Cornugon" type="Greater" />
+  <creature name="Camizu" base="Dogai" type="Greater" />
+  <creature name="Erinyes Vitiarch" base="Erinyes" type="Greater" />
+  <creature name="Excruciarch Inquisitor" base="Excruciarch" type="Greater" />
+  <creature name="Vexiarch" base="Falxugon" type="Greater" />
+  <creature name="Gelidarch" base="Gelugon" type="Greater" />
+  <creature name="Hamatula Scourge" base="Hamatula" type="Greater" />
+  <creature name="Cereberean Hound" base="Hell Hound" type="Greater" />
+  <creature name="Cloacal Leech" base="Hell Leech" type="Greater" />
+  <creature name="Spoliated Ichor" base="Ichor of the Fallen" type="Greater" />
+  <creature name="Hyperborean Fiend" base="Ice Fiend" type="Greater" />
+  <creature name="Algid Reaver" base="Ice Reaver" type="Greater" />
+  <creature name="Hellion" base="Imp" type="Greater" />
+  <creature name="Hellfire Engine" base="Infernal Machine" type="Greater" />
+  <creature name="Infestiarch" base="Kocrachon" type="Greater" />
+  <creature name="Kyton Legionnaire" base="Kyton" type="Greater" />
+  <creature name="Foul Lemure" base="Lemure" type="Greater" />
+  <creature name="Fell Mistral" base="Living Cold" type="Greater" />
+  <creature name="Unbound" base="Maelephant" type="Greater" />
+  <creature name="Ravening Malebranche" base="Malebranche" type="Greater" />
+  <creature name="Effluviarch" base="Malefic Wind" type="Greater" />
+  <creature name="Dolorous Tear" base="Mammons Tears" type="Greater" />
+  <creature name="Minauran Rotscale" base="Minauran Murkfiend" type="Greater" />
+  <creature name="Narzugon Eye" base="Narzugon" type="Greater" />
+  <creature name="Elder Nag" base="Nightmare" type="Greater" />
+  <creature name="Inchoate Baatorian" base="Nupperibo" type="Greater" />
+  <creature name="Orthon Fist" base="Orthon" type="Greater" />
+  <creature name="Rachugon" base="Osyluth" type="Greater" />
+  <creature name="Aspirant of the Eight" base="Pit Fiend" type="Greater" />
+  <creature name="Phlogiston Ferment" base="Pyrexic Fume" type="Greater" />
+  <creature name="Raja" base="Rakshasa" type="Greater" />
+  <creature name="Elder Sahuagin" base="Sahuagin" type="Greater" />
+  <creature name="Hollow Soul" base="Soul Shell" type="Greater" />
+  <creature name="Spiniarch" base="Spinagon" type="Greater" />
+  <creature name="Fen Render" base="Swamp Devil" type="Greater" />
+</creatures>

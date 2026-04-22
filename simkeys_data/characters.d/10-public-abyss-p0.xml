@@ -1,0 +1,2835 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Abrian" timeStamp="2012-03-16T12:58:39.1245447Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="20" />
+      <damage type="Piercing" immunity="40" resistance="20" />
+      <damage type="Slashing" immunity="40" resistance="20" />
+      <damage type="Acid" immunity="70" resistance="20" />
+      <damage type="Cold" immunity="0" resistance="20" />
+      <damage type="Electrical" immunity="0" resistance="20" />
+      <damage type="Fire" immunity="0" resistance="20" />
+      <damage type="Sonic" immunity="70" resistance="20" />
+      <damage type="Divine" immunity="80" resistance="15" />
+      <damage type="Magical" immunity="80" resistance="35" />
+      <damage type="Negative" immunity="30" resistance="15" />
+      <damage type="Positive" immunity="30" resistance="15" />
+      <damage type="Ectoplasmic" immunity="15" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="40" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="27" resistance="0" />
+      <damage type="Axiomatic" immunity="27" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Abyssal Ant Swarm" timeStamp="2012-03-16T12:58:47.4690219Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="0" />
+      <damage type="Piercing" immunity="50" resistance="0" />
+      <damage type="Slashing" immunity="50" resistance="0" />
+      <damage type="Acid" immunity="80" resistance="5" />
+      <damage type="Cold" immunity="60" resistance="10" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="10" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Abyssal Drake" timeStamp="2012-03-16T12:59:24.4711383Z">
+	<damageImmunities>
+	  <damage type="Fire" immunity="0" healing="7" />
+	</damageImmunities>
+  </creature>
+  <creature name="Abyssal Ghoul" timeStamp="2012-03-16T12:59:34.2266963Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="0" />
+      <damage type="Piercing" immunity="60" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="50" resistance="5" />
+      <damage type="Cold" immunity="90" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="10" />
+      <damage type="Divine" immunity="40" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" healing="6" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="20" resistance="0" />
+      <damage type="Vile" immunity="20" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="20" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Abyssal Sunbeam" timeStamp="2012-03-16T12:59:41.2790997Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="15" />
+      <damage type="Piercing" immunity="40" resistance="10" />
+      <damage type="Slashing" immunity="40" resistance="10" />
+      <damage type="Acid" immunity="50" resistance="10" />
+      <damage type="Cold" immunity="100" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="60" resistance="5" />
+      <damage type="Divine" immunity="50" resistance="5" />
+      <damage type="Magical" immunity="100" resistance="10" />
+      <damage type="Negative" immunity="60" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="17" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="50" resistance="0" />
+      <damage type="Sacred" immunity="25" resistance="0" />
+      <damage type="Vile" immunity="25" resistance="0" />
+      <damage type="Anarchic" immunity="40" resistance="0" />
+      <damage type="Axiomatic" immunity="27" resistance="0" />
+      <damage type="Primal" immunity="25" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Abyssal Zombie" timeStamp="2012-03-16T12:59:49.7305831Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="60" resistance="0" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="20" resistance="10" />
+      <damage type="Cold" immunity="80" resistance="5" />
+      <damage type="Electrical" immunity="60" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="60" resistance="5" />
+      <damage type="Divine" immunity="60" resistance="5" />
+      <damage type="Magical" immunity="50" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" healing="6" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="25" resistance="0" />
+      <damage type="Sacred" immunity="30" resistance="0" />
+      <damage type="Vile" immunity="30" resistance="0" />
+      <damage type="Anarchic" immunity="15" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="30" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Adaru" timeStamp="2012-03-16T12:59:59.1861239Z">
+  </creature>
+  <creature name="Alkilith" timeStamp="2012-03-16T13:00:07.2415847Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="100" resistance="10" />
+      <damage type="Piercing" immunity="80" resistance="10" />
+      <damage type="Slashing" immunity="60" resistance="10" />
+      <damage type="Acid" immunity="100" resistance="0" />
+      <damage type="Cold" immunity="50" resistance="15" />
+      <damage type="Electrical" immunity="50" resistance="5" />
+      <damage type="Fire" immunity="100" resistance="5" />
+      <damage type="Sonic" immunity="100" resistance="5" />
+      <damage type="Divine" immunity="50" resistance="5" />
+      <damage type="Magical" immunity="100" resistance="5" />
+      <damage type="Negative" immunity="100" resistance="0" />
+      <damage type="Positive" immunity="100" resistance="5" />
+      <damage type="Ectoplasmic" immunity="50" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="50" resistance="0" />
+      <damage type="Sacred" immunity="25" resistance="0" />
+      <damage type="Vile" immunity="25" resistance="0" />
+      <damage type="Anarchic" immunity="50" resistance="0" />
+      <damage type="Axiomatic" immunity="50" resistance="0" />
+      <damage type="Primal" immunity="25" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Anzu" timeStamp="2012-03-16T13:00:14.4859990Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="10" />
+      <damage type="Piercing" immunity="40" resistance="10" />
+      <damage type="Slashing" immunity="40" resistance="15" />
+      <damage type="Acid" immunity="70" resistance="15" />
+      <damage type="Cold" immunity="70" resistance="15" />
+      <damage type="Electrical" immunity="70" resistance="15" />
+      <damage type="Fire" immunity="0" resistance="10" />
+      <damage type="Sonic" immunity="0" resistance="20" />
+      <damage type="Divine" immunity="70" resistance="15" />
+      <damage type="Magical" immunity="70" resistance="10" />
+      <damage type="Negative" immunity="70" resistance="15" />
+      <damage type="Positive" immunity="0" resistance="15" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Arcane Ooze" timeStamp="2012-03-16T13:00:21.6064063Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="100" resistance="5" />
+      <damage type="Piercing" immunity="40" resistance="5" />
+      <damage type="Slashing" immunity="40" resistance="5" />
+      <damage type="Acid" immunity="100" resistance="10" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="40" resistance="5" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="20" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="0" healing="10" />
+      <damage type="Negative" immunity="50" resistance="5" />
+      <damage type="Positive" immunity="50" resistance="0" />
+      <damage type="Ectoplasmic" immunity="25" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="10" resistance="0" />
+      <damage type="Vile" immunity="10" resistance="0" />
+      <damage type="Anarchic" immunity="15" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="10" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Armanite" timeStamp="2012-03-16T13:00:46.8368494Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="15" />
+      <damage type="Piercing" immunity="40" resistance="15" />
+      <damage type="Slashing" immunity="40" resistance="15" />
+      <damage type="Acid" immunity="0" resistance="0" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="70" resistance="5" />
+      <damage type="Sonic" immunity="0" resistance="10" />
+      <damage type="Divine" immunity="100" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="20" resistance="0" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="22" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="50" resistance="0" />
+      <damage type="Vile" immunity="50" resistance="0" />
+      <damage type="Anarchic" immunity="7" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="50" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Arrowhawk" timeStamp="2012-03-16T13:00:55.1043223Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="0" />
+      <damage type="Piercing" immunity="50" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="10" />
+      <damage type="Cold" immunity="50" resistance="10" />
+      <damage type="Electrical" immunity="90" resistance="5" healing="6" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="0" resistance="0" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Artaaglith" timeStamp="2012-03-16T13:01:03.3367931Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="0" />
+      <damage type="Piercing" immunity="30" resistance="5" />
+      <damage type="Slashing" immunity="30" resistance="5" />
+      <damage type="Acid" immunity="80" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="10" />
+      <damage type="Electrical" immunity="60" resistance="10" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="0" resistance="0" />
+      <damage type="Divine" immunity="80" resistance="5" />
+      <damage type="Magical" immunity="50" resistance="0" />
+      <damage type="Negative" immunity="80" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="22" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="25" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="32" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Babau" timeStamp="2012-03-16T13:01:10.8552232Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="80" resistance="5" />
+      <damage type="Slashing" immunity="60" resistance="5" />
+      <damage type="Acid" immunity="100" resistance="10" />
+      <damage type="Cold" immunity="50" resistance="5" />
+      <damage type="Electrical" immunity="100" resistance="0" />
+      <damage type="Fire" immunity="70" resistance="0" />
+      <damage type="Sonic" immunity="40" resistance="10" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Balor" timeStamp="2012-03-16T13:01:17.0315764Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="10" />
+      <damage type="Piercing" immunity="20" resistance="10" />
+      <damage type="Slashing" immunity="60" resistance="10" />
+      <damage type="Acid" immunity="40" resistance="0" />
+      <damage type="Cold" immunity="60" resistance="5" />
+      <damage type="Electrical" immunity="90" resistance="5" />
+      <damage type="Fire" immunity="100" resistance="5" />
+      <damage type="Sonic" immunity="60" resistance="10" />
+      <damage type="Divine" immunity="90" resistance="5" />
+      <damage type="Magical" immunity="90" resistance="5" />
+      <damage type="Negative" immunity="90" resistance="0" />
+      <damage type="Positive" immunity="40" resistance="5" />
+      <damage type="Ectoplasmic" immunity="32" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="45" resistance="0" />
+      <damage type="Sacred" immunity="45" resistance="0" />
+      <damage type="Vile" immunity="45" resistance="0" />
+      <damage type="Anarchic" immunity="45" resistance="0" />
+      <damage type="Axiomatic" immunity="32" resistance="0" />
+      <damage type="Primal" immunity="45" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Bar-Lgura" timeStamp="2012-03-16T13:01:22.9349141Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="0" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="50" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="80" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="60" resistance="5" />
+      <damage type="Divine" immunity="90" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="60" resistance="5" />
+      <damage type="Positive" immunity="60" resistance="5" />
+      <damage type="Ectoplasmic" immunity="30" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="45" resistance="0" />
+      <damage type="Vile" immunity="45" resistance="0" />
+      <damage type="Anarchic" immunity="17" resistance="0" />
+      <damage type="Axiomatic" immunity="17" resistance="0" />
+      <damage type="Primal" immunity="45" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Bebelith" timeStamp="2012-03-16T13:01:30.5283484Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="20" />
+      <damage type="Piercing" immunity="40" resistance="20" />
+      <damage type="Slashing" immunity="30" resistance="20" />
+      <damage type="Acid" immunity="100" resistance="20" />
+      <damage type="Cold" immunity="50" resistance="20" />
+      <damage type="Electrical" immunity="0" resistance="20" />
+      <damage type="Fire" immunity="0" resistance="15" />
+      <damage type="Sonic" immunity="60" resistance="25" />
+      <damage type="Divine" immunity="90" resistance="20" />
+      <damage type="Magical" immunity="0" resistance="15" />
+      <damage type="Negative" immunity="60" resistance="20" />
+      <damage type="Positive" immunity="60" resistance="20" />
+      <damage type="Ectoplasmic" immunity="30" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="45" resistance="0" />
+      <damage type="Vile" immunity="45" resistance="0" />
+      <damage type="Anarchic" immunity="17" resistance="0" />
+      <damage type="Axiomatic" immunity="17" resistance="0" />
+      <damage type="Primal" immunity="45" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Black Pudding" timeStamp="2012-03-16T13:01:47.1082967Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="100" resistance="5" />
+      <damage type="Piercing" immunity="0" resistance="5" />
+      <damage type="Slashing" immunity="0" resistance="5" />
+      <damage type="Acid" immunity="100" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="10" healing="6" />
+      <damage type="Electrical" immunity="40" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="90" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="60" resistance="5" />
+      <damage type="Positive" immunity="60" resistance="5" />
+      <damage type="Ectoplasmic" immunity="30" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="45" resistance="0" />
+      <damage type="Vile" immunity="45" resistance="0" />
+      <damage type="Anarchic" immunity="17" resistance="0" />
+      <damage type="Axiomatic" immunity="17" resistance="0" />
+      <damage type="Primal" immunity="45" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Blood Wind" timeStamp="2012-03-16T13:01:55.0247495Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="15" />
+      <damage type="Piercing" immunity="40" resistance="10" />
+      <damage type="Slashing" immunity="40" resistance="10" />
+      <damage type="Acid" immunity="60" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="50" resistance="10" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="100" resistance="5" />
+      <damage type="Divine" immunity="60" resistance="10" />
+      <damage type="Magical" immunity="50" resistance="5" />
+      <damage type="Negative" immunity="100" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="25" resistance="0" />
+      <damage type="Sacred" immunity="30" resistance="0" />
+      <damage type="Vile" immunity="30" resistance="0" />
+      <damage type="Anarchic" immunity="37" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="30" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Bodak" timeStamp="2012-03-16T13:02:02.8441968Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="0" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="60" resistance="5" />
+      <damage type="Cold" immunity="20" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="70" resistance="5" />
+      <damage type="Sonic" immunity="0" resistance="5" />
+      <damage type="Divine" immunity="30" resistance="0" />
+      <damage type="Magical" immunity="80" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="10" healing="6" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="40" resistance="0" />
+      <damage type="Sacred" immunity="15" resistance="0" />
+      <damage type="Vile" immunity="15" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="22" resistance="0" />
+      <damage type="Primal" immunity="15" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Bone Moss" timeStamp="2012-03-16T13:02:09.6645869Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="60" resistance="0" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="0" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="10" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="40" resistance="5" />
+      <damage type="Negative" immunity="100" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="20" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="12" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Bone Ooze" timeStamp="2012-03-16T13:02:18.1000693Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="5" />
+      <damage type="Piercing" immunity="100" resistance="5" />
+      <damage type="Slashing" immunity="100" resistance="5" />
+      <damage type="Acid" immunity="0" resistance="0" />
+      <damage type="Cold" immunity="90" resistance="15" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="50" resistance="5" />
+      <damage type="Divine" immunity="50" resistance="5" />
+      <damage type="Magical" immunity="60" resistance="5" />
+      <damage type="Negative" immunity="100" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="30" resistance="0" />
+      <damage type="Sacred" immunity="25" resistance="0" />
+      <damage type="Vile" immunity="25" resistance="0" />
+      <damage type="Anarchic" immunity="40" resistance="0" />
+      <damage type="Axiomatic" immunity="17" resistance="0" />
+      <damage type="Primal" immunity="25" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Bonesinger" timeStamp="2012-03-16T13:02:25.5884976Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="5" />
+      <damage type="Piercing" immunity="50" resistance="5" />
+      <damage type="Slashing" immunity="50" resistance="5" />
+      <damage type="Acid" immunity="0" resistance="5" />
+      <damage type="Cold" immunity="50" resistance="10" />
+      <damage type="Electrical" immunity="70" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="90" resistance="10" />
+      <damage type="Divine" immunity="30" resistance="5" />
+      <damage type="Magical" immunity="80" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="5" healing="6" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="40" resistance="0" />
+      <damage type="Sacred" immunity="15" resistance="0" />
+      <damage type="Vile" immunity="15" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="22" resistance="0" />
+      <damage type="Primal" immunity="15" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Brood Keeper" timeStamp="2012-03-16T13:02:34.6170141Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="0" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="50" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="10" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="70" resistance="10" />
+      <damage type="Sonic" immunity="0" resistance="0" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Broodswarm" timeStamp="2012-03-16T13:02:41.9114313Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="0" />
+      <damage type="Piercing" immunity="40" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="60" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" healing="6" />
+      <damage type="Sonic" immunity="0" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Bulezau" timeStamp="2012-03-16T13:02:50.9269469Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="50" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="0" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="10" />
+      <damage type="Divine" immunity="100" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="50" resistance="5" />
+      <damage type="Positive" immunity="50" resistance="5" />
+      <damage type="Ectoplasmic" immunity="25" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="50" resistance="0" />
+      <damage type="Vile" immunity="50" resistance="0" />
+      <damage type="Anarchic" immunity="15" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="50" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Caligrosto" timeStamp="2012-03-16T13:03:02.3586008Z">
+  </creature>
+  <creature name="Carcass Eater" timeStamp="2012-03-16T13:03:13.4382345Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="10" />
+      <damage type="Piercing" immunity="20" resistance="10" />
+      <damage type="Slashing" immunity="30" resistance="10" />
+      <damage type="Acid" immunity="60" resistance="10" />
+      <damage type="Cold" immunity="80" resistance="15" />
+      <damage type="Electrical" immunity="70" resistance="10" />
+      <damage type="Fire" immunity="0" resistance="10" />
+      <damage type="Sonic" immunity="0" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="10" />
+      <damage type="Magical" immunity="0" resistance="10" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="10" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Caustic Fountain" timeStamp="2012-03-16T13:03:20.3656307Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="5" />
+      <damage type="Piercing" immunity="40" resistance="20" />
+      <damage type="Slashing" immunity="40" resistance="10" />
+      <damage type="Acid" immunity="100" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="60" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="50" resistance="10" />
+      <damage type="Divine" immunity="60" resistance="10" />
+      <damage type="Magical" immunity="50" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="100" resistance="5" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="25" resistance="0" />
+      <damage type="Sacred" immunity="30" resistance="0" />
+      <damage type="Vile" immunity="30" resistance="0" />
+      <damage type="Anarchic" immunity="15" resistance="0" />
+      <damage type="Axiomatic" immunity="37" resistance="0" />
+      <damage type="Primal" immunity="30" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Chasme" timeStamp="2012-03-16T13:03:38.6016738Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="0" />
+      <damage type="Piercing" immunity="40" resistance="5" />
+      <damage type="Slashing" immunity="60" resistance="5" />
+      <damage type="Acid" immunity="60" resistance="5" />
+      <damage type="Cold" immunity="80" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="10" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="80" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="0" />
+      <damage type="Negative" immunity="60" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="17" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="32" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Chelicera" timeStamp="2012-03-16T13:03:47.5431852Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="0" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="90" resistance="5" />
+      <damage type="Magical" immunity="20" resistance="0" />
+      <damage type="Negative" immunity="90" resistance="10" />
+      <damage type="Positive" immunity="20" resistance="0" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="10" resistance="0" />
+      <damage type="Sacred" immunity="45" resistance="0" />
+      <damage type="Vile" immunity="45" resistance="0" />
+      <damage type="Anarchic" immunity="27" resistance="0" />
+      <damage type="Axiomatic" immunity="10" resistance="0" />
+      <damage type="Primal" immunity="45" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Crypt Thing" timeStamp="2012-03-16T13:03:54.8116009Z">
+    <damageImmunities>
+      <damage type="Negative" immunity="0" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Deadborn Vulture" timeStamp="2012-03-16T13:04:21.1071049Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="15" />
+      <damage type="Piercing" immunity="50" resistance="0" />
+      <damage type="Slashing" immunity="50" resistance="0" />
+      <damage type="Acid" immunity="0" resistance="10" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="40" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="50" resistance="0" />
+      <damage type="Magical" immunity="60" resistance="10" />
+      <damage type="Negative" immunity="100" resistance="5" />
+      <damage type="Positive" immunity="30" resistance="0" />
+      <damage type="Ectoplasmic" immunity="32" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="30" resistance="0" />
+      <damage type="Sacred" immunity="25" resistance="0" />
+      <damage type="Vile" immunity="25" resistance="0" />
+      <damage type="Anarchic" immunity="40" resistance="0" />
+      <damage type="Axiomatic" immunity="22" resistance="0" />
+      <damage type="Primal" immunity="25" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Death Knight" timeStamp="2012-03-16T13:04:28.9495535Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="10" />
+      <damage type="Piercing" immunity="50" resistance="10" />
+      <damage type="Slashing" immunity="50" resistance="10" />
+      <damage type="Acid" immunity="60" resistance="5" />
+      <damage type="Cold" immunity="100" resistance="5" />
+      <damage type="Electrical" immunity="60" resistance="5" />
+      <damage type="Fire" immunity="60" resistance="5" />
+      <damage type="Sonic" immunity="60" resistance="5" />
+      <damage type="Divine" immunity="100" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="5" healing="8" />
+      <damage type="Positive" immunity="40" resistance="0" />
+      <damage type="Ectoplasmic" immunity="12" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="50" resistance="0" />
+      <damage type="Vile" immunity="50" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="27" resistance="0" />
+      <damage type="Primal" immunity="50" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Draudnu" timeStamp="2012-03-16T13:04:48.2836593Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="90" resistance="0" />
+      <damage type="Slashing" immunity="50" resistance="0" />
+      <damage type="Acid" immunity="0" resistance="45" />
+      <damage type="Cold" immunity="60" resistance="40" />
+      <damage type="Electrical" immunity="0" resistance="45" />
+      <damage type="Fire" immunity="80" resistance="45" />
+      <damage type="Sonic" immunity="70" resistance="45" />
+      <damage type="Divine" immunity="70" resistance="45" />
+      <damage type="Magical" immunity="0" resistance="40" />
+      <damage type="Negative" immunity="70" resistance="45" />
+      <damage type="Positive" immunity="70" resistance="45" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Dread Ram" timeStamp="2012-03-16T13:04:58.1472235Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="0" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="0" resistance="5" />
+      <damage type="Cold" immunity="80" resistance="5" />
+      <damage type="Electrical" immunity="60" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="60" resistance="5" />
+      <damage type="Magical" immunity="50" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="5" healing="6" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="25" resistance="0" />
+      <damage type="Sacred" immunity="30" resistance="0" />
+      <damage type="Vile" immunity="30" resistance="0" />
+      <damage type="Anarchic" immunity="15" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="30" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Dretch" timeStamp="2012-03-16T13:05:04.9266113Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="0" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Dustman Necromancer" timeStamp="2012-03-16T13:05:12.2850321Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="0" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="50" resistance="5" />
+      <damage type="Cold" immunity="50" resistance="10" />
+      <damage type="Electrical" immunity="50" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="90" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="30" resistance="5" />
+      <damage type="Positive" immunity="30" resistance="5" />
+      <damage type="Ectoplasmic" immunity="15" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="45" resistance="0" />
+      <damage type="Vile" immunity="45" resistance="0" />
+      <damage type="Anarchic" immunity="25" resistance="0" />
+      <damage type="Axiomatic" immunity="25" resistance="0" />
+      <damage type="Primal" immunity="45" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Dustman Slinger" timeStamp="2012-03-16T13:05:18.9394128Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="0" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="40" resistance="5" />
+      <damage type="Cold" immunity="50" resistance="5" />
+      <damage type="Electrical" immunity="50" resistance="5" />
+      <damage type="Fire" immunity="50" resistance="5" />
+      <damage type="Sonic" immunity="40" resistance="5" />
+      <damage type="Divine" immunity="80" resistance="5" />
+      <damage type="Magical" immunity="80" resistance="5" />
+      <damage type="Negative" immunity="40" resistance="5" />
+      <damage type="Positive" immunity="20" resistance="0" />
+      <damage type="Ectoplasmic" immunity="15" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="40" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="30" resistance="0" />
+      <damage type="Axiomatic" immunity="25" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Dust Wight" timeStamp="2012-03-16T13:05:30.5110746Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="50" resistance="5" />
+      <damage type="Slashing" immunity="30" resistance="5" />
+      <damage type="Acid" immunity="0" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="70" resistance="5" />
+      <damage type="Sonic" immunity="0" resistance="5" />
+      <damage type="Divine" immunity="100" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="5" healing="6" />
+      <damage type="Positive" immunity="40" resistance="0" />
+      <damage type="Ectoplasmic" immunity="12" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="50" resistance="0" />
+      <damage type="Vile" immunity="50" resistance="0" />
+      <damage type="Anarchic" immunity="0" resistance="0" />
+      <damage type="Axiomatic" immunity="12" resistance="0" />
+      <damage type="Primal" immunity="50" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Dybbuk" timeStamp="2012-03-16T13:05:38.7005430Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="100" resistance="5" />
+      <damage type="Piercing" immunity="100" resistance="5" />
+      <damage type="Slashing" immunity="100" resistance="5" />
+      <damage type="Acid" immunity="70" resistance="0" />
+      <damage type="Cold" immunity="70" resistance="0" />
+      <damage type="Electrical" immunity="40" resistance="10" />
+      <damage type="Fire" immunity="40" resistance="10" />
+      <damage type="Sonic" immunity="0" resistance="5" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Ekolid Builder" timeStamp="2012-03-16T13:05:55.4234995Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="10" />
+      <damage type="Cold" immunity="70" resistance="10" />
+      <damage type="Electrical" immunity="0" resistance="0" healing="2" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="0" />
+      <damage type="Magical" immunity="20" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="60" resistance="10" />
+      <damage type="Ectoplasmic" immunity="32" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="10" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Ekolid Chitterer" timeStamp="2012-03-16T13:06:01.8898694Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="10" />
+      <damage type="Cold" immunity="70" resistance="10" />
+      <damage type="Electrical" immunity="0" resistance="0" healing="2" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="0" />
+      <damage type="Magical" immunity="20" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="60" resistance="10" />
+      <damage type="Ectoplasmic" immunity="32" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="10" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Ekolid Devourer" timeStamp="2012-03-16T13:06:27.5443367Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="10" />
+      <damage type="Cold" immunity="70" resistance="10" />
+      <damage type="Electrical" immunity="0" resistance="0" healing="2" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="0" />
+      <damage type="Magical" immunity="20" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="60" resistance="10" />
+      <damage type="Ectoplasmic" immunity="32" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="10" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Ekolid Reaver" timeStamp="2012-03-16T13:06:34.1007117Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="10" />
+      <damage type="Cold" immunity="70" resistance="10" />
+      <damage type="Electrical" immunity="0" resistance="0" healing="2" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="0" />
+      <damage type="Magical" immunity="20" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="60" resistance="10" />
+      <damage type="Ectoplasmic" immunity="32" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="10" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Fiendish Aboleth" timeStamp="2012-03-16T13:06:40.6150843Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="90" resistance="45" />
+      <damage type="Piercing" immunity="60" resistance="10" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="100" resistance="15" />
+      <damage type="Cold" immunity="20" resistance="15" />
+      <damage type="Electrical" immunity="100" resistance="15" />
+      <damage type="Fire" immunity="70" resistance="15" />
+      <damage type="Sonic" immunity="70" resistance="15" />
+      <damage type="Divine" immunity="100" resistance="45" />
+      <damage type="Magical" immunity="70" resistance="15" />
+      <damage type="Negative" immunity="70" resistance="15" />
+      <damage type="Positive" immunity="70" resistance="15" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="50" resistance="0" />
+      <damage type="Vile" immunity="50" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="50" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Fiendish Barracuda" timeStamp="2012-03-16T13:06:51.2056901Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="50" resistance="0" />
+      <damage type="Piercing" immunity="0" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="80" resistance="5" />
+      <damage type="Cold" immunity="80" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="50" resistance="10" />
+      <damage type="Divine" immunity="90" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="20" resistance="5" />
+      <damage type="Positive" immunity="100" resistance="5" />
+      <damage type="Ectoplasmic" immunity="30" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="45" resistance="0" />
+      <damage type="Vile" immunity="45" resistance="0" />
+      <damage type="Anarchic" immunity="7" resistance="0" />
+      <damage type="Axiomatic" immunity="27" resistance="0" />
+      <damage type="Primal" immunity="45" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Fiendish Boar" timeStamp="2012-03-16T13:06:57.6710599Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="50" resistance="25" />
+      <damage type="Piercing" immunity="20" resistance="25" />
+      <damage type="Slashing" immunity="40" resistance="25" />
+      <damage type="Acid" immunity="0" resistance="10" />
+      <damage type="Cold" immunity="90" resistance="5" />
+      <damage type="Electrical" immunity="60" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="60" resistance="5" />
+      <damage type="Divine" immunity="50" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="80" resistance="5" />
+      <damage type="Positive" immunity="80" resistance="5" />
+      <damage type="Ectoplasmic" immunity="40" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="25" resistance="0" />
+      <damage type="Vile" immunity="25" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="22" resistance="0" />
+      <damage type="Primal" immunity="25" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Fiendish Frog" timeStamp="2012-03-16T13:07:09.3407273Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="0" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="20" resistance="0" />
+      <damage type="Acid" immunity="90" resistance="30" />
+      <damage type="Cold" immunity="50" resistance="20" />
+      <damage type="Electrical" immunity="0" resistance="20" />
+      <damage type="Fire" immunity="0" resistance="25" />
+      <damage type="Sonic" immunity="70" resistance="30" />
+      <damage type="Divine" immunity="80" resistance="25" />
+      <damage type="Magical" immunity="0" resistance="25" />
+      <damage type="Negative" immunity="60" resistance="25" />
+      <damage type="Positive" immunity="70" resistance="20" />
+      <damage type="Ectoplasmic" immunity="32" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="17" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Fiendish Fungus" timeStamp="2012-03-16T13:07:16.2391219Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="60" resistance="0" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="60" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="60" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" healing="6" />
+      <damage type="Sonic" immunity="90" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Fiendish Otyugh" timeStamp="2012-03-16T13:07:26.5267103Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="90" resistance="0" />
+      <damage type="Piercing" immunity="70" resistance="0" />
+      <damage type="Slashing" immunity="70" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="10" />
+      <damage type="Cold" immunity="0" resistance="10" />
+      <damage type="Electrical" immunity="70" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="30" resistance="0" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="20" resistance="5" />
+      <damage type="Positive" immunity="90" resistance="5" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="15" resistance="0" />
+      <damage type="Vile" immunity="15" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="40" resistance="0" />
+      <damage type="Primal" immunity="15" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Fiendish Raptor" timeStamp="2012-03-16T13:07:34.3601584Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="25" />
+      <damage type="Piercing" immunity="20" resistance="25" />
+      <damage type="Slashing" immunity="40" resistance="25" />
+      <damage type="Acid" immunity="70" resistance="25" />
+      <damage type="Cold" immunity="0" resistance="20" />
+      <damage type="Electrical" immunity="50" resistance="30" />
+      <damage type="Fire" immunity="0" resistance="30" />
+      <damage type="Sonic" immunity="90" resistance="20" />
+      <damage type="Divine" immunity="80" resistance="25" />
+      <damage type="Magical" immunity="20" resistance="25" />
+      <damage type="Negative" immunity="20" resistance="20" />
+      <damage type="Positive" immunity="100" resistance="25" />
+      <damage type="Ectoplasmic" immunity="30" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="10" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="10" resistance="0" />
+      <damage type="Axiomatic" immunity="30" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Fiendish Render" timeStamp="2012-03-16T13:07:42.4146191Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="50" resistance="35" />
+      <damage type="Piercing" immunity="30" resistance="30" />
+      <damage type="Slashing" immunity="40" resistance="30" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="10" />
+      <damage type="Fire" immunity="70" resistance="0" />
+      <damage type="Sonic" immunity="0" resistance="10" />
+      <damage type="Divine" immunity="70" resistance="0" />
+      <damage type="Magical" immunity="70" resistance="10" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Fiendish Roc" timeStamp="2012-03-16T13:07:49.4340206Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="0" />
+      <damage type="Piercing" immunity="40" resistance="0" />
+      <damage type="Slashing" immunity="50" resistance="0" />
+      <damage type="Acid" immunity="20" resistance="10" />
+      <damage type="Cold" immunity="60" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="10" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="60" resistance="0" />
+      <damage type="Divine" immunity="50" resistance="10" />
+      <damage type="Magical" immunity="0" resistance="10" />
+      <damage type="Negative" immunity="80" resistance="0" />
+      <damage type="Positive" immunity="80" resistance="0" />
+      <damage type="Ectoplasmic" immunity="40" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="25" resistance="0" />
+      <damage type="Vile" immunity="25" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="22" resistance="0" />
+      <damage type="Primal" immunity="25" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Fiendish Slug" timeStamp="2012-03-16T13:07:55.6493761Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="100" resistance="0" />
+      <damage type="Piercing" immunity="50" resistance="0" />
+      <damage type="Slashing" immunity="20" resistance="0" />
+      <damage type="Acid" immunity="100" resistance="10" />
+      <damage type="Cold" immunity="60" resistance="10" />
+      <damage type="Electrical" immunity="40" resistance="0" />
+      <damage type="Fire" immunity="60" resistance="0" />
+      <damage type="Sonic" immunity="60" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="50" resistance="0" />
+      <damage type="Negative" immunity="20" resistance="10" />
+      <damage type="Positive" immunity="70" resistance="0" />
+      <damage type="Ectoplasmic" immunity="22" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="25" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="17" resistance="0" />
+      <damage type="Axiomatic" immunity="30" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Flesh Jelly" timeStamp="2012-03-16T13:08:02.7157802Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="100" resistance="5" />
+      <damage type="Piercing" immunity="0" resistance="5" />
+      <damage type="Slashing" immunity="0" resistance="5" />
+      <damage type="Acid" immunity="0" resistance="5" />
+      <damage type="Cold" immunity="40" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="5" healing="6" />
+      <damage type="Fire" immunity="40" resistance="5" />
+      <damage type="Sonic" immunity="40" resistance="5" />
+      <damage type="Divine" immunity="50" resistance="5" />
+      <damage type="Magical" immunity="50" resistance="5" />
+      <damage type="Negative" immunity="50" resistance="5" />
+      <damage type="Positive" immunity="50" resistance="5" />
+      <damage type="Ectoplasmic" immunity="25" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="25" resistance="0" />
+      <damage type="Sacred" immunity="25" resistance="0" />
+      <damage type="Vile" immunity="25" resistance="0" />
+      <damage type="Anarchic" immunity="25" resistance="0" />
+      <damage type="Axiomatic" immunity="25" resistance="0" />
+      <damage type="Primal" immunity="25" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Gadacro" timeStamp="2012-03-16T13:08:44.2441555Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="0" />
+      <damage type="Piercing" immunity="40" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="0" resistance="10" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="80" resistance="0" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="60" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="17" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="32" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Giant Scorpion Flayer" timeStamp="2012-03-16T13:09:08.7085548Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="15" />
+      <damage type="Piercing" immunity="30" resistance="10" />
+      <damage type="Slashing" immunity="50" resistance="15" />
+      <damage type="Acid" immunity="80" resistance="15" />
+      <damage type="Cold" immunity="80" resistance="15" />
+      <damage type="Electrical" immunity="0" resistance="15" />
+      <damage type="Fire" immunity="0" resistance="15" />
+      <damage type="Sonic" immunity="50" resistance="15" />
+      <damage type="Divine" immunity="80" resistance="15" />
+      <damage type="Magical" immunity="0" resistance="15" />
+      <damage type="Negative" immunity="80" resistance="15" />
+      <damage type="Positive" immunity="50" resistance="10" />
+      <damage type="Ectoplasmic" immunity="32" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Giant Scorpion Stinger" timeStamp="2012-03-16T13:09:21.0282594Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="50" resistance="5" />
+      <damage type="Acid" immunity="80" resistance="5" />
+      <damage type="Cold" immunity="80" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="50" resistance="5" />
+      <damage type="Divine" immunity="80" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="80" resistance="5" />
+      <damage type="Positive" immunity="50" resistance="0" />
+      <damage type="Ectoplasmic" immunity="32" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Glabrezu" timeStamp="2012-03-16T13:09:33.3729655Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="15" />
+      <damage type="Piercing" immunity="20" resistance="20" />
+      <damage type="Slashing" immunity="40" resistance="20" />
+      <damage type="Acid" immunity="60" resistance="20" />
+      <damage type="Cold" immunity="70" resistance="20" />
+      <damage type="Electrical" immunity="80" resistance="15" />
+      <damage type="Fire" immunity="0" resistance="30" />
+      <damage type="Sonic" immunity="0" resistance="15" />
+      <damage type="Divine" immunity="70" resistance="20" />
+      <damage type="Magical" immunity="0" resistance="15" />
+      <damage type="Negative" immunity="70" resistance="20" />
+      <damage type="Positive" immunity="70" resistance="20" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Goristro" timeStamp="2012-03-16T13:09:59.4254556Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="80" resistance="5" />
+      <damage type="Piercing" immunity="40" resistance="5" />
+      <damage type="Slashing" immunity="60" resistance="5" />
+      <damage type="Acid" immunity="50" resistance="10" />
+      <damage type="Cold" immunity="90" resistance="5" />
+      <damage type="Electrical" immunity="50" resistance="5" />
+      <damage type="Fire" immunity="90" resistance="5" />
+      <damage type="Sonic" immunity="90" resistance="0" />
+      <damage type="Divine" immunity="80" resistance="5" />
+      <damage type="Magical" immunity="40" resistance="5" />
+      <damage type="Negative" immunity="80" resistance="0" />
+      <damage type="Positive" immunity="80" resistance="5" />
+      <damage type="Ectoplasmic" immunity="40" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="20" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="30" resistance="0" />
+      <damage type="Axiomatic" immunity="30" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Guecubu" timeStamp="2012-03-16T13:10:16.1724135Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="100" resistance="5" />
+      <damage type="Piercing" immunity="100" resistance="5" />
+      <damage type="Slashing" immunity="100" resistance="5" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="10" healing="6" />
+      <damage type="Fire" immunity="70" resistance="10" />
+      <damage type="Sonic" immunity="0" resistance="0" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Hezrou" timeStamp="2012-03-16T13:10:30.2992215Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="60" resistance="0" />
+      <damage type="Piercing" immunity="0" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="5" />
+      <damage type="Acid" immunity="80" resistance="0" />
+      <damage type="Cold" immunity="0" resistance="10" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="60" resistance="10" />
+      <damage type="Sonic" immunity="70" resistance="0" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Incubus" timeStamp="2012-03-16T13:10:37.3186230Z">
+  </creature>
+  <creature name="Ixitxachitl Cultist" timeStamp="2012-03-16T13:10:46.1851301Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="10" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="5" />
+      <damage type="Acid" immunity="90" resistance="5" />
+      <damage type="Cold" immunity="90" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="30" resistance="10" />
+      <damage type="Divine" immunity="20" resistance="0" />
+      <damage type="Magical" immunity="90" resistance="10" />
+      <damage type="Negative" immunity="20" resistance="5" />
+      <damage type="Positive" immunity="90" resistance="0" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="45" resistance="0" />
+      <damage type="Sacred" immunity="10" resistance="0" />
+      <damage type="Vile" immunity="10" resistance="0" />
+      <damage type="Anarchic" immunity="27" resistance="0" />
+      <damage type="Axiomatic" immunity="45" resistance="0" />
+      <damage type="Primal" immunity="10" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Ixitxachitl Darter" timeStamp="2012-03-16T13:11:00.9929771Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="10" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="5" />
+      <damage type="Acid" immunity="90" resistance="5" />
+      <damage type="Cold" immunity="90" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="30" resistance="10" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="90" resistance="10" />
+      <damage type="Negative" immunity="30" resistance="5" />
+      <damage type="Positive" immunity="90" resistance="0" />
+      <damage type="Ectoplasmic" immunity="30" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="45" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="30" resistance="0" />
+      <damage type="Axiomatic" immunity="45" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Ixitxachitl Priest" timeStamp="2012-03-16T13:11:08.2493921Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="10" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="5" />
+      <damage type="Acid" immunity="90" resistance="5" />
+      <damage type="Cold" immunity="90" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="30" resistance="10" />
+      <damage type="Divine" immunity="100" resistance="10" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="30" resistance="5" />
+      <damage type="Positive" immunity="80" resistance="0" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="50" resistance="0" />
+      <damage type="Vile" immunity="50" resistance="0" />
+      <damage type="Anarchic" immunity="10" resistance="0" />
+      <damage type="Axiomatic" immunity="22" resistance="0" />
+      <damage type="Primal" immunity="50" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Jarilith" timeStamp="2012-03-16T13:11:15.0767826Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="50" resistance="0" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="0" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="60" resistance="10" />
+      <damage type="Fire" immunity="60" resistance="10" />
+      <damage type="Sonic" immunity="90" resistance="0" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="20" resistance="5" />
+      <damage type="Positive" immunity="100" resistance="5" />
+      <damage type="Ectoplasmic" immunity="30" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="7" resistance="0" />
+      <damage type="Axiomatic" immunity="27" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Jovoc" timeStamp="2012-03-16T13:11:20.8281116Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="30" resistance="5" />
+      <damage type="Slashing" immunity="50" resistance="5" />
+      <damage type="Acid" immunity="20" resistance="15" />
+      <damage type="Cold" immunity="80" resistance="10" />
+      <damage type="Electrical" immunity="20" resistance="5" />
+      <damage type="Fire" immunity="80" resistance="10" />
+      <damage type="Sonic" immunity="80" resistance="10" />
+      <damage type="Divine" immunity="80" resistance="10" />
+      <damage type="Magical" immunity="20" resistance="5" />
+      <damage type="Negative" immunity="80" resistance="10" />
+      <damage type="Positive" immunity="80" resistance="10" />
+      <damage type="Ectoplasmic" immunity="40" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="10" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="25" resistance="0" />
+      <damage type="Axiomatic" immunity="25" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Kelvezu" timeStamp="2012-03-16T13:11:45.8465426Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="0" />
+      <damage type="Piercing" immunity="30" resistance="5" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="80" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="10" />
+      <damage type="Sonic" immunity="60" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="0" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Laghathti" timeStamp="2012-03-16T13:11:53.7179928Z">
+  </creature>
+  <creature name="Lemorian Scream" timeStamp="2012-03-16T13:12:06.0746996Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="15" />
+      <damage type="Piercing" immunity="40" resistance="10" />
+      <damage type="Slashing" immunity="40" resistance="10" />
+      <damage type="Acid" immunity="50" resistance="10" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="60" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="100" resistance="5" />
+      <damage type="Divine" immunity="100" resistance="10" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="50" resistance="5" />
+      <damage type="Positive" immunity="60" resistance="5" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="50" resistance="0" />
+      <damage type="Vile" immunity="50" resistance="0" />
+      <damage type="Anarchic" immunity="15" resistance="0" />
+      <damage type="Axiomatic" immunity="17" resistance="0" />
+      <damage type="Primal" immunity="50" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Living Holocaust" timeStamp="2012-03-16T13:12:12.5440696Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="15" />
+      <damage type="Piercing" immunity="40" resistance="10" />
+      <damage type="Slashing" immunity="40" resistance="10" />
+      <damage type="Acid" immunity="0" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="60" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="10" healing="6" />
+      <damage type="Sonic" immunity="50" resistance="5" />
+      <damage type="Divine" immunity="100" resistance="10" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="50" resistance="5" />
+      <damage type="Positive" immunity="60" resistance="5" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="50" resistance="0" />
+      <damage type="Vile" immunity="50" resistance="0" />
+      <damage type="Anarchic" immunity="15" resistance="0" />
+      <damage type="Axiomatic" immunity="17" resistance="0" />
+      <damage type="Primal" immunity="50" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Mane" timeStamp="2012-03-16T13:12:34.6363332Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="0" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Manitou" timeStamp="2012-03-16T13:12:41.1727071Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="100" resistance="5" />
+      <damage type="Piercing" immunity="100" resistance="5" />
+      <damage type="Slashing" immunity="100" resistance="5" />
+      <damage type="Acid" immunity="70" resistance="10" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="10" />
+      <damage type="Fire" immunity="70" resistance="0" />
+      <damage type="Sonic" immunity="0" resistance="0" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Marilith" timeStamp="2012-03-16T13:12:47.7670842Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="10" />
+      <damage type="Piercing" immunity="40" resistance="5" />
+      <damage type="Slashing" immunity="60" resistance="0" />
+      <damage type="Acid" immunity="90" resistance="0" />
+      <damage type="Cold" immunity="40" resistance="0" />
+      <damage type="Electrical" immunity="80" resistance="10" />
+      <damage type="Fire" immunity="40" resistance="5" />
+      <damage type="Sonic" immunity="80" resistance="10" />
+      <damage type="Divine" immunity="90" resistance="5" />
+      <damage type="Magical" immunity="90" resistance="5" />
+      <damage type="Negative" immunity="90" resistance="0" />
+      <damage type="Positive" immunity="30" resistance="5" />
+      <damage type="Ectoplasmic" immunity="30" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="45" resistance="0" />
+      <damage type="Sacred" immunity="45" resistance="0" />
+      <damage type="Vile" immunity="45" resistance="0" />
+      <damage type="Anarchic" immunity="45" resistance="0" />
+      <damage type="Axiomatic" immunity="30" resistance="0" />
+      <damage type="Primal" immunity="45" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Maurezhi" timeStamp="2012-03-16T13:12:56.6515924Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="10" />
+      <damage type="Piercing" immunity="50" resistance="5" />
+      <damage type="Slashing" immunity="50" resistance="5" />
+      <damage type="Acid" immunity="70" resistance="10" />
+      <damage type="Cold" immunity="70" resistance="20" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="70" resistance="10" />
+      <damage type="Divine" immunity="100" resistance="10" />
+      <damage type="Magical" immunity="90" resistance="10" />
+      <damage type="Negative" immunity="20" resistance="10" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="7" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="45" resistance="0" />
+      <damage type="Sacred" immunity="50" resistance="0" />
+      <damage type="Vile" immunity="50" resistance="0" />
+      <damage type="Anarchic" immunity="27" resistance="0" />
+      <damage type="Axiomatic" immunity="25" resistance="0" />
+      <damage type="Primal" immunity="50" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Merchurion" timeStamp="2012-03-16T13:13:03.8770057Z">
+  </creature>
+  <creature name="Molydeus" timeStamp="2012-03-16T13:13:14.1325923Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="10" />
+      <damage type="Piercing" immunity="30" resistance="15" />
+      <damage type="Slashing" immunity="30" resistance="15" />
+      <damage type="Acid" immunity="80" resistance="0" />
+      <damage type="Cold" immunity="0" resistance="35" />
+      <damage type="Electrical" immunity="60" resistance="35" />
+      <damage type="Fire" immunity="70" resistance="35" />
+      <damage type="Sonic" immunity="0" resistance="40" />
+      <damage type="Divine" immunity="90" resistance="40" />
+      <damage type="Magical" immunity="0" resistance="35" />
+      <damage type="Negative" immunity="60" resistance="30" />
+      <damage type="Positive" immunity="60" resistance="35" />
+      <damage type="Ectoplasmic" immunity="30" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="45" resistance="0" />
+      <damage type="Vile" immunity="45" resistance="0" />
+      <damage type="Anarchic" immunity="17" resistance="0" />
+      <damage type="Axiomatic" immunity="17" resistance="0" />
+      <damage type="Primal" immunity="45" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Myrmyxicus" timeStamp="2012-03-16T13:13:46.9734706Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="10" />
+      <damage type="Piercing" immunity="40" resistance="5" />
+      <damage type="Slashing" immunity="50" resistance="5" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="60" resistance="5" />
+      <damage type="Sonic" immunity="20" resistance="10" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Nabassu" timeStamp="2012-03-16T13:13:54.7039128Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="20" />
+      <damage type="Piercing" immunity="40" resistance="20" />
+      <damage type="Slashing" immunity="20" resistance="20" />
+      <damage type="Acid" immunity="0" resistance="20" />
+      <damage type="Cold" immunity="70" resistance="20" />
+      <damage type="Electrical" immunity="70" resistance="20" />
+      <damage type="Fire" immunity="0" resistance="20" />
+      <damage type="Sonic" immunity="70" resistance="20" />
+      <damage type="Divine" immunity="70" resistance="20" />
+      <damage type="Magical" immunity="70" resistance="15" />
+      <damage type="Negative" immunity="70" resistance="20" />
+      <damage type="Positive" immunity="0" resistance="20" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Nalfeshnee" timeStamp="2012-03-16T13:14:01.0662767Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="50" resistance="20" />
+      <damage type="Piercing" immunity="20" resistance="20" />
+      <damage type="Slashing" immunity="30" resistance="15" />
+      <damage type="Acid" immunity="20" resistance="10" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="60" resistance="0" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Palrethee" timeStamp="2012-03-16T13:15:23.3529832Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="5" />
+      <damage type="Piercing" immunity="80" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="0" resistance="10" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="60" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" healing="6" />
+      <damage type="Sonic" immunity="50" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Phycomid" timeStamp="2012-03-16T13:15:36.4847343Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="80" resistance="0" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="20" resistance="0" />
+      <damage type="Acid" immunity="80" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="50" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="80" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="10" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="70" resistance="0" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Quasit" timeStamp="2012-03-16T13:16:03.0092514Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="0" />
+      <damage type="Piercing" immunity="40" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Resin Golem" timeStamp="2012-03-16T13:16:09.7046344Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="90" resistance="10" />
+      <damage type="Piercing" immunity="60" resistance="10" />
+      <damage type="Slashing" immunity="60" resistance="10" />
+      <damage type="Acid" immunity="100" resistance="0" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="40" resistance="15" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="0" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Resinous Geyser" timeStamp="2012-03-16T13:16:16.6330307Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="5" />
+      <damage type="Piercing" immunity="40" resistance="20" />
+      <damage type="Slashing" immunity="40" resistance="10" />
+      <damage type="Acid" immunity="100" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="50" resistance="10" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="60" resistance="5" />
+      <damage type="Divine" immunity="60" resistance="10" />
+      <damage type="Magical" immunity="50" resistance="5" />
+      <damage type="Negative" immunity="100" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="25" resistance="0" />
+      <damage type="Sacred" immunity="30" resistance="0" />
+      <damage type="Vile" immunity="30" resistance="0" />
+      <damage type="Anarchic" immunity="37" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="30" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Resinous Ooze" timeStamp="2012-03-16T13:16:25.1505179Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="100" resistance="5" />
+      <damage type="Piercing" immunity="0" resistance="5" />
+      <damage type="Slashing" immunity="0" resistance="5" />
+      <damage type="Acid" immunity="100" resistance="5" healing="6" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="50" resistance="10" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="60" resistance="5" />
+      <damage type="Divine" immunity="60" resistance="10" />
+      <damage type="Magical" immunity="50" resistance="5" />
+      <damage type="Negative" immunity="100" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="25" resistance="0" />
+      <damage type="Sacred" immunity="30" resistance="0" />
+      <damage type="Vile" immunity="30" resistance="0" />
+      <damage type="Anarchic" immunity="37" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="30" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Retriever" timeStamp="2012-03-16T13:16:31.0818571Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="5" />
+      <damage type="Piercing" immunity="50" resistance="5" />
+      <damage type="Slashing" immunity="30" resistance="5" />
+      <damage type="Acid" immunity="30" resistance="10" />
+      <damage type="Cold" immunity="90" resistance="5" />
+      <damage type="Electrical" immunity="90" resistance="5" />
+      <damage type="Fire" immunity="90" resistance="5" />
+      <damage type="Sonic" immunity="30" resistance="0" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Rutterkin" timeStamp="2012-03-16T13:16:39.3983328Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="0" />
+      <damage type="Piercing" immunity="60" resistance="0" />
+      <damage type="Slashing" immunity="20" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Sanguineous Drinker" timeStamp="2012-03-16T13:16:46.2307236Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="5" />
+      <damage type="Piercing" immunity="40" resistance="0" />
+      <damage type="Slashing" immunity="50" resistance="0" />
+      <damage type="Acid" immunity="20" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="10" />
+      <damage type="Electrical" immunity="60" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="5" healing="6" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Sibriex" timeStamp="2012-03-16T13:17:03.8137293Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="50" resistance="5" />
+      <damage type="Piercing" immunity="40" resistance="5" />
+      <damage type="Slashing" immunity="20" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="60" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="70" resistance="0" />
+      <damage type="Sonic" immunity="20" resistance="10" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="70" resistance="0" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Skeletal Rat" timeStamp="2012-03-16T13:17:11.7091809Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="0" />
+      <damage type="Piercing" immunity="50" resistance="0" />
+      <damage type="Slashing" immunity="50" resistance="0" />
+      <damage type="Acid" immunity="0" resistance="5" />
+      <damage type="Cold" immunity="90" resistance="10" />
+      <damage type="Electrical" immunity="40" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="80" resistance="5" />
+      <damage type="Divine" immunity="60" resistance="5" />
+      <damage type="Magical" immunity="50" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="5" healing="6" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="25" resistance="0" />
+      <damage type="Sacred" immunity="30" resistance="0" />
+      <damage type="Vile" immunity="30" resistance="0" />
+      <damage type="Anarchic" immunity="15" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="30" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Skulvyn" timeStamp="2012-03-16T13:17:29.5832032Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="20" resistance="10" />
+      <damage type="Sonic" immunity="60" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Sporebat" timeStamp="2012-03-16T13:17:36.9256232Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="0" />
+      <damage type="Piercing" immunity="40" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="90" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="50" resistance="10" />
+      <damage type="Sonic" immunity="0" resistance="0" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="70" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Succubus" timeStamp="2012-03-16T13:17:43.6260064Z">
+  </creature>
+  <creature name="Tiefling Archer" timeStamp="2012-03-16T13:18:05.9472831Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="0" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="50" resistance="5" />
+      <damage type="Cold" immunity="20" resistance="5" />
+      <damage type="Electrical" immunity="50" resistance="5" />
+      <damage type="Fire" immunity="90" resistance="5" />
+      <damage type="Sonic" immunity="20" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="40" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="40" resistance="5" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="20" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="27" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Tiefling Assassin" timeStamp="2012-03-16T13:18:13.2206991Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="30" resistance="5" />
+      <damage type="Slashing" immunity="40" resistance="5" />
+      <damage type="Acid" immunity="50" resistance="5" />
+      <damage type="Cold" immunity="20" resistance="5" />
+      <damage type="Electrical" immunity="50" resistance="5" />
+      <damage type="Fire" immunity="90" resistance="5" />
+      <damage type="Sonic" immunity="20" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="40" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="40" resistance="5" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="20" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="27" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Tiefling Sorceress" timeStamp="2012-03-16T13:18:21.0171450Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="0" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="0" />
+      <damage type="Acid" immunity="50" resistance="5" />
+      <damage type="Cold" immunity="20" resistance="5" />
+      <damage type="Electrical" immunity="50" resistance="5" />
+      <damage type="Fire" immunity="90" resistance="5" />
+      <damage type="Sonic" immunity="20" resistance="5" />
+      <damage type="Divine" immunity="30" resistance="0" />
+      <damage type="Magical" immunity="90" resistance="5" />
+      <damage type="Negative" immunity="50" resistance="5" />
+      <damage type="Positive" immunity="50" resistance="5" />
+      <damage type="Ectoplasmic" immunity="25" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="45" resistance="0" />
+      <damage type="Sacred" immunity="15" resistance="0" />
+      <damage type="Vile" immunity="15" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="15" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Tomb Mote" timeStamp="2012-03-16T13:18:28.8085907Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="0" />
+      <damage type="Piercing" immunity="60" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="0" resistance="0" />
+      <damage type="Cold" immunity="60" resistance="10" />
+      <damage type="Electrical" immunity="60" resistance="10" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="90" resistance="5" />
+      <damage type="Divine" immunity="80" resistance="5" />
+      <damage type="Magical" immunity="30" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="5" healing="6" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="15" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="10" resistance="0" />
+      <damage type="Axiomatic" immunity="10" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Tombstone Golem" timeStamp="2012-03-16T13:18:35.9860012Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="30" />
+      <damage type="Piercing" immunity="60" resistance="30" />
+      <damage type="Slashing" immunity="60" resistance="30" />
+      <damage type="Acid" immunity="0" resistance="0" />
+      <damage type="Cold" immunity="90" resistance="5" />
+      <damage type="Electrical" immunity="50" resistance="10" />
+      <damage type="Fire" immunity="70" resistance="5" />
+      <damage type="Sonic" immunity="0" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="10" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="90" resistance="0" />
+      <damage type="Positive" immunity="50" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="25" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Uridezu" timeStamp="2012-03-16T13:18:42.4903732Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="0" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="5" />
+      <damage type="Acid" immunity="60" resistance="5" />
+      <damage type="Cold" immunity="80" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="15" />
+      <damage type="Sonic" immunity="60" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Uzollru" timeStamp="2012-03-16T13:18:49.6057802Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="0" />
+      <damage type="Piercing" immunity="60" resistance="5" />
+      <damage type="Slashing" immunity="40" resistance="10" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="10" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="70" resistance="5" />
+      <damage type="Sonic" immunity="0" resistance="10" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Vampiric Ixitxachitl" timeStamp="2012-03-16T13:18:58.8133069Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="10" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="30" resistance="5" />
+      <damage type="Acid" immunity="90" resistance="5" />
+      <damage type="Cold" immunity="100" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="30" resistance="10" />
+      <damage type="Divine" immunity="100" resistance="0" />
+      <damage type="Magical" immunity="70" resistance="10" />
+      <damage type="Negative" immunity="0" resistance="5" healing="6" />
+      <damage type="Positive" immunity="40" resistance="0" />
+      <damage type="Ectoplasmic" immunity="12" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="50" resistance="0" />
+      <damage type="Vile" immunity="50" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="27" resistance="0" />
+      <damage type="Primal" immunity="50" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Varrangoin Arcanist" timeStamp="2012-03-16T13:19:06.1787281Z">
+  </creature>
+  <creature name="Varrangoin Hurler" timeStamp="2012-03-16T13:19:12.9881176Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="0" />
+      <damage type="Piercing" immunity="50" resistance="5" />
+      <damage type="Slashing" immunity="20" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="10" />
+      <damage type="Cold" immunity="50" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="90" resistance="5" />
+      <damage type="Sonic" immunity="0" resistance="5" />
+      <damage type="Divine" immunity="30" resistance="5" />
+      <damage type="Magical" immunity="80" resistance="10" />
+      <damage type="Negative" immunity="100" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="40" resistance="0" />
+      <damage type="Sacred" immunity="15" resistance="0" />
+      <damage type="Vile" immunity="15" resistance="0" />
+      <damage type="Anarchic" immunity="45" resistance="0" />
+      <damage type="Axiomatic" immunity="22" resistance="0" />
+      <damage type="Primal" immunity="15" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Varrangoin Rager" timeStamp="2012-03-16T13:19:22.2896496Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="0" />
+      <damage type="Piercing" immunity="50" resistance="5" />
+      <damage type="Slashing" immunity="20" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="10" />
+      <damage type="Cold" immunity="50" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="90" resistance="5" />
+      <damage type="Sonic" immunity="0" resistance="5" />
+      <damage type="Divine" immunity="30" resistance="5" />
+      <damage type="Magical" immunity="80" resistance="10" />
+      <damage type="Negative" immunity="100" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="40" resistance="0" />
+      <damage type="Sacred" immunity="15" resistance="0" />
+      <damage type="Vile" immunity="15" resistance="0" />
+      <damage type="Anarchic" immunity="45" resistance="0" />
+      <damage type="Axiomatic" immunity="22" resistance="0" />
+      <damage type="Primal" immunity="15" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Varrangoin Scout" timeStamp="2012-03-16T13:20:01.5428948Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="0" />
+      <damage type="Piercing" immunity="50" resistance="5" />
+      <damage type="Slashing" immunity="20" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="10" />
+      <damage type="Cold" immunity="50" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="90" resistance="5" />
+      <damage type="Sonic" immunity="0" resistance="5" />
+      <damage type="Divine" immunity="30" resistance="5" />
+      <damage type="Magical" immunity="80" resistance="10" />
+      <damage type="Negative" immunity="100" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="27" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="40" resistance="0" />
+      <damage type="Sacred" immunity="15" resistance="0" />
+      <damage type="Vile" immunity="15" resistance="0" />
+      <damage type="Anarchic" immunity="45" resistance="0" />
+      <damage type="Axiomatic" immunity="22" resistance="0" />
+      <damage type="Primal" immunity="15" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Verakia" timeStamp="2012-03-16T13:20:19.2229060Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="5" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="60" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="100" resistance="5" />
+      <damage type="Sonic" immunity="40" resistance="10" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="90" resistance="5" />
+      <damage type="Positive" immunity="50" resistance="0" />
+      <damage type="Ectoplasmic" immunity="35" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="25" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Violet Fungus" timeStamp="2012-03-16T13:20:34.9718068Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="60" resistance="0" />
+      <damage type="Piercing" immunity="20" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="50" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="10" />
+      <damage type="Sonic" immunity="90" resistance="0" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Viper Tree" timeStamp="2012-03-16T13:20:41.8371995Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="60" resistance="10" />
+      <damage type="Piercing" immunity="60" resistance="10" />
+      <damage type="Slashing" immunity="20" resistance="10" />
+      <damage type="Acid" immunity="70" resistance="10" />
+      <damage type="Cold" immunity="70" resistance="10" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="0" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="60" resistance="5" />
+      <damage type="Negative" immunity="80" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="22" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="30" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="17" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Vorr" timeStamp="2012-03-16T13:20:49.3876313Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="30" resistance="0" />
+      <damage type="Piercing" immunity="40" resistance="0" />
+      <damage type="Slashing" immunity="20" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="10" />
+      <damage type="Sonic" immunity="0" resistance="0" />
+      <damage type="Divine" immunity="90" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="30" resistance="10" />
+      <damage type="Positive" immunity="90" resistance="5" />
+      <damage type="Ectoplasmic" immunity="30" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="45" resistance="0" />
+      <damage type="Vile" immunity="45" resistance="0" />
+      <damage type="Anarchic" immunity="10" resistance="0" />
+      <damage type="Axiomatic" immunity="25" resistance="0" />
+      <damage type="Primal" immunity="45" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Vrock" timeStamp="2012-03-16T13:20:55.7379946Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="0" />
+      <damage type="Piercing" immunity="70" resistance="5" />
+      <damage type="Slashing" immunity="20" resistance="10" />
+      <damage type="Acid" immunity="0" resistance="15" />
+      <damage type="Cold" immunity="60" resistance="5" />
+      <damage type="Electrical" immunity="90" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="60" resistance="0" />
+      <damage type="Divine" immunity="100" resistance="0" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="20" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="7" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="50" resistance="0" />
+      <damage type="Vile" immunity="50" resistance="0" />
+      <damage type="Anarchic" immunity="22" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="50" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Wastrilith" timeStamp="2012-03-16T13:21:02.6463897Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="70" resistance="5" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="70" resistance="5" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="20" resistance="0" />
+      <damage type="Axiomatic" immunity="35" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Yuan-Ti Huntress" timeStamp="2012-03-16T13:21:09.5147826Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="5" />
+      <damage type="Piercing" immunity="30" resistance="5" />
+      <damage type="Slashing" immunity="40" resistance="5" />
+      <damage type="Acid" immunity="100" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="40" resistance="5" />
+      <damage type="Fire" immunity="40" resistance="5" />
+      <damage type="Sonic" immunity="40" resistance="10" />
+      <damage type="Divine" immunity="60" resistance="0" />
+      <damage type="Magical" immunity="60" resistance="5" />
+      <damage type="Negative" immunity="40" resistance="5" />
+      <damage type="Positive" immunity="60" resistance="5" />
+      <damage type="Ectoplasmic" immunity="25" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="30" resistance="0" />
+      <damage type="Sacred" immunity="30" resistance="0" />
+      <damage type="Vile" immunity="30" resistance="0" />
+      <damage type="Anarchic" immunity="25" resistance="0" />
+      <damage type="Axiomatic" immunity="30" resistance="0" />
+      <damage type="Primal" immunity="30" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Yuan-Ti Sorceress" timeStamp="2012-03-16T13:21:15.8301438Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="20" resistance="0" />
+      <damage type="Piercing" immunity="30" resistance="0" />
+      <damage type="Slashing" immunity="40" resistance="0" />
+      <damage type="Acid" immunity="100" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="40" resistance="5" />
+      <damage type="Fire" immunity="40" resistance="5" />
+      <damage type="Sonic" immunity="40" resistance="10" />
+      <damage type="Divine" immunity="40" resistance="0" />
+      <damage type="Magical" immunity="90" resistance="5" />
+      <damage type="Negative" immunity="30" resistance="5" />
+      <damage type="Positive" immunity="60" resistance="5" />
+      <damage type="Ectoplasmic" immunity="22" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="45" resistance="0" />
+      <damage type="Sacred" immunity="20" resistance="0" />
+      <damage type="Vile" immunity="20" resistance="0" />
+      <damage type="Anarchic" immunity="30" resistance="0" />
+      <damage type="Axiomatic" immunity="37" resistance="0" />
+      <damage type="Primal" immunity="20" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+  <creature name="Zovvut" timeStamp="2012-03-16T13:21:30.5649866Z">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="40" resistance="5" />
+      <damage type="Piercing" immunity="20" resistance="5" />
+      <damage type="Slashing" immunity="30" resistance="5" />
+      <damage type="Acid" immunity="70" resistance="5" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="70" resistance="5" />
+      <damage type="Magical" immunity="70" resistance="5" />
+      <damage type="Negative" immunity="70" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="20" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="35" resistance="0" />
+      <damage type="Sacred" immunity="35" resistance="0" />
+      <damage type="Vile" immunity="35" resistance="0" />
+      <damage type="Anarchic" immunity="35" resistance="0" />
+      <damage type="Axiomatic" immunity="20" resistance="0" />
+      <damage type="Primal" immunity="35" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+</creatures>

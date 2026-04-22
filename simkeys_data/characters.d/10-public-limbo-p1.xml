@@ -1,0 +1,271 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Greater Amorphion" base="Amorphion" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Anarchic Basilisk" base="Anarchic Basilisk" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Anarchic Fox" base="Anarchic Fox" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Anarchic Serpent" base="Anarchic Serpent" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Anarchic Storm Giant" base="Anarchic Storm Giant" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Arucha" base="Arucha" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Black Slaad" base="Black Slaad" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Bloodthorn" base="Bloodthorn" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Blue Slaad" base="Blue Slaad" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Chaond Primalist" base="Chaond Primalist" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Chaond Vandal" base="Chaond Vandal" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Chaos Drake" base="Chaos Drake" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Chaos Phage Swarm" base="Chaos Phage Swarm" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Chaos Roc" base="Chaos Roc" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Death Slaad" base="Death Slaad" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Discordant Soul" base="Discordant Soul" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Doppelganger" base="Doppelganger" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Entropic Reaper" base="Entropic Reaper" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Eolian" base="Eolian" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Feral Elf Archer" base="Feral Elf Archer" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Feral Elf Skinwalker" base="Feral Elf Skinwalker" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Feral Elf Skirmisher" base="Feral Elf Skirmisher" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Feral Elf Stormwarden" base="Feral Elf Stormwarden" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Gibbering Orb" base="Gibbering Orb" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Gibbering Mouther" base="Gibbering Mouther" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Gith-attala" base="Gith-attala" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Githyanki Avenger" base="Githyanki Avenger" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Githzerai Chaosweaver" base="Githzerai Chaosweaver" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Githzerai Monast" base="Githzerai Monast" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Githzerai Stalker" base="Githzerai Stalker" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Githzerai Zerth" base="Githzerai Zerth" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Green Slaad" base="Green Slaad" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Gremlin" base="Gremlin" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Grey Slaad" base="Grey Slaad" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Hagunemnon" base="Hagunemnon" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Howler" base="Howler" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Imentesh" base="Imentesh" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Kaorti Alienist" base="Kaorti Alienist" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Kaorti Nullifier" base="Kaorti Nullifier" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Kaorti Mocker" base="Kaorti Mocker" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Keketar" base="Keketar" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Khayal" base="Khayal" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Lillend" base="Lillend" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Limbo Stalker" base="Limbo Stalker" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Mageripper Swarm" base="Mageripper Swarm" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Mimic" base="Mimic" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Mud Slaad" base="Mud Slaad" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Naunet" base="Naunet" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Nightseed" base="Nightseed" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Nishruu" base="Nishruu" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Phasm" base="Phasm" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Quark" base="Quark" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Red Slaad" base="Red Slaad" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Shadow Jelly" base="Shadow Jelly" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Shardsoul Slayer" base="Shardsoul Slayer" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Taunting Haunt" base="Taunting Haunt" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Trilloch" base="Trilloch" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Unfinished Minotaur" base="Unfinished Minotaur" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Unfinished Titan" base="Unfinished Titan" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Voidworm School" base="Voidworm School" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Warp Drifter" base="Warp Drifter" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Weaver" base="Weaver" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater White Slaad" base="White Slaad" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Windrazor" base="Windrazor" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Windscythe Confessor" base="Windscythe Confessor" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Windscythe Tyrant" base="Windscythe Tyrant" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+  <creature name="Greater Zeugalak" base="Zeugalak" type="Greater">
+    <damageImmunities>
+    </damageImmunities>
+  </creature>
+</creatures>

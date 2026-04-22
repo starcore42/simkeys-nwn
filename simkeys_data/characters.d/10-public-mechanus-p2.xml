@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Superior Mechanus Creature Template" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z" base="Mechanus Creature Template" type="Superior">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="20" />
+      <damage type="Piercing" immunity="40" resistance="20" />
+      <damage type="Slashing" immunity="40" resistance="20" />
+      <damage type="Acid" immunity="70" resistance="20" />
+      <damage type="Cold" immunity="0" resistance="20" />
+      <damage type="Electrical" immunity="0" resistance="20" />
+      <damage type="Fire" immunity="0" resistance="20" />
+      <damage type="Sonic" immunity="70" resistance="20" />
+      <damage type="Divine" immunity="80" resistance="15" />
+      <damage type="Magical" immunity="80" resistance="35" />
+      <damage type="Negative" immunity="30" resistance="15" />
+      <damage type="Positive" immunity="30" resistance="15" />
+      <damage type="Ectoplasmic" immunity="15" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="40" resistance="0" />
+      <damage type="Sacred" immunity="40" resistance="0" />
+      <damage type="Vile" immunity="40" resistance="0" />
+      <damage type="Anarchic" immunity="27" resistance="0" />
+      <damage type="Axiomatic" immunity="27" resistance="0" />
+      <damage type="Primal" immunity="40" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+      <damage type="Force" immunity="0" resistance="0" />
+    </damageImmunities>
+  </creature>
+</creatures>

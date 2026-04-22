@@ -1,0 +1,654 @@
+<creatures>
+  <creature name="Compost Worm" timeStamp="2012-01-13T14:41:33.0000000Z" race="Vermin">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="5" />
+      <damage type="Piercing" immunity="0" resistance="15" />
+      <damage type="Slashing" immunity="0" resistance="0" />
+      <damage type="Acid" immunity="70" resistance="0" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="40" resistance="10" />
+      <damage type="Fire" immunity="70" resistance="0" />
+      <damage type="Sonic" immunity="0" resistance="0" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="0" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="0" resistance="0" />
+      <damage type="Axiomatic" immunity="0" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Ability Decrease" />
+      <add name="Negative Levels" />
+      <add name="Death Magic" />
+      <add name="Petrification" />
+    </otherImmunities>
+    <spellImmunities>
+      <add name="Harm" />
+      <add name="Mass Harm" />
+      <add name="Flesh to Stone" />
+      <add name="Call of Stone" />
+      <add name="Cast in Stone" />
+    </spellImmunities>
+  </creature>
+  <creature name="Fell Shrieker" timeStamp="2012-06-24T19:31:48.0000000Z" race="Plant">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="0" />
+      <damage type="Piercing" immunity="90" resistance="0" />
+      <damage type="Slashing" immunity="0" resistance="0" />
+      <damage type="Acid" immunity="0" resistance="10" />
+      <damage type="Cold" immunity="70" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="100" resistance="0" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Poison" />
+      <add name="Disease" />
+      <add name="Ability Decrease" />
+      <add name="Knockdown" />
+      <add name="Negative Levels" />
+      <add name="Critical Hits" />
+      <add name="Death Magic" />
+      <add name="Petrification" />
+    </otherImmunities>
+    <spellImmunities>
+      <add name="Word of Faith" />
+      <add name="Word of Balance" />
+      <add name="Drown" />
+      <add name="Flesh to Stone" />
+      <add name="Call of Stone" />
+      <add name="Cast in Stone" />
+    </spellImmunities>
+  </creature>
+  <creature name="Fungal Tender" timeStamp="2012-01-13T14:24:40.0000000Z" race="Vermin">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="15" />
+      <damage type="Piercing" immunity="90" resistance="0" />
+      <damage type="Slashing" immunity="0" resistance="5" />
+      <damage type="Acid" immunity="20" resistance="5" />
+      <damage type="Cold" immunity="90" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="5" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="0" resistance="0" />
+      <damage type="Axiomatic" immunity="0" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Knockdown" />
+      <add name="Critical Hits" />
+      <add name="Death Magic" />
+    </otherImmunities>
+    <spellImmunities>
+      <add name="Implosion" />
+      <add name="Drown" />
+      <add name="Disintegrate" />
+    </spellImmunities>
+  </creature>
+  <creature name="King Myxo Dreamcaller" timeStamp="2012-01-13T15:26:12.0000000Z" race="Plant">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="30" />
+      <damage type="Piercing" immunity="100" resistance="45" />
+      <damage type="Slashing" immunity="0" resistance="15" />
+      <damage type="Acid" immunity="100" resistance="10" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="50" resistance="10" />
+      <damage type="Fire" immunity="50" resistance="10" />
+      <damage type="Sonic" immunity="100" resistance="10" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="50" resistance="25" />
+      <damage type="Negative" immunity="50" resistance="25" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="15" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="25" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="25" resistance="0" />
+      <damage type="Axiomatic" immunity="15" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Poison" />
+      <add name="Disease" />
+      <add name="Ability Decrease" />
+      <add name="Knockdown" />
+      <add name="Negative Levels" />
+      <add name="Critical Hits" />
+      <add name="Death Magic" />
+      <add name="Petrification" />
+    </otherImmunities>
+    <spellImmunities>
+      <add name="Harm" />
+      <add name="Mass Harm" />
+      <add name="Word of Faith" />
+      <add name="Word of Balance" />
+      <add name="Implosion" />
+      <add name="Drown" />
+      <add name="Disintegrate" />
+      <add name="Bigbys Crushing Hand" />
+      <add name="Bigbys Grasping Hand" />
+      <add name="Flesh to Stone" />
+      <add name="Call of Stone" />
+      <add name="Cast in Stone" />
+      <add name="Defoliate" />
+      <add name="Contagion" />
+    </spellImmunities>
+  </creature>
+  <creature name="Myconid Caller" timeStamp="2012-01-13T14:26:37.0000000Z" race="Plant">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="5" />
+      <damage type="Piercing" immunity="90" resistance="45" />
+      <damage type="Slashing" immunity="0" resistance="5" />
+      <damage type="Acid" immunity="100" resistance="0" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="15" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="0" resistance="0" />
+      <damage type="Axiomatic" immunity="0" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Critical Hits" />
+    </otherImmunities>
+    <spellImmunities>
+      <add name="Word of Faith" />
+      <add name="Word of Balance" />
+      <add name="Implosion" />
+      <add name="Drown" />
+      <add name="Disintegrate" />
+      <add name="Contagion" />
+    </spellImmunities>
+  </creature>
+  <creature name="Myconid Flinger" timeStamp="2012-01-13T14:06:59.0000000Z" race="Plant">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="15" />
+      <damage type="Piercing" immunity="90" resistance="45" />
+      <damage type="Slashing" immunity="0" resistance="0" />
+      <damage type="Acid" immunity="100" resistance="0" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="15" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="0" resistance="0" />
+      <damage type="Axiomatic" immunity="0" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Knockdown" />
+      <add name="Critical Hits" />
+    </otherImmunities>
+  </creature>
+  <creature name="Myconid Flow Guider" timeStamp="2012-01-13T13:59:30.0000000Z" race="Plant">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="20" />
+      <damage type="Piercing" immunity="100" resistance="45" />
+      <damage type="Slashing" immunity="0" resistance="10" />
+      <damage type="Acid" immunity="100" resistance="10" />
+      <damage type="Cold" immunity="30" resistance="10" />
+      <damage type="Electrical" immunity="30" resistance="0" />
+      <damage type="Fire" immunity="30" resistance="10" />
+      <damage type="Sonic" immunity="90" resistance="0" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="30" resistance="0" />
+      <damage type="Negative" immunity="30" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="10" />
+      <damage type="Ectoplasmic" immunity="10" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="15" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="15" resistance="0" />
+      <damage type="Axiomatic" immunity="10" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Poison" />
+      <add name="Disease" />
+      <add name="Ability Decrease" />
+      <add name="Knockdown" />
+      <add name="Negative Levels" />
+      <add name="Critical Hits" />
+      <add name="Death Magic" />
+      <add name="Petrification" />
+    </otherImmunities>
+    <spellImmunities>
+      <add name="Harm" />
+      <add name="Mass Harm" />
+      <add name="Word of Faith" />
+      <add name="Word of Balance" />
+      <add name="Implosion" />
+      <add name="Drown" />
+      <add name="Disintegrate" />
+      <add name="Bigbys Crushing Hand" />
+      <add name="Bigbys Grasping Hand" />
+      <add name="Flesh to Stone" />
+      <add name="Call of Stone" />
+      <add name="Cast in Stone" />
+    </spellImmunities>
+  </creature>
+  <creature name="Myconid Scout" timeStamp="2012-07-30T19:12:49.0000000Z" race="Plant">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="15" />
+      <damage type="Piercing" immunity="90" resistance="45" />
+      <damage type="Slashing" immunity="0" resistance="0" />
+      <damage type="Acid" immunity="100" resistance="0" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="15" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Knockdown" />
+      <add name="Critical Hits" />
+    </otherImmunities>
+  </creature>
+  <creature name="Myconid Warrior" timeStamp="2012-01-13T14:05:31.0000000Z" race="Plant">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="15" />
+      <damage type="Piercing" immunity="90" resistance="45" />
+      <damage type="Slashing" immunity="0" resistance="5" />
+      <damage type="Acid" immunity="100" resistance="0" />
+      <damage type="Cold" immunity="0" resistance="0" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="70" resistance="15" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="0" resistance="0" />
+      <damage type="Axiomatic" immunity="0" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Critical Hits" />
+    </otherImmunities>
+  </creature>
+  <creature name="Refuse Blossom" timeStamp="2012-01-13T14:44:05.0000000Z" race="Ooze">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="90" resistance="10" />
+      <damage type="Piercing" immunity="0" resistance="5" />
+      <damage type="Slashing" immunity="0" resistance="5" />
+      <damage type="Acid" immunity="100" resistance="0" />
+      <damage type="Cold" immunity="40" resistance="5" />
+      <damage type="Electrical" immunity="0" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="0" />
+      <damage type="Sonic" immunity="40" resistance="10" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="0" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="0" resistance="0" />
+      <damage type="Axiomatic" immunity="0" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Poison" />
+      <add name="Disease" />
+      <add name="Knockdown" />
+      <add name="Critical Hits" />
+      <add name="Death Magic" />
+    </otherImmunities>
+    <spellImmunities>
+      <add name="Harm" />
+      <add name="Mass Harm" />
+      <add name="Bigbys Crushing Hand" />
+      <add name="Bigbys Grasping Hand" />
+    </spellImmunities>
+  </creature>
+  <creature name="Russet Mold" timeStamp="2012-07-30T19:12:23.0000000Z" race="Ooze">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="100" resistance="10" />
+      <damage type="Piercing" immunity="100" resistance="5" />
+      <damage type="Slashing" immunity="100" resistance="5" />
+      <damage type="Acid" immunity="0" resistance="0" />
+      <damage type="Cold" immunity="100" resistance="5" />
+      <damage type="Electrical" immunity="100" resistance="5" />
+      <damage type="Fire" immunity="100" resistance="5" />
+      <damage type="Sonic" immunity="100" resistance="0" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="0" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Poison" />
+      <add name="Disease" />
+      <add name="Ability Decrease" />
+      <add name="Knockdown" />
+      <add name="Negative Levels" />
+      <add name="Critical Hits" />
+      <add name="Death Magic" />
+      <add name="Petrification" />
+    </otherImmunities>
+    <spellImmunities>
+      <add name="Flesh to Stone" />
+      <add name="Call of Stone" />
+      <add name="Cast in Stone" />
+    </spellImmunities>
+  </creature>
+  <creature name="The Agitator" timeStamp="2012-01-13T14:50:28.0000000Z" race="Magical Beast">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="10" />
+      <damage type="Piercing" immunity="100" resistance="45" />
+      <damage type="Slashing" immunity="0" resistance="20" />
+      <damage type="Acid" immunity="30" resistance="5" />
+      <damage type="Cold" immunity="30" resistance="5" />
+      <damage type="Electrical" immunity="100" resistance="5" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="100" resistance="5" />
+      <damage type="Divine" immunity="30" resistance="5" />
+      <damage type="Magical" immunity="-20" resistance="5" />
+      <damage type="Negative" immunity="0" resistance="5" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="15" resistance="0" />
+      <damage type="Sacred" immunity="15" resistance="0" />
+      <damage type="Vile" immunity="15" resistance="0" />
+      <damage type="Anarchic" immunity="10" resistance="0" />
+      <damage type="Axiomatic" immunity="10" resistance="0" />
+      <damage type="Primal" immunity="15" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Poison" />
+      <add name="Disease" />
+      <add name="Ability Decrease" />
+      <add name="Knockdown" />
+      <add name="Negative Levels" />
+      <add name="Critical Hits" />
+      <add name="Death Magic" />
+      <add name="Petrification" />
+    </otherImmunities>
+    <spellImmunities>
+      <add name="Harm" />
+      <add name="Mass Harm" />
+      <add name="Word of Faith" />
+      <add name="Word of Balance" />
+      <add name="Implosion" />
+      <add name="Drown" />
+      <add name="Disintegrate" />
+      <add name="Bigbys Crushing Hand" />
+      <add name="Bigbys Grasping Hand" />
+      <add name="Flesh to Stone" />
+      <add name="Call of Stone" />
+      <add name="Cast in Stone" />
+      <add name="Contagion" />
+    </spellImmunities>
+  </creature>
+  <creature name="The Germinator" timeStamp="2012-01-13T14:34:54.0000000Z" race="Vermin">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="20" />
+      <damage type="Piercing" immunity="100" resistance="45" />
+      <damage type="Slashing" immunity="0" resistance="10" />
+      <damage type="Acid" immunity="100" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="50" resistance="5" />
+      <damage type="Fire" immunity="100" resistance="5" />
+      <damage type="Sonic" immunity="0" resistance="5" />
+      <damage type="Divine" immunity="0" resistance="5" />
+      <damage type="Magical" immunity="0" resistance="5" />
+      <damage type="Negative" immunity="30" resistance="5" />
+      <damage type="Positive" immunity="30" resistance="5" />
+      <damage type="Ectoplasmic" immunity="15" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+      <damage type="Anarchic" immunity="10" resistance="0" />
+      <damage type="Axiomatic" immunity="10" resistance="0" />
+      <damage type="Primal" immunity="0" resistance="0" />
+      <damage type="Subdual" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Poison" />
+      <add name="Disease" />
+      <add name="Ability Decrease" />
+      <add name="Knockdown" />
+      <add name="Negative Levels" />
+      <add name="Critical Hits" />
+      <add name="Death Magic" />
+      <add name="Petrification" />
+    </otherImmunities>
+    <spellImmunities>
+      <add name="Harm" />
+      <add name="Mass Harm" />
+      <add name="Word of Faith" />
+      <add name="Word of Balance" />
+      <add name="Implosion" />
+      <add name="Drown" />
+      <add name="Disintegrate" />
+      <add name="Bigbys Crushing Hand" />
+      <add name="Bigbys Grasping Hand" />
+      <add name="Flesh to Stone" />
+      <add name="Call of Stone" />
+      <add name="Cast in Stone" />
+      <add name="Contagion" />
+    </spellImmunities>
+  </creature>
+  <creature name="Thorn Hound" timeStamp="2012-07-30T19:12:27.0000000Z" race="Plant">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="5" />
+      <damage type="Piercing" immunity="90" resistance="5" />
+      <damage type="Slashing" immunity="0" resistance="10" />
+      <damage type="Acid" immunity="20" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="70" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="0" resistance="0" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Critical Hits" />
+    </otherImmunities>
+  </creature>
+  <creature name="Vegepygmy Guard" timeStamp="2012-07-30T19:12:53.0000000Z" race="Plant">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="10" />
+      <damage type="Piercing" immunity="90" resistance="45" />
+      <damage type="Slashing" immunity="0" resistance="5" />
+      <damage type="Acid" immunity="30" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="100" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="50" resistance="0" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Critical Hits" />
+    </otherImmunities>
+  </creature>
+  <creature name="Vegepygmy Rider" timeStamp="2012-06-24T19:32:08.0000000Z" race="Plant">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="0" />
+      <damage type="Piercing" immunity="90" resistance="45" />
+      <damage type="Slashing" immunity="0" resistance="15" />
+      <damage type="Acid" immunity="30" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="100" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="50" resistance="0" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Knockdown" />
+      <add name="Critical Hits" />
+    </otherImmunities>
+    <spellImmunities>
+      <add name="Bigbys Crushing Hand" />
+      <add name="Bigbys Grasping Hand" />
+    </spellImmunities>
+  </creature>
+  <creature name="Vegepygmy Singer" timeStamp="2012-07-30T19:15:41.0000000Z" race="Plant">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="5" />
+      <damage type="Piercing" immunity="90" resistance="45" />
+      <damage type="Slashing" immunity="0" resistance="5" />
+      <damage type="Acid" immunity="30" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="100" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="50" resistance="0" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Critical Hits" />
+      <add name="Petrification" />
+    </otherImmunities>
+    <spellImmunities>
+      <add name="Flesh to Stone" />
+      <add name="Call of Stone" />
+      <add name="Cast in Stone" />
+    </spellImmunities>
+  </creature>
+  <creature name="Vegepygmy Warrior" timeStamp="2012-07-30T19:12:56.0000000Z" race="Plant">
+    <damageImmunities>
+      <damage type="Bludgeoning" immunity="0" resistance="5" />
+      <damage type="Piercing" immunity="90" resistance="45" />
+      <damage type="Slashing" immunity="0" resistance="10" />
+      <damage type="Acid" immunity="30" resistance="5" />
+      <damage type="Cold" immunity="0" resistance="5" />
+      <damage type="Electrical" immunity="100" resistance="0" />
+      <damage type="Fire" immunity="0" resistance="5" />
+      <damage type="Sonic" immunity="50" resistance="0" />
+      <damage type="Divine" immunity="0" resistance="0" />
+      <damage type="Magical" immunity="0" resistance="0" />
+      <damage type="Negative" immunity="0" resistance="0" />
+      <damage type="Positive" immunity="0" resistance="5" />
+      <damage type="Ectoplasmic" immunity="0" resistance="0" />
+      <damage type="Internal" immunity="0" resistance="0" />
+      <damage type="Psionic" immunity="0" resistance="0" />
+      <damage type="Sacred" immunity="0" resistance="0" />
+      <damage type="Vile" immunity="0" resistance="0" />
+    </damageImmunities>
+    <otherImmunities>
+      <add name="Mind Spells" />
+      <add name="Critical Hits" />
+    </otherImmunities>
+  </creature>
+</creatures>

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Elite Chosen of Tiamat" race="Outsider" type="Elite" />
+  <creature name="Elite Swarm Master" base="Advespa" type="Elite">
+    <damageImmunities>
+      <damage type="Cold" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Frostweaver" base="Arachill" type="Elite">
+    <damageImmunities>
+      <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Ayperobos Horde" base="Ayperobos Swarm" type="Elite" />
+  <creature name="Elite Ephasiarch" base="Amnizu" type="Elite">
+    <damageImmunities>
+      <damage type="Cold" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Masterwork Baatorian Green Steel Golem" base="Baatorian Green Steel Golem" type="Elite">
+    <damageImmunities>
+      <damage type="Divine" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Barbazu Razor" base="Barbazu" type="Elite">
+    <damageImmunities>
+      <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Bezekira Prideleader" base="Bezekira" type="Elite">
+    <damageImmunities>
+      <damage type="Cold" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Brachina Seductrix" base="Brachina" type="Elite">
+    <damageImmunities>
+      <damage type="Positive" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Firstborn" base="Brood Serpent" type="Elite">
+    <damageImmunities>
+      <damage type="Magical" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Magebane" base="Bueroza" type="Elite">
+    <damageImmunities>
+      <damage type="Magical" healing="3" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Cinderscale Broodmother" base="Cinderscale" type="Elite">
+    <damageImmunities>
+      <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Rimeforged Assembly" base="Coldforge Construct" type="Elite">
+    <damageImmunities>
+      <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Cornugon Taskmaster" base="Cornugon" type="Elite">
+    <damageImmunities>
+      <damage type="Electrical" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Camizu" base="Dogai" type="Elite">
+    <damageImmunities>
+      <damage type="Acid" healing="3" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Erinyes Vitiarch" base="Erinyes" type="Elite">
+    <damageImmunities>
+      <damage type="Cold" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Excruciarch Inquisitor" base="Excruciarch" type="Elite">
+    <damageImmunities>
+      <damage type="Negative" healing="3" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Vexiarch" base="Falxugon" type="Elite">
+    <damageImmunities>
+      <damage type="Sonic" healing="3" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Gelidarch" base="Gelugon" type="Elite">
+    <damageImmunities>
+      <damage type="Cold" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Hamatula Scourge" base="Hamatula" type="Elite">
+    <damageImmunities>
+      <damage type="Negative" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Cereberean Hound" base="Hell Hound" type="Elite">
+    <damageImmunities>
+      <damage type="Electrical" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Cloacal Leech" base="Hell Leech" type="Elite">
+    <damageImmunities>
+      <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Spoliated Ichor" base="Ichor of the Fallen" type="Elite">
+    <damageImmunities>
+      <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Hyperborean Fiend" base="Ice Fiend" type="Elite">
+    <damageImmunities>
+      <damage type="Cold" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Algid Reaver" base="Ice Reaver" type="Elite">
+    <damageImmunities>
+      <damage type="Cold" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Hellion" base="Imp" type="Elite">
+    <damageImmunities>
+      <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Hellfire Engine" base="Infernal Machine" type="Elite">
+    <damageImmunities>
+      <damage type="Fire" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Infestiarch" base="Kocrachon" type="Elite">
+    <damageImmunities>
+      <damage type="Negative" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Kyton Legionnaire" base="Kyton" type="Elite">
+    <damageImmunities>
+      <damage type="Sonic" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Foul Lemure" base="Lemure" type="Elite">
+    <damageImmunities>
+      <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Fell Mistral" base="Living Cold" type="Elite">
+    <damageImmunities>
+      <damage type="Cold" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Unbound" base="Maelephant" type="Elite">
+    <damageImmunities>
+      <damage type="Positive" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Ravening Malebranche" base="Malebranche" type="Elite">
+    <damageImmunities>
+      <damage type="Electrical" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Effluviarch" base="Malefic Wind" type="Elite">
+    <damageImmunities>
+      <damage type="Electrical" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Dolorous Tear" base="Mammons Tears" type="Elite">
+    <damageImmunities>
+      <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Minauran Rotscale" base="Minauran Murkfiend" type="Elite">
+  	<damageImmunities>
+      <damage type="Negative" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Narzugon Eye" base="Narzugon" type="Elite">
+    <damageImmunities>
+      <damage type="Positive" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Elder Nag" base="Nightmare" type="Elite">
+    <damageImmunities>
+      <damage type="Fire" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Inchoate Baatorian" base="Nupperibo" type="Elite">
+    <damageImmunities>
+      <damage type="Electrical" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Orthon Fist" base="Orthon" type="Elite">
+    <damageImmunities>
+      <damage type="Divine" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Rachugon" base="Osyluth" type="Elite">
+    <damageImmunities>
+      <damage type="Cold" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Aspirant of the Eight" base="Pit Fiend" type="Elite">
+    <damageImmunities>
+      <damage type="Fire" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Phlogiston Ferment" base="Pyrexic Fume" type="Elite">
+    <damageImmunities>
+      <damage type="Fire" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Raja" base="Rakshasa" type="Elite">
+    <damageImmunities>
+      <damage type="Electrical" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Elder Sahuagin" base="Sahuagin" type="Elite">
+    <damageImmunities>
+      <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Hollow Soul" base="Soul Shell" type="Elite">
+    <damageImmunities>
+      <damage type="Negative" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Spiniarch" base="Spinagon" type="Elite">
+    <damageImmunities>
+      <damage type="Magical" healing="6" />
+    </damageImmunities>
+  </creature>
+  <creature name="Elite Fen Render" base="Swamp Devil" type="Elite">
+    <damageImmunities>
+      <damage type="Acid" healing="6" />
+    </damageImmunities>
+  </creature>
+</creatures>

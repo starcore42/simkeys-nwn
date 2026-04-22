@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+
+# Visual Studio / build outputs
+.vs/
+**/.vs/
+**/Release/
+**/x64/
+*.obj
+*.ipdb
+*.iobj
+*.ilk
+*.pdb
+*.idb
+*.tlog
+*.lastbuildstate
+*.vcxproj.user
+*.recipe
+*.Build.CppClean.log
+*.FileListAbsolute.txt
+*.log
+
+# SimKeys generated outputs
+SimKeysHook2/Release/
+SimKeysHook2/x64/
+SimKeysHook2/logs/
+
+# Large reverse-engineering reference dumps stay local only.
+docs/reverse-engineering/decompiles/
+
+# Third-party/reference copies stay local only.
+Hgx.Client/
+Hgx.Core/
+NWN Diamond/

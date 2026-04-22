@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Arendagrost" type="MiniBoss" />
+  <creature name="Demogorgon, Prince of Demons" base="Orcus" />
+  
+  <creature name="Verin" type="MiniBoss" />
+  <creature name="Graz'zt, Prince of Demons" base="Orcus" />
+  
+  <creature name="Shade of Miska" type="MiniBoss" />
+  <creature name="Obox-ob, Prince of Demons" base="Orcus" />
+  
+  <creature name="Quah-Nomag" type="MiniBoss" />
+  <creature name="Orcus, Prince of Demons" base="Orcus" />
+</creatures>

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+  <creature name="Superior Chosen of Tiamat" race="Outsider" type="Superior" />
+  <creature name="Superior Swarm Master" base="Advespa" type="Superior">
+    <damageImmunities>
+      <damage type="Cold" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Frostweaver" base="Arachill" type="Superior">
+    <damageImmunities>
+      <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Ayperobos Horde" base="Ayperobos Swarm" type="Superior" />
+  <creature name="Superior Ephasiarch" base="Amnizu" type="Superior">
+    <damageImmunities>
+      <damage type="Cold" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Masterwork Baatorian Green Steel Golem" base="Baatorian Green Steel Golem" type="Superior">
+    <damageImmunities>
+      <damage type="Divine" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Barbazu Razor" base="Barbazu" type="Superior">
+    <damageImmunities>
+      <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Bezekira Prideleader" base="Bezekira" type="Superior">
+    <damageImmunities>
+      <damage type="Cold" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Brachina Seductrix" base="Brachina" type="Superior">
+    <damageImmunities>
+      <damage type="Positive" healing="2" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Firstborn" base="Brood Serpent" type="Superior">
+    <damageImmunities>
+      <damage type="Magical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Magebane" base="Bueroza" type="Superior">
+    <damageImmunities>
+      <damage type="Magical" healing="2" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Cinderscale Broodmother" base="Cinderscale" type="Superior">
+    <damageImmunities>
+      <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Rimeforged Assembly" base="Coldforge Construct" type="Superior">
+    <damageImmunities>
+      <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Cornugon Taskmaster" base="Cornugon" type="Superior">
+    <damageImmunities>
+      <damage type="Electrical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Camizu" base="Dogai" type="Superior">
+    <damageImmunities>
+      <damage type="Acid" healing="2" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Erinyes Vitiarch" base="Erinyes" type="Superior">
+    <damageImmunities>
+      <damage type="Cold" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Excruciarch Inquisitor" base="Excruciarch" type="Superior">
+    <damageImmunities>
+      <damage type="Negative" healing="2" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Vexiarch" base="Falxugon" type="Superior">
+    <damageImmunities>
+      <damage type="Sonic" healing="2" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Gelidarch" base="Gelugon" type="Superior">
+    <damageImmunities>
+      <damage type="Cold" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Hamatula Scourge" base="Hamatula" type="Superior">
+    <damageImmunities>
+      <damage type="Negative" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Cereberean Hound" base="Hell Hound" type="Superior">
+    <damageImmunities>
+      <damage type="Electrical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Cloacal Leech" base="Hell Leech" type="Superior">
+    <damageImmunities>
+      <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Spoliated Ichor" base="Ichor of the Fallen" type="Superior">
+    <damageImmunities>
+      <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Hyperborean Fiend" base="Ice Fiend" type="Superior">
+    <damageImmunities>
+      <damage type="Cold" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Algid Reaver" base="Ice Reaver" type="Superior">
+    <damageImmunities>
+      <damage type="Cold" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Hellion" base="Imp" type="Superior">
+    <damageImmunities>
+      <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Hellfire Engine" base="Infernal Machine" type="Superior">
+    <damageImmunities>
+      <damage type="Fire" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Infestiarch" base="Kocrachon" type="Superior">
+    <damageImmunities>
+      <damage type="Negative" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Kyton Legionnaire" base="Kyton" type="Superior">
+    <damageImmunities>
+      <damage type="Sonic" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Foul Lemure" base="Lemure" type="Superior">
+    <damageImmunities>
+      <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Fell Mistral" base="Living Cold" type="Superior">
+    <damageImmunities>
+      <damage type="Cold" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Unbound" base="Maelephant" type="Superior">
+    <damageImmunities>
+      <damage type="Positive" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Ravening Malebranche" base="Malebranche" type="Superior">
+    <damageImmunities>
+      <damage type="Electrical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Effluviarch" base="Malefic Wind" type="Superior">
+    <damageImmunities>
+      <damage type="Electrical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Dolorous Tear" base="Mammons Tears" type="Superior">
+    <damageImmunities>
+      <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Minauran Rotscale" base="Minauran Murkfiend" type="Superior">
+	<damageImmunities>
+      <damage type="Negative" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Narzugon Eye" base="Narzugon" type="Superior">
+    <damageImmunities>
+      <damage type="Positive" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Elder Nag" base="Nightmare" type="Superior">
+    <damageImmunities>
+      <damage type="Fire" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Inchoate Baatorian" base="Nupperibo" type="Superior">
+    <damageImmunities>
+      <damage type="Electrical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Orthon Fist" base="Orthon" type="Superior">
+    <damageImmunities>
+      <damage type="Divine" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Rachugon" base="Osyluth" type="Superior">
+    <damageImmunities>
+      <damage type="Cold" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Aspirant of the Eight" base="Pit Fiend" type="Superior">
+    <damageImmunities>
+      <damage type="Fire" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Phlogiston Ferment" base="Pyrexic Fume" type="Superior">
+    <damageImmunities>
+      <damage type="Fire" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Raja" base="Rakshasa" type="Superior">
+    <damageImmunities>
+      <damage type="Electrical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Elder Sahuagin" base="Sahuagin" type="Superior">
+    <damageImmunities>
+      <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Hollow Soul" base="Soul Shell" type="Superior">
+    <damageImmunities>
+      <damage type="Negative" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Spiniarch" base="Spinagon" type="Superior">
+    <damageImmunities>
+      <damage type="Magical" healing="4" />
+    </damageImmunities>
+  </creature>
+  <creature name="Superior Fen Render" base="Swamp Devil" type="Superior">
+    <damageImmunities>
+      <damage type="Acid" healing="4" />
+    </damageImmunities>
+  </creature>
+</creatures>

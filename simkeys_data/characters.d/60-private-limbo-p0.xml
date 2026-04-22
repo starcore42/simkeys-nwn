@@ -1,0 +1,4331 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<creatures>
+<creature name="Amorphion" timeStamp="2020-12-04T04:45:31.022000Z" race="Construct">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="3" resistance="20" />
+		<damage type="Piercing" immunity="23" resistance="15" />
+		<damage type="Slashing" immunity="13" resistance="15" />
+		<damage type="Magical" immunity="90" resistance="10" />
+		<damage type="Acid" immunity="36" resistance="10" />
+		<damage type="Cold" immunity="90" resistance="15" healing="3" />
+		<damage type="Divine" immunity="30" resistance="0" />
+		<damage type="Electrical" immunity="46" resistance="10" />
+		<damage type="Fire" immunity="56" resistance="15" />
+		<damage type="Negative" immunity="56" resistance="10" />
+		<damage type="Positive" immunity="90" resistance="10" />
+		<damage type="Sonic" immunity="26" resistance="5" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="45" resistance="0" />
+		<damage type="Psionic" immunity="45" resistance="0" />
+		<damage type="Sacred" immunity="15" resistance="0" />
+		<damage type="Vile" immunity="15" resistance="0" />
+		<damage type="Primal" immunity="15" resistance="0" />
+		<damage type="Anarchic" immunity="45" resistance="0" />
+		<damage type="Axiomatic" immunity="45" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+		<add name="Crumble" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Anarchic Basilisk" timeStamp="2020-12-04T04:04:11.106000Z" race="Magical Beast">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="23" resistance="15" />
+		<damage type="Piercing" immunity="13" resistance="10" />
+		<damage type="Slashing" immunity="33" resistance="20" />
+		<damage type="Magical" immunity="90" resistance="5" />
+		<damage type="Acid" immunity="65" resistance="10" />
+		<damage type="Cold" immunity="15" resistance="10" />
+		<damage type="Divine" immunity="0" resistance="5" />
+		<damage type="Electrical" immunity="35" resistance="10" />
+		<damage type="Fire" immunity="15" resistance="15" />
+		<damage type="Negative" immunity="45" resistance="10" />
+		<damage type="Positive" immunity="60" resistance="10" />
+		<damage type="Sonic" immunity="35" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="30" resistance="0" />
+		<damage type="Psionic" immunity="45" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="37" resistance="0" />
+		<damage type="Axiomatic" immunity="37" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Entangle" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Anarchic Fox" timeStamp="2016-05-18T04:53:31.000000Z" race="Animal">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="30" resistance="10" />
+		<damage type="Piercing" immunity="20" resistance="5" />
+		<damage type="Slashing" immunity="40" resistance="10" />
+		<damage type="Magical" immunity="80" resistance="5" />
+		<damage type="Acid" immunity="30" resistance="10" />
+		<damage type="Cold" immunity="80" resistance="15" />
+		<damage type="Divine" immunity="0" resistance="5" />
+		<damage type="Electrical" immunity="50" resistance="10" />
+		<damage type="Fire" immunity="30" resistance="5" />
+		<damage type="Negative" immunity="70" resistance="10" />
+		<damage type="Positive" immunity="60" resistance="10" />
+		<damage type="Sonic" immunity="50" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="32" resistance="0" />
+		<damage type="Psionic" immunity="40" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="37" resistance="0" />
+		<damage type="Axiomatic" immunity="35" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Weird" />
+		<add name="Phantasmal Killer" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Paralysis" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Movement Speed Decrease" />
+		<add name="Saving Throw Decrease" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Anarchic Serpent" timeStamp="2017-01-13T04:15:50.000000Z" race="Animal">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="25" resistance="25" />
+		<damage type="Piercing" immunity="35" resistance="20" />
+		<damage type="Slashing" immunity="15" resistance="15" />
+		<damage type="Magical" immunity="70" resistance="10" />
+		<damage type="Acid" immunity="100" resistance="20" />
+		<damage type="Cold" immunity="30" resistance="20" />
+		<damage type="Divine" immunity="0" resistance="10" />
+		<damage type="Electrical" immunity="50" resistance="25" />
+		<damage type="Fire" immunity="30" resistance="20" />
+		<damage type="Negative" immunity="70" resistance="15" />
+		<damage type="Positive" immunity="70" resistance="15" />
+		<damage type="Sonic" immunity="30" resistance="20" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="35" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="35" resistance="0" />
+		<damage type="Axiomatic" immunity="35" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Weird" />
+		<add name="Phantasmal Killer" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Paralysis" />
+		<add name="Entangle" />
+		<add name="Sleep" />
+		<add name="Confuse" />
+		<add name="Movement Speed Decrease" />
+		<add name="Saving Throw Decrease" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+	</otherImmunities>
+</creature>
+<creature name="Anarchic Storm Giant" timeStamp="2018-09-22T03:35:42.174000Z" race="Giant">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="60" resistance="20" />
+		<damage type="Piercing" immunity="40" resistance="15" />
+		<damage type="Slashing" immunity="50" resistance="20" />
+		<damage type="Magical" immunity="70" resistance="0" />
+		<damage type="Acid" immunity="50" resistance="10" />
+		<damage type="Cold" immunity="60" resistance="10" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="0" resistance="0" healing="6" />
+		<damage type="Fire" immunity="50" resistance="15" />
+		<damage type="Negative" immunity="80" resistance="10" />
+		<damage type="Positive" immunity="70" resistance="10" />
+		<damage type="Sonic" immunity="60" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="37" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="37" resistance="0" />
+		<damage type="Axiomatic" immunity="35" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Daze" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Arucha" timeStamp="2020-12-04T04:24:38.394000Z" race="Ooze">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="100" resistance="20" />
+		<damage type="Piercing" immunity="50" resistance="15" />
+		<damage type="Slashing" immunity="70" resistance="15" />
+		<damage type="Magical" immunity="60" resistance="10" />
+		<damage type="Acid" immunity="0" resistance="0" healing="9" />
+		<damage type="Cold" immunity="30" resistance="10" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="50" resistance="10" />
+		<damage type="Fire" immunity="30" resistance="5" />
+		<damage type="Negative" immunity="20" resistance="5" />
+		<damage type="Positive" immunity="60" resistance="5" />
+		<damage type="Sonic" immunity="60" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="20" resistance="0" />
+		<damage type="Psionic" immunity="30" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="20" resistance="0" />
+		<damage type="Axiomatic" immunity="30" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Black Slaad" timeStamp="2020-12-04T04:17:55.597000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="50" resistance="20" />
+		<damage type="Piercing" immunity="40" resistance="20" />
+		<damage type="Slashing" immunity="30" resistance="10" />
+		<damage type="Magical" immunity="30" resistance="10" />
+		<damage type="Acid" immunity="0" resistance="0" healing="10" />
+		<damage type="Cold" immunity="60" resistance="5" />
+		<damage type="Divine" immunity="70" resistance="10" />
+		<damage type="Electrical" immunity="40" resistance="10" />
+		<damage type="Fire" immunity="60" resistance="5" />
+		<damage type="Negative" immunity="70" resistance="5" />
+		<damage type="Positive" immunity="50" resistance="5" />
+		<damage type="Sonic" immunity="100" resistance="25" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="30" resistance="0" />
+		<damage type="Psionic" immunity="15" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="25" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Mordenkainens Disjunction" />
+		<add name="Word of Faith" />
+		<add name="Word of Balance" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Silence" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Bloodthorn" timeStamp="2018-09-22T04:19:19.097000Z" race="Plant">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="35" resistance="35" />
+		<damage type="Piercing" immunity="25" resistance="35" />
+		<damage type="Slashing" immunity="15" resistance="25" />
+		<damage type="Magical" immunity="60" resistance="5" />
+		<damage type="Acid" immunity="60" resistance="15" />
+		<damage type="Cold" immunity="30" resistance="5" />
+		<damage type="Divine" immunity="0" resistance="5" />
+		<damage type="Electrical" immunity="50" resistance="10" />
+		<damage type="Fire" immunity="50" resistance="10" />
+		<damage type="Negative" immunity="50" resistance="10" />
+		<damage type="Positive" immunity="100" resistance="10" />
+		<damage type="Sonic" immunity="50" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="37" resistance="0" />
+		<damage type="Psionic" immunity="30" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="27" resistance="0" />
+		<damage type="Axiomatic" immunity="40" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Blue Slaad" timeStamp="2020-12-04T03:36:32.025000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="45" />
+		<damage type="Piercing" immunity="30" resistance="45" />
+		<damage type="Slashing" immunity="20" resistance="40" />
+		<damage type="Magical" immunity="90" resistance="40" />
+		<damage type="Acid" immunity="0" resistance="0" healing="4" />
+		<damage type="Cold" immunity="50" resistance="35" />
+		<damage type="Divine" immunity="80" resistance="40" />
+		<damage type="Electrical" immunity="20" resistance="40" />
+		<damage type="Fire" immunity="50" resistance="35" />
+		<damage type="Negative" immunity="30" resistance="35" />
+		<damage type="Positive" immunity="20" resistance="35" />
+		<damage type="Sonic" immunity="100" resistance="45" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="12" resistance="0" />
+		<damage type="Psionic" immunity="45" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="30" resistance="0" />
+		<damage type="Axiomatic" immunity="27" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Word of Faith" />
+		<add name="Word of Balance" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Entangle" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Daze" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Bodak" timeStamp="2018-09-15T03:53:57.058000Z" race="Undead">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="0" />
+		<damage type="Piercing" immunity="20" resistance="0" />
+		<damage type="Slashing" immunity="30" resistance="0" />
+		<damage type="Magical" immunity="80" resistance="5" />
+		<damage type="Acid" immunity="60" resistance="5" />
+		<damage type="Cold" immunity="20" resistance="5" />
+		<damage type="Divine" immunity="30" resistance="0" />
+		<damage type="Electrical" immunity="70" resistance="5" />
+		<damage type="Fire" immunity="70" resistance="5" />
+		<damage type="Negative" immunity="0" resistance="10" healing="6" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="0" resistance="5" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="40" resistance="0" />
+		<damage type="Sacred" immunity="15" resistance="0" />
+		<damage type="Vile" immunity="15" resistance="0" />
+		<damage type="Primal" immunity="15" resistance="0" />
+		<damage type="Anarchic" immunity="22" resistance="0" />
+		<damage type="Axiomatic" immunity="22" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Forceful Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Ability Decrease" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Chaond Primalist" timeStamp="2016-05-18T03:15:47.000000Z" race="Half-Orc">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="30" resistance="10" />
+		<damage type="Piercing" immunity="20" resistance="5" />
+		<damage type="Slashing" immunity="30" resistance="10" />
+		<damage type="Magical" immunity="80" resistance="10" />
+		<damage type="Acid" immunity="30" resistance="10" />
+		<damage type="Cold" immunity="50" resistance="10" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="40" resistance="10" />
+		<damage type="Fire" immunity="50" resistance="10" />
+		<damage type="Negative" immunity="30" resistance="5" />
+		<damage type="Positive" immunity="30" resistance="5" />
+		<damage type="Sonic" immunity="70" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="15" resistance="0" />
+		<damage type="Psionic" immunity="40" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="27" resistance="0" />
+		<damage type="Axiomatic" immunity="27" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Saving Throw Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Chaond Vandal" timeStamp="2016-05-15T19:48:10.000000Z" race="Half-Orc">
+      <damageImmunities>
+        <damage type="Bludgeoning" immunity="70" resistance="15" />
+        <damage type="Piercing" immunity="60" resistance="5" />
+        <damage type="Slashing" immunity="70" resistance="15" />
+        <damage type="Magical" immunity="80" resistance="10" />
+        <damage type="Acid" immunity="30" resistance="10" />
+        <damage type="Cold" immunity="50" resistance="10" />
+        <damage type="Divine" immunity="80" resistance="10" />
+        <damage type="Electrical" immunity="40" resistance="10" />
+        <damage type="Fire" immunity="50" resistance="10" />
+        <damage type="Negative" immunity="30" resistance="5" />
+        <damage type="Positive" immunity="30" resistance="5" />
+        <damage type="Sonic" immunity="70" resistance="15" />
+        <damage type="Subdual" immunity="0" resistance="0" />
+        <damage type="Ectoplasmic" immunity="15" resistance="0" />
+        <damage type="Psionic" immunity="40" resistance="0" />
+        <damage type="Sacred" immunity="40" resistance="0" />
+        <damage type="Vile" immunity="40" resistance="0" />
+        <damage type="Primal" immunity="40" resistance="0" />
+        <damage type="Anarchic" immunity="27" resistance="0" />
+        <damage type="Axiomatic" immunity="27" resistance="0" />
+        <damage type="Internal" immunity="0" resistance="0" />
+    </damageImmunities>
+    <spellImmunities>
+        <add name="Harm" />
+        <add name="Mass Harm" />
+        <add name="Implosion" />
+        <add name="Drown" />
+        <add name="Disintegrate" />
+        <add name="Bigbys Crushing Hand" />
+        <add name="Bigbys Grasping Hand" />
+    </spellImmunities>
+    <otherImmunities>
+        <add name="Poison" />
+        <add name="Disease" />
+        <add name="Paralysis" />
+        <add name="Slow" />
+        <add name="Stun" />
+        <add name="Sleep" />
+        <add name="Charm" />
+        <add name="Dominate" />
+        <add name="Confuse" />
+        <add name="Daze" />
+        <add name="Movement Speed Decrease" />
+        <add name="Saving Throw Decrease" />
+        <add name="Knockdown" />
+        <add name="Death Magic" />
+    </otherImmunities>
+    </creature>
+<creature name="Chaos Drake" timeStamp="2020-12-04T03:19:41.868000Z" race="Dragon">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="23" resistance="35" />
+		<damage type="Piercing" immunity="13" resistance="30" />
+		<damage type="Slashing" immunity="33" resistance="30" />
+		<damage type="Magical" immunity="60" resistance="5" />
+		<damage type="Acid" immunity="35" resistance="30" />
+		<damage type="Cold" immunity="35" resistance="30" />
+		<damage type="Divine" immunity="50" resistance="10" />
+		<damage type="Electrical" immunity="35" resistance="30" />
+		<damage type="Fire" immunity="35" resistance="30" />
+		<damage type="Negative" immunity="35" resistance="10" />
+		<damage type="Positive" immunity="60" resistance="5" />
+		<damage type="Sonic" immunity="25" resistance="35" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="30" resistance="0" />
+		<damage type="Sacred" immunity="25" resistance="0" />
+		<damage type="Vile" immunity="25" resistance="0" />
+		<damage type="Primal" immunity="25" resistance="0" />
+		<damage type="Anarchic" immunity="27" resistance="0" />
+		<damage type="Axiomatic" immunity="30" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Chaos Phage Swarm" timeStamp="2020-12-04T03:50:12.087000Z" race="Shapechanger">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="100" resistance="45" />
+		<damage type="Piercing" immunity="100" resistance="45" />
+		<damage type="Slashing" immunity="100" resistance="45" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="100" resistance="10" />
+		<damage type="Cold" immunity="50" resistance="10" />
+		<damage type="Divine" immunity="90" resistance="15" />
+		<damage type="Electrical" immunity="30" resistance="10" />
+		<damage type="Fire" immunity="20" resistance="10" />
+		<damage type="Negative" immunity="60" resistance="5" />
+		<damage type="Positive" immunity="60" resistance="5" />
+		<damage type="Sonic" immunity="30" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="30" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="45" resistance="0" />
+		<damage type="Vile" immunity="45" resistance="0" />
+		<damage type="Primal" immunity="45" resistance="0" />
+		<damage type="Anarchic" immunity="17" resistance="0" />
+		<damage type="Axiomatic" immunity="17" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Chaos Roc" timeStamp="2017-01-13T04:42:24.000000Z" race="Magical Beast">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="10" />
+		<damage type="Piercing" immunity="40" resistance="20" />
+		<damage type="Slashing" immunity="30" resistance="20" />
+		<damage type="Magical" immunity="70" resistance="10" />
+		<damage type="Acid" immunity="70" resistance="10" />
+		<damage type="Cold" immunity="90" resistance="10" />
+		<damage type="Divine" immunity="70" resistance="10" />
+		<damage type="Electrical" immunity="80" resistance="10" />
+		<damage type="Fire" immunity="40" resistance="10" />
+		<damage type="Negative" immunity="70" resistance="5" />
+		<damage type="Positive" immunity="90" resistance="5" />
+		<damage type="Sonic" immunity="100" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="40" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="35" resistance="0" />
+		<damage type="Axiomatic" immunity="40" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Movement Speed Decrease" />
+		<add name="Saving Throw Decrease" />
+		<add name="Knockdown" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Death Slaad" timeStamp="2020-12-04T04:12:17.213000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="60" resistance="15" />
+		<damage type="Piercing" immunity="50" resistance="25" />
+		<damage type="Slashing" immunity="60" resistance="10" />
+		<damage type="Magical" immunity="20" resistance="10" />
+		<damage type="Acid" immunity="0" resistance="0" healing="8" />
+		<damage type="Cold" immunity="50" resistance="5" />
+		<damage type="Divine" immunity="60" resistance="10" />
+		<damage type="Electrical" immunity="30" resistance="5" />
+		<damage type="Fire" immunity="50" resistance="0" />
+		<damage type="Negative" immunity="10" resistance="0" />
+		<damage type="Positive" immunity="30" resistance="0" />
+		<damage type="Sonic" immunity="100" resistance="25" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="15" resistance="0" />
+		<damage type="Psionic" immunity="10" resistance="0" />
+		<damage type="Sacred" immunity="30" resistance="0" />
+		<damage type="Vile" immunity="30" resistance="0" />
+		<damage type="Primal" immunity="30" resistance="0" />
+		<damage type="Anarchic" immunity="10" resistance="0" />
+		<damage type="Axiomatic" immunity="15" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Word of Faith" />
+		<add name="Word of Balance" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Discordant Soul" timeStamp="2017-01-13T03:48:18.000000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="35" resistance="10" />
+		<damage type="Piercing" immunity="25" resistance="5" />
+		<damage type="Slashing" immunity="15" resistance="5" />
+		<damage type="Magical" immunity="50" resistance="10" />
+		<damage type="Acid" immunity="50" resistance="10" />
+		<damage type="Cold" immunity="50" resistance="10" />
+		<damage type="Divine" immunity="60" resistance="5" />
+		<damage type="Electrical" immunity="50" resistance="10" />
+		<damage type="Fire" immunity="50" resistance="10" />
+		<damage type="Negative" immunity="50" resistance="10" />
+		<damage type="Positive" immunity="60" resistance="5" />
+		<damage type="Sonic" immunity="40" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="25" resistance="0" />
+		<damage type="Sacred" immunity="30" resistance="0" />
+		<damage type="Vile" immunity="30" resistance="0" />
+		<damage type="Primal" immunity="30" resistance="0" />
+		<damage type="Anarchic" immunity="25" resistance="0" />
+		<damage type="Axiomatic" immunity="27" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Weird" />
+		<add name="Phantasmal Killer" />
+		<add name="Drown" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Entangle" />
+		<add name="Sleep" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Saving Throw Decrease" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Doppelganger" timeStamp="2016-05-18T04:42:03.000000Z" race="Shapechanger">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="70" resistance="15" />
+		<damage type="Piercing" immunity="70" resistance="15" />
+		<damage type="Slashing" immunity="70" resistance="15" />
+		<damage type="Magical" immunity="60" resistance="0" />
+		<damage type="Acid" immunity="40" resistance="10" />
+		<damage type="Cold" immunity="40" resistance="10" />
+		<damage type="Divine" immunity="70" resistance="15" />
+		<damage type="Electrical" immunity="80" resistance="20" />
+		<damage type="Fire" immunity="20" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="15" />
+		<damage type="Positive" immunity="80" resistance="0" />
+		<damage type="Sonic" immunity="60" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="22" resistance="0" />
+		<damage type="Psionic" immunity="30" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="17" resistance="0" />
+		<damage type="Axiomatic" immunity="35" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="AC Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Entropic Reaper" timeStamp="2020-12-04T03:56:00.114000Z" race="Undead">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="13" resistance="5" />
+		<damage type="Piercing" immunity="63" resistance="10" />
+		<damage type="Slashing" immunity="63" resistance="10" />
+		<damage type="Magical" immunity="50" resistance="10" />
+		<damage type="Acid" immunity="35" resistance="10" />
+		<damage type="Cold" immunity="100" resistance="15" />
+		<damage type="Divine" immunity="60" resistance="10" />
+		<damage type="Electrical" immunity="25" resistance="10" />
+		<damage type="Fire" immunity="5" resistance="5" />
+		<damage type="Negative" immunity="0" resistance="0" healing="6" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="15" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="25" resistance="0" />
+		<damage type="Sacred" immunity="30" resistance="0" />
+		<damage type="Vile" immunity="30" resistance="0" />
+		<damage type="Primal" immunity="30" resistance="0" />
+		<damage type="Anarchic" immunity="15" resistance="0" />
+		<damage type="Axiomatic" immunity="15" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Eolian" timeStamp="2018-09-22T03:27:07.308000Z" race="Elemental">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="20" />
+		<damage type="Piercing" immunity="40" resistance="20" />
+		<damage type="Slashing" immunity="30" resistance="10" />
+		<damage type="Magical" immunity="30" resistance="5" />
+		<damage type="Acid" immunity="40" resistance="10" />
+		<damage type="Cold" immunity="60" resistance="15" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="0" resistance="0" healing="6" />
+		<damage type="Fire" immunity="0" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="100" resistance="10" />
+		<damage type="Sonic" immunity="60" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="15" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="10" resistance="0" />
+		<damage type="Axiomatic" immunity="32" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Erdeen" timeStamp="2018-09-15T03:04:34.656000Z" race="Elemental">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="35" />
+		<damage type="Piercing" immunity="40" resistance="45" />
+		<damage type="Slashing" immunity="40" resistance="45" />
+		<damage type="Magical" immunity="30" resistance="5" />
+		<damage type="Acid" immunity="70" resistance="35" />
+		<damage type="Cold" immunity="0" resistance="40" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="80" resistance="40" />
+		<damage type="Fire" immunity="70" resistance="40" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="100" resistance="10" />
+		<damage type="Sonic" immunity="0" resistance="0" healing="6" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="15" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="10" resistance="0" />
+		<damage type="Axiomatic" immunity="32" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Feral Elf Archer" timeStamp="2016-05-15T20:07:23.000000Z" race="Elf">
+      <damageImmunities>
+        <damage type="Bludgeoning" immunity="30" resistance="10" />
+        <damage type="Piercing" immunity="40" resistance="10" />
+        <damage type="Slashing" immunity="20" resistance="5" />
+        <damage type="Magical" immunity="30" resistance="5" />
+        <damage type="Acid" immunity="60" resistance="10" />
+        <damage type="Cold" immunity="70" resistance="15" />
+        <damage type="Divine" immunity="80" resistance="15" />
+        <damage type="Electrical" immunity="40" resistance="10" />
+        <damage type="Fire" immunity="30" resistance="10" />
+        <damage type="Negative" immunity="0" resistance="0" />
+        <damage type="Positive" immunity="100" resistance="10" />
+        <damage type="Sonic" immunity="40" resistance="10" />
+        <damage type="Subdual" immunity="0" resistance="0" />
+        <damage type="Ectoplasmic" immunity="27" resistance="0" />
+        <damage type="Psionic" immunity="15" resistance="0" />
+        <damage type="Sacred" immunity="40" resistance="0" />
+        <damage type="Vile" immunity="40" resistance="0" />
+        <damage type="Primal" immunity="40" resistance="0" />
+        <damage type="Anarchic" immunity="10" resistance="0" />
+        <damage type="Axiomatic" immunity="32" resistance="0" />
+        <damage type="Internal" immunity="0" resistance="0" />
+    </damageImmunities>
+    <spellImmunities>
+        <add name="Implosion" />
+        <add name="Drown" />
+        <add name="Disintegrate" />
+        <add name="Flesh to Stone" />
+        <add name="Call of Stone" />
+        <add name="Cast in Stone" />
+        <add name="Freedom of Movement" />
+    </spellImmunities>
+    <otherImmunities>
+        <add name="Poison" />
+        <add name="Disease" />
+        <add name="Fear" />
+        <add name="Paralysis" />
+        <add name="Slow" />
+        <add name="Entangle" />
+        <add name="Stun" />
+        <add name="Sleep" />
+        <add name="Confuse" />
+        <add name="Daze" />
+        <add name="Movement Speed Decrease" />
+        <add name="Knockdown" />
+        <add name="Petrification" />
+    </otherImmunities>
+    </creature>
+    <creature name="Feral Elf Skinwalker" timeStamp="2016-05-15T20:53:48.000000Z" race="Elf">
+      <damageImmunities>
+        <damage type="Bludgeoning" immunity="30" resistance="10" />
+        <damage type="Piercing" immunity="40" resistance="5" />
+        <damage type="Slashing" immunity="20" resistance="5" />
+        <damage type="Magical" immunity="30" resistance="5" />
+        <damage type="Acid" immunity="60" resistance="10" />
+        <damage type="Cold" immunity="70" resistance="15" />
+        <damage type="Divine" immunity="80" resistance="15" />
+        <damage type="Electrical" immunity="40" resistance="10" />
+        <damage type="Fire" immunity="30" resistance="10" />
+        <damage type="Negative" immunity="0" resistance="0" />
+        <damage type="Positive" immunity="100" resistance="10" />
+        <damage type="Sonic" immunity="40" resistance="10" />
+        <damage type="Subdual" immunity="0" resistance="0" />
+        <damage type="Ectoplasmic" immunity="27" resistance="0" />
+        <damage type="Psionic" immunity="15" resistance="0" />
+        <damage type="Sacred" immunity="40" resistance="0" />
+        <damage type="Vile" immunity="40" resistance="0" />
+        <damage type="Primal" immunity="40" resistance="0" />
+        <damage type="Anarchic" immunity="10" resistance="0" />
+        <damage type="Axiomatic" immunity="32" resistance="0" />
+        <damage type="Internal" immunity="0" resistance="0" />
+    </damageImmunities>
+    <spellImmunities>
+        <add name="Implosion" />
+        <add name="Drown" />
+        <add name="Disintegrate" />
+        <add name="Bigbys Crushing Hand" />
+        <add name="Bigbys Grasping Hand" />
+        <add name="Flesh to Stone" />
+        <add name="Call of Stone" />
+        <add name="Cast in Stone" />
+    </spellImmunities>
+    <otherImmunities>
+        <add name="Poison" />
+        <add name="Disease" />
+        <add name="Fear" />
+        <add name="Paralysis" />
+        <add name="Stun" />
+        <add name="Sleep" />
+        <add name="Confuse" />
+        <add name="Daze" />
+        <add name="Knockdown" />
+        <add name="Death Magic" />
+        <add name="Petrification" />
+    </otherImmunities>
+    </creature>
+    <creature name="Feral Elf Skirmisher" timeStamp="2016-05-15T20:23:57.000000Z" race="Elf">
+      <damageImmunities>
+        <damage type="Bludgeoning" immunity="30" resistance="10" />
+        <damage type="Piercing" immunity="40" resistance="10" />
+        <damage type="Slashing" immunity="20" resistance="10" />
+        <damage type="Magical" immunity="30" resistance="5" />
+        <damage type="Acid" immunity="60" resistance="10" />
+        <damage type="Cold" immunity="70" resistance="15" />
+        <damage type="Divine" immunity="80" resistance="15" />
+        <damage type="Electrical" immunity="40" resistance="10" />
+        <damage type="Fire" immunity="30" resistance="10" />
+        <damage type="Negative" immunity="0" resistance="0" />
+        <damage type="Positive" immunity="100" resistance="10" />
+        <damage type="Sonic" immunity="40" resistance="10" />
+        <damage type="Subdual" immunity="0" resistance="0" />
+        <damage type="Ectoplasmic" immunity="27" resistance="0" />
+        <damage type="Psionic" immunity="15" resistance="0" />
+        <damage type="Sacred" immunity="40" resistance="0" />
+        <damage type="Vile" immunity="40" resistance="0" />
+        <damage type="Primal" immunity="40" resistance="0" />
+        <damage type="Anarchic" immunity="10" resistance="0" />
+        <damage type="Axiomatic" immunity="32" resistance="0" />
+        <damage type="Internal" immunity="0" resistance="0" />
+    </damageImmunities>
+    <spellImmunities>
+        <add name="Implosion" />
+        <add name="Drown" />
+        <add name="Disintegrate" />
+        <add name="Bigbys Crushing Hand" />
+        <add name="Bigbys Grasping Hand" />
+        <add name="Flesh to Stone" />
+        <add name="Call of Stone" />
+        <add name="Cast in Stone" />
+    </spellImmunities>
+    <otherImmunities>
+        <add name="Poison" />
+        <add name="Disease" />
+        <add name="Fear" />
+        <add name="Paralysis" />
+        <add name="Slow" />
+        <add name="Entangle" />
+        <add name="Stun" />
+        <add name="Sleep" />
+        <add name="Daze" />
+        <add name="Movement Speed Decrease" />
+        <add name="Knockdown" />
+        <add name="Death Magic" />
+        <add name="Petrification" />
+    </otherImmunities>
+    </creature>
+    <creature name="Feral Elf Stormwarden" timeStamp="2016-05-18T06:20:29.000000Z" race="Elf">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="30" resistance="5" />
+		<damage type="Piercing" immunity="40" resistance="5" />
+		<damage type="Slashing" immunity="20" resistance="5" />
+		<damage type="Magical" immunity="30" resistance="5" />
+		<damage type="Acid" immunity="60" resistance="10" />
+		<damage type="Cold" immunity="70" resistance="15" />
+		<damage type="Divine" immunity="80" resistance="15" />
+		<damage type="Electrical" immunity="100" resistance="10" />
+		<damage type="Fire" immunity="30" resistance="10" />
+		<damage type="Negative" immunity="0" resistance="0" />
+		<damage type="Positive" immunity="100" resistance="10" />
+		<damage type="Sonic" immunity="100" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="15" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="10" resistance="0" />
+		<damage type="Axiomatic" immunity="32" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Weird" />
+		<add name="Phantasmal Killer" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Gibbering Mouther" timeStamp="2020-12-04T03:40:56.554000Z" race="Aberration">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="74" resistance="15" />
+		<damage type="Piercing" immunity="6" resistance="10" />
+		<damage type="Slashing" immunity="6" resistance="20" />
+		<damage type="Magical" immunity="20" resistance="0" />
+		<damage type="Acid" immunity="100" resistance="10" />
+		<damage type="Cold" immunity="74" resistance="10" />
+		<damage type="Divine" immunity="100" resistance="10" />
+		<damage type="Electrical" immunity="14" resistance="10" />
+		<damage type="Fire" immunity="44" resistance="10" />
+		<damage type="Negative" immunity="64" resistance="10" />
+		<damage type="Positive" immunity="60" resistance="0" />
+		<damage type="Sonic" immunity="100" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="32" resistance="0" />
+		<damage type="Psionic" immunity="10" resistance="0" />
+		<damage type="Sacred" immunity="50" resistance="0" />
+		<damage type="Vile" immunity="50" resistance="0" />
+		<damage type="Primal" immunity="50" resistance="0" />
+		<damage type="Anarchic" immunity="22" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+	</otherImmunities>
+</creature>
+    <creature name="Gibbering Orb" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+        <damageImmunities>
+        </damageImmunities>
+    </creature>
+    <creature name="Gith-attala" timeStamp="2017-01-13T04:56:03.000000Z" race="Monstrous Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="15" />
+		<damage type="Piercing" immunity="40" resistance="20" />
+		<damage type="Slashing" immunity="30" resistance="20" />
+		<damage type="Magical" immunity="80" resistance="10" />
+		<damage type="Acid" immunity="40" resistance="5" />
+		<damage type="Cold" immunity="90" resistance="20" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="40" resistance="5" />
+		<damage type="Fire" immunity="90" resistance="15" />
+		<damage type="Negative" immunity="80" resistance="10" />
+		<damage type="Positive" immunity="10" resistance="0" />
+		<damage type="Sonic" immunity="30" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="25" resistance="0" />
+		<damage type="Psionic" immunity="40" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="40" resistance="0" />
+		<damage type="Axiomatic" immunity="25" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Forceful Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Attack Decrease" />
+		<add name="Damage Decrease" />
+		<add name="Skill Decrease" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Githyanki Avenger" timeStamp="2016-05-15T19:44:26.000000Z" race="Monstrous Humanoid">
+      <damageImmunities>
+        <damage type="Bludgeoning" immunity="0" resistance="0" />
+        <damage type="Piercing" immunity="0" resistance="0" />
+        <damage type="Slashing" immunity="0" resistance="0" />
+        <damage type="Magical" immunity="70" resistance="10" />
+        <damage type="Acid" immunity="60" resistance="5" />
+        <damage type="Cold" immunity="70" resistance="20" />
+        <damage type="Divine" immunity="70" resistance="10" />
+        <damage type="Electrical" immunity="40" resistance="5" />
+        <damage type="Fire" immunity="100" resistance="15" />
+        <damage type="Negative" immunity="70" resistance="10" />
+        <damage type="Positive" immunity="30" resistance="0" />
+        <damage type="Sonic" immunity="50" resistance="10" />
+        <damage type="Subdual" immunity="0" resistance="0" />
+        <damage type="Ectoplasmic" immunity="25" resistance="0" />
+        <damage type="Psionic" immunity="35" resistance="0" />
+        <damage type="Sacred" immunity="35" resistance="0" />
+        <damage type="Vile" immunity="35" resistance="0" />
+        <damage type="Primal" immunity="35" resistance="0" />
+        <damage type="Anarchic" immunity="35" resistance="0" />
+        <damage type="Axiomatic" immunity="25" resistance="0" />
+        <damage type="Internal" immunity="0" resistance="0" />
+    </damageImmunities>
+    <spellImmunities>
+        <add name="Harm" />
+        <add name="Mass Harm" />
+        <add name="Implosion" />
+        <add name="Drown" />
+        <add name="Disintegrate" />
+        <add name="Bigbys Crushing Hand" />
+        <add name="Bigbys Grasping Hand" />
+        <add name="Bigbys Interposing Hand" />
+        <add name="Flesh to Stone" />
+        <add name="Call of Stone" />
+        <add name="Cast in Stone" />
+    </spellImmunities>
+    <otherImmunities>
+        <add name="Poison" />
+        <add name="Fear" />
+        <add name="Paralysis" />
+        <add name="Blindness" />
+        <add name="Slow" />
+        <add name="Entangle" />
+        <add name="Stun" />
+        <add name="Sleep" />
+        <add name="Confuse" />
+        <add name="Daze" />
+        <add name="Movement Speed Decrease" />
+        <add name="Knockdown" />
+        <add name="Sneak Attack" />
+        <add name="Critical Hits" />
+        <add name="Death Magic" />
+        <add name="Petrification" />
+    </otherImmunities>
+    </creature>
+    <creature name="Githzerai Chaosweaver" timeStamp="2016-05-18T04:04:57.000000Z" race="Monstrous Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="5" />
+		<damage type="Piercing" immunity="40" resistance="10" />
+		<damage type="Slashing" immunity="30" resistance="10" />
+		<damage type="Magical" immunity="70" resistance="10" />
+		<damage type="Acid" immunity="30" resistance="5" />
+		<damage type="Cold" immunity="80" resistance="20" />
+		<damage type="Divine" immunity="70" resistance="10" />
+		<damage type="Electrical" immunity="30" resistance="5" />
+		<damage type="Fire" immunity="80" resistance="15" />
+		<damage type="Negative" immunity="70" resistance="10" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="20" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="20" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="35" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Entangle" />
+		<add name="Knockdown" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Githzerai Monast" timeStamp="2016-05-18T03:16:35.000000Z" race="Monstrous Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="20" />
+		<damage type="Piercing" immunity="40" resistance="15" />
+		<damage type="Slashing" immunity="30" resistance="15" />
+		<damage type="Magical" immunity="70" resistance="10" />
+		<damage type="Acid" immunity="30" resistance="5" />
+		<damage type="Cold" immunity="80" resistance="20" />
+		<damage type="Divine" immunity="70" resistance="10" />
+		<damage type="Electrical" immunity="30" resistance="5" />
+		<damage type="Fire" immunity="80" resistance="15" />
+		<damage type="Negative" immunity="70" resistance="10" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="20" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="20" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="35" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="AC Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Githzerai Stalker" timeStamp="2016-05-15T21:09:04.000000Z" race="Monstrous Humanoid">
+      <damageImmunities>
+        <damage type="Bludgeoning" immunity="20" resistance="30" />
+        <damage type="Piercing" immunity="40" resistance="30" />
+        <damage type="Slashing" immunity="30" resistance="20" />
+        <damage type="Magical" immunity="70" resistance="10" />
+        <damage type="Acid" immunity="30" resistance="20" />
+        <damage type="Cold" immunity="80" resistance="40" />
+        <damage type="Divine" immunity="70" resistance="10" />
+        <damage type="Electrical" immunity="30" resistance="20" />
+        <damage type="Fire" immunity="80" resistance="35" />
+        <damage type="Negative" immunity="70" resistance="10" />
+        <damage type="Positive" immunity="0" resistance="0" />
+        <damage type="Sonic" immunity="20" resistance="30" />
+        <damage type="Subdual" immunity="0" resistance="0" />
+        <damage type="Ectoplasmic" immunity="20" resistance="0" />
+        <damage type="Psionic" immunity="35" resistance="0" />
+        <damage type="Sacred" immunity="35" resistance="0" />
+        <damage type="Vile" immunity="35" resistance="0" />
+        <damage type="Primal" immunity="35" resistance="0" />
+        <damage type="Anarchic" immunity="35" resistance="0" />
+        <damage type="Axiomatic" immunity="20" resistance="0" />
+        <damage type="Internal" immunity="0" resistance="0" />
+    </damageImmunities>
+    <spellImmunities>
+        <add name="Harm" />
+        <add name="Mass Harm" />
+        <add name="Drown" />
+        <add name="Bigbys Crushing Hand" />
+        <add name="Bigbys Grasping Hand" />
+        <add name="Flesh to Stone" />
+        <add name="Call of Stone" />
+        <add name="Cast in Stone" />
+    </spellImmunities>
+    <otherImmunities>
+        <add name="Poison" />
+        <add name="Disease" />
+        <add name="Fear" />
+        <add name="Stun" />
+        <add name="Sleep" />
+        <add name="Confuse" />
+        <add name="Daze" />
+        <add name="Knockdown" />
+        <add name="Death Magic" />
+        <add name="Petrification" />
+    </otherImmunities>
+    </creature>
+    <creature name="Githzerai Zerth" timeStamp="2017-01-13T05:04:41.000000Z" race="Monstrous Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="15" />
+		<damage type="Piercing" immunity="40" resistance="20" />
+		<damage type="Slashing" immunity="30" resistance="20" />
+		<damage type="Magical" immunity="70" resistance="10" />
+		<damage type="Acid" immunity="30" resistance="5" />
+		<damage type="Cold" immunity="80" resistance="20" />
+		<damage type="Divine" immunity="70" resistance="10" />
+		<damage type="Electrical" immunity="30" resistance="5" />
+		<damage type="Fire" immunity="80" resistance="15" />
+		<damage type="Negative" immunity="70" resistance="10" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="20" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="20" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="35" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Forceful Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Attack Decrease" />
+		<add name="Damage Decrease" />
+		<add name="Skill Decrease" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Green Slaad" timeStamp="2018-09-15T03:25:03.032000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="20" />
+		<damage type="Piercing" immunity="30" resistance="20" />
+		<damage type="Slashing" immunity="20" resistance="10" />
+		<damage type="Magical" immunity="80" resistance="10" />
+		<damage type="Acid" immunity="0" resistance="60" healing="6" />
+		<damage type="Cold" immunity="60" resistance="5" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="50" resistance="10" />
+		<damage type="Fire" immunity="60" resistance="5" />
+		<damage type="Negative" immunity="30" resistance="5" />
+		<damage type="Positive" immunity="30" resistance="5" />
+		<damage type="Sonic" immunity="100" resistance="25" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="15" resistance="0" />
+		<damage type="Psionic" immunity="40" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="27" resistance="0" />
+		<damage type="Axiomatic" immunity="27" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Word of Faith" />
+		<add name="Word of Balance" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Gremlin" timeStamp="2016-05-18T03:20:24.000000Z" race="Fey">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="5" />
+		<damage type="Piercing" immunity="40" resistance="10" />
+		<damage type="Slashing" immunity="30" resistance="5" />
+		<damage type="Magical" immunity="70" resistance="10" />
+		<damage type="Acid" immunity="30" resistance="10" />
+		<damage type="Cold" immunity="60" resistance="15" />
+		<damage type="Divine" immunity="0" resistance="5" />
+		<damage type="Electrical" immunity="70" resistance="10" />
+		<damage type="Fire" immunity="30" resistance="5" />
+		<damage type="Negative" immunity="70" resistance="5" />
+		<damage type="Positive" immunity="70" resistance="10" />
+		<damage type="Sonic" immunity="50" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="35" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="35" resistance="0" />
+		<damage type="Axiomatic" immunity="35" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Weird" />
+		<add name="Phantasmal Killer" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+		<add name="Spell Resistance" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Movement Speed Decrease" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Grey Slaad" timeStamp="2018-09-15T05:18:40.699000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="38" resistance="15" />
+		<damage type="Piercing" immunity="28" resistance="25" />
+		<damage type="Slashing" immunity="18" resistance="10" />
+		<damage type="Magical" immunity="60" resistance="10" />
+		<damage type="Acid" immunity="0" resistance="0" healing="7" />
+		<damage type="Cold" immunity="38" resistance="5" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="28" resistance="10" />
+		<damage type="Fire" immunity="38" resistance="5" />
+		<damage type="Negative" immunity="28" resistance="5" />
+		<damage type="Positive" immunity="40" resistance="5" />
+		<damage type="Sonic" immunity="100" resistance="25" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="20" resistance="0" />
+		<damage type="Psionic" immunity="30" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="25" resistance="0" />
+		<damage type="Axiomatic" immunity="25" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Word of Faith" />
+		<add name="Word of Balance" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Knockdown" />
+		<add name="Sneak Attack" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Hagunemnon" timeStamp="2016-05-15T20:04:27.000000Z" race="Shapechanger">
+      <damageImmunities>
+        <damage type="Bludgeoning" immunity="40" resistance="20" />
+        <damage type="Piercing" immunity="30" resistance="20" />
+        <damage type="Slashing" immunity="20" resistance="10" />
+        <damage type="Magical" immunity="50" resistance="10" />
+        <damage type="Acid" immunity="50" resistance="10" />
+        <damage type="Cold" immunity="40" resistance="15" />
+        <damage type="Divine" immunity="70" resistance="5" />
+        <damage type="Electrical" immunity="50" resistance="10" />
+        <damage type="Fire" immunity="50" resistance="10" />
+        <damage type="Negative" immunity="50" resistance="10" />
+        <damage type="Positive" immunity="50" resistance="5" />
+        <damage type="Sonic" immunity="50" resistance="10" />
+        <damage type="Subdual" immunity="0" resistance="0" />
+        <damage type="Ectoplasmic" immunity="25" resistance="0" />
+        <damage type="Psionic" immunity="25" resistance="0" />
+        <damage type="Sacred" immunity="35" resistance="0" />
+        <damage type="Vile" immunity="35" resistance="0" />
+        <damage type="Primal" immunity="35" resistance="0" />
+        <damage type="Anarchic" immunity="25" resistance="0" />
+        <damage type="Axiomatic" immunity="25" resistance="0" />
+        <damage type="Internal" immunity="0" resistance="0" />
+    </damageImmunities>
+    <spellImmunities>
+        <add name="Harm" />
+        <add name="Mass Harm" />
+        <add name="Implosion" />
+        <add name="Drown" />
+        <add name="Disintegrate" />
+        <add name="Bigbys Crushing Hand" />
+        <add name="Bigbys Grasping Hand" />
+        <add name="Bigbys Interposing Hand" />
+        <add name="Flesh to Stone" />
+        <add name="Call of Stone" />
+        <add name="Cast in Stone" />
+    </spellImmunities>
+    <otherImmunities>
+        <add name="Mind Spells" />
+        <add name="Poison" />
+        <add name="Disease" />
+        <add name="Fear" />
+        <add name="Paralysis" />
+        <add name="Blindness" />
+        <add name="Deafness" />
+        <add name="Slow" />
+        <add name="Entangle" />
+        <add name="Stun" />
+        <add name="Sleep" />
+        <add name="Charm" />
+        <add name="Dominate" />
+        <add name="Confuse" />
+        <add name="Daze" />
+        <add name="Ability Decrease" />
+        <add name="Movement Speed Decrease" />
+        <add name="Knockdown" />
+        <add name="Negative Levels" />
+        <add name="Sneak Attack" />
+        <add name="Critical Hits" />
+        <add name="Death Magic" />
+        <add name="Petrification" />
+    </otherImmunities>
+    </creature>
+    <creature name="Howler" race="Unknown" timeStamp="2016-03-19T19:33:35.3454112Z">
+        <damageImmunities>
+        </damageImmunities>
+    </creature>
+    <creature name="Imentesh" timeStamp="2016-05-15T19:52:40.000000Z" race="Shapechanger">
+      <damageImmunities>
+        <damage type="Bludgeoning" immunity="26" resistance="20" />
+        <damage type="Piercing" immunity="16" resistance="20" />
+        <damage type="Slashing" immunity="6" resistance="10" />
+        <damage type="Magical" immunity="50" resistance="10" />
+        <damage type="Acid" immunity="31" resistance="5" />
+        <damage type="Cold" immunity="11" resistance="15" />
+        <damage type="Divine" immunity="70" resistance="5" />
+        <damage type="Electrical" immunity="21" resistance="15" />
+        <damage type="Fire" immunity="21" resistance="10" />
+        <damage type="Negative" immunity="36" resistance="10" />
+        <damage type="Positive" immunity="50" resistance="5" />
+        <damage type="Sonic" immunity="11" resistance="10" />
+        <damage type="Subdual" immunity="0" resistance="0" />
+        <damage type="Ectoplasmic" immunity="25" resistance="0" />
+        <damage type="Psionic" immunity="25" resistance="0" />
+        <damage type="Sacred" immunity="35" resistance="0" />
+        <damage type="Vile" immunity="35" resistance="0" />
+        <damage type="Primal" immunity="35" resistance="0" />
+        <damage type="Anarchic" immunity="25" resistance="0" />
+        <damage type="Axiomatic" immunity="25" resistance="0" />
+        <damage type="Internal" immunity="0" resistance="0" />
+    </damageImmunities>
+    <spellImmunities>
+        <add name="Harm" />
+        <add name="Mass Harm" />
+        <add name="Implosion" />
+        <add name="Drown" />
+        <add name="Disintegrate" />
+        <add name="Bigbys Crushing Hand" />
+        <add name="Bigbys Grasping Hand" />
+        <add name="Flesh to Stone" />
+        <add name="Call of Stone" />
+        <add name="Cast in Stone" />
+    </spellImmunities>
+    <otherImmunities>
+        <add name="Mind Spells" />
+        <add name="Poison" />
+        <add name="Disease" />
+        <add name="Fear" />
+        <add name="Paralysis" />
+        <add name="Blindness" />
+        <add name="Deafness" />
+        <add name="Slow" />
+        <add name="Entangle" />
+        <add name="Stun" />
+        <add name="Sleep" />
+        <add name="Charm" />
+        <add name="Dominate" />
+        <add name="Confuse" />
+        <add name="Daze" />
+        <add name="Ability Decrease" />
+        <add name="Movement Speed Decrease" />
+        <add name="Knockdown" />
+        <add name="Negative Levels" />
+        <add name="Critical Hits" />
+        <add name="Death Magic" />
+        <add name="Petrification" />
+    </otherImmunities>
+    </creature>
+<creature name="Kaorti Alienist" timeStamp="2018-09-15T03:14:28.726000Z" race="Aberration">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="0" />
+		<damage type="Piercing" immunity="30" resistance="0" />
+		<damage type="Slashing" immunity="40" resistance="5" />
+		<damage type="Magical" immunity="100" resistance="30" />
+		<damage type="Acid" immunity="100" resistance="20" />
+		<damage type="Cold" immunity="100" resistance="25" />
+		<damage type="Divine" immunity="100" resistance="30" />
+		<damage type="Electrical" immunity="80" resistance="20" />
+		<damage type="Fire" immunity="100" resistance="25" />
+		<damage type="Negative" immunity="80" resistance="15" />
+		<damage type="Positive" immunity="80" resistance="15" />
+		<damage type="Sonic" immunity="70" resistance="20" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="40" resistance="0" />
+		<damage type="Psionic" immunity="50" resistance="0" />
+		<damage type="Sacred" immunity="50" resistance="0" />
+		<damage type="Vile" immunity="50" resistance="0" />
+		<damage type="Primal" immunity="50" resistance="0" />
+		<damage type="Anarchic" immunity="45" resistance="0" />
+		<damage type="Axiomatic" immunity="45" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Infestation of Maggots" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+		<add name="Flensing" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Damage Immunity Decrease" />
+		<add name="AC Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Kaorti Nullifier" timeStamp="2018-09-15T03:09:30.493000Z" race="Aberration">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="0" />
+		<damage type="Piercing" immunity="30" resistance="0" />
+		<damage type="Slashing" immunity="40" resistance="5" />
+		<damage type="Magical" immunity="100" resistance="30" />
+		<damage type="Acid" immunity="100" resistance="20" />
+		<damage type="Cold" immunity="100" resistance="25" />
+		<damage type="Divine" immunity="100" resistance="30" />
+		<damage type="Electrical" immunity="80" resistance="20" />
+		<damage type="Fire" immunity="100" resistance="25" />
+		<damage type="Negative" immunity="80" resistance="15" />
+		<damage type="Positive" immunity="80" resistance="15" />
+		<damage type="Sonic" immunity="70" resistance="20" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="40" resistance="0" />
+		<damage type="Psionic" immunity="50" resistance="0" />
+		<damage type="Sacred" immunity="50" resistance="0" />
+		<damage type="Vile" immunity="50" resistance="0" />
+		<damage type="Primal" immunity="50" resistance="0" />
+		<damage type="Anarchic" immunity="45" resistance="0" />
+		<damage type="Axiomatic" immunity="45" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Infestation of Maggots" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+		<add name="Flensing" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Damage Immunity Decrease" />
+		<add name="AC Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Kaorti Mocker" timeStamp="2018-09-15T03:06:46.441000Z" race="Aberration">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="0" />
+		<damage type="Piercing" immunity="30" resistance="0" />
+		<damage type="Slashing" immunity="40" resistance="5" />
+		<damage type="Magical" immunity="100" resistance="30" />
+		<damage type="Acid" immunity="100" resistance="20" />
+		<damage type="Cold" immunity="100" resistance="25" />
+		<damage type="Divine" immunity="100" resistance="30" />
+		<damage type="Electrical" immunity="80" resistance="20" />
+		<damage type="Fire" immunity="100" resistance="25" />
+		<damage type="Negative" immunity="80" resistance="15" />
+		<damage type="Positive" immunity="80" resistance="15" />
+		<damage type="Sonic" immunity="70" resistance="20" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="40" resistance="0" />
+		<damage type="Psionic" immunity="50" resistance="0" />
+		<damage type="Sacred" immunity="50" resistance="0" />
+		<damage type="Vile" immunity="50" resistance="0" />
+		<damage type="Primal" immunity="50" resistance="0" />
+		<damage type="Anarchic" immunity="45" resistance="0" />
+		<damage type="Axiomatic" immunity="45" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Infestation of Maggots" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+		<add name="Flensing" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Damage Immunity Decrease" />
+		<add name="AC Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Keketar" timeStamp="2020-12-04T03:59:07.753000Z" race="Shapechanger">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="20" />
+		<damage type="Piercing" immunity="20" resistance="10" />
+		<damage type="Slashing" immunity="30" resistance="20" />
+		<damage type="Magical" immunity="40" resistance="10" />
+		<damage type="Acid" immunity="50" resistance="5" />
+		<damage type="Cold" immunity="40" resistance="10" />
+		<damage type="Divine" immunity="100" resistance="5" />
+		<damage type="Electrical" immunity="50" resistance="5" />
+		<damage type="Fire" immunity="40" resistance="10" />
+		<damage type="Negative" immunity="40" resistance="10" />
+		<damage type="Positive" immunity="40" resistance="5" />
+		<damage type="Sonic" immunity="60" resistance="0" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="20" resistance="0" />
+		<damage type="Psionic" immunity="20" resistance="0" />
+		<damage type="Sacred" immunity="50" resistance="0" />
+		<damage type="Vile" immunity="50" resistance="0" />
+		<damage type="Primal" immunity="50" resistance="0" />
+		<damage type="Anarchic" immunity="20" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Mordenkainens Disjunction" />
+		<add name="Lesser Spell Breach" />
+		<add name="Spell Breach" />
+		<add name="Greater Spell Breach" />
+		<add name="Lesser Dispel" />
+		<add name="Dispel Magic" />
+		<add name="Greater Dispelling" />
+		<add name="Word of Faith" />
+		<add name="Word of Balance" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Silence" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Khayal" timeStamp="2018-09-22T03:36:35.402000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="30" resistance="20" />
+		<damage type="Piercing" immunity="40" resistance="20" />
+		<damage type="Slashing" immunity="20" resistance="5" />
+		<damage type="Magical" immunity="60" resistance="10" />
+		<damage type="Acid" immunity="50" resistance="10" />
+		<damage type="Cold" immunity="20" resistance="5" />
+		<damage type="Divine" immunity="50" resistance="5" />
+		<damage type="Electrical" immunity="30" resistance="10" />
+		<damage type="Fire" immunity="70" resistance="15" />
+		<damage type="Negative" immunity="0" resistance="0" healing="6" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="70" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="30" resistance="0" />
+		<damage type="Sacred" immunity="25" resistance="0" />
+		<damage type="Vile" immunity="25" resistance="0" />
+		<damage type="Primal" immunity="25" resistance="0" />
+		<damage type="Anarchic" immunity="17" resistance="0" />
+		<damage type="Axiomatic" immunity="17" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Curses" />
+		<add name="Daze" />
+		<add name="Movement Speed Decrease" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Lillend" timeStamp="2017-01-13T03:17:06.000000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="30" resistance="15" />
+		<damage type="Piercing" immunity="20" resistance="5" />
+		<damage type="Slashing" immunity="40" resistance="10" />
+		<damage type="Magical" immunity="70" resistance="10" />
+		<damage type="Acid" immunity="50" resistance="10" />
+		<damage type="Cold" immunity="20" resistance="10" />
+		<damage type="Divine" immunity="20" resistance="5" />
+		<damage type="Electrical" immunity="50" resistance="15" />
+		<damage type="Fire" immunity="20" resistance="10" />
+		<damage type="Negative" immunity="70" resistance="10" />
+		<damage type="Positive" immunity="60" resistance="5" />
+		<damage type="Sonic" immunity="100" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="32" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="10" resistance="0" />
+		<damage type="Vile" immunity="10" resistance="0" />
+		<damage type="Primal" immunity="10" resistance="0" />
+		<damage type="Anarchic" immunity="35" resistance="0" />
+		<damage type="Axiomatic" immunity="32" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Limbo Stalker" timeStamp="2018-09-15T03:34:59.950000Z" race="Magical Beast">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="40" />
+		<damage type="Piercing" immunity="30" resistance="40" />
+		<damage type="Slashing" immunity="20" resistance="30" />
+		<damage type="Magical" immunity="40" resistance="5" />
+		<damage type="Acid" immunity="20" resistance="20" />
+		<damage type="Cold" immunity="0" resistance="20" />
+		<damage type="Divine" immunity="40" resistance="5" />
+		<damage type="Electrical" immunity="100" resistance="5" />
+		<damage type="Fire" immunity="100" resistance="5" />
+		<damage type="Negative" immunity="40" resistance="5" />
+		<damage type="Positive" immunity="100" resistance="15" />
+		<damage type="Sonic" immunity="0" resistance="5" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="35" resistance="0" />
+		<damage type="Psionic" immunity="20" resistance="0" />
+		<damage type="Sacred" immunity="20" resistance="0" />
+		<damage type="Vile" immunity="20" resistance="0" />
+		<damage type="Primal" immunity="20" resistance="0" />
+		<damage type="Anarchic" immunity="20" resistance="0" />
+		<damage type="Axiomatic" immunity="35" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Weird" />
+		<add name="Phantasmal Killer" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Mageripper Swarm" timeStamp="2020-12-04T05:12:32.479000Z" race="Vermin">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="15" />
+		<damage type="Piercing" immunity="90" resistance="20" />
+		<damage type="Slashing" immunity="70" resistance="20" />
+		<damage type="Magical" immunity="0" resistance="0" healing="10" />
+		<damage type="Acid" immunity="50" resistance="10" />
+		<damage type="Cold" immunity="70" resistance="15" />
+		<damage type="Divine" immunity="0" resistance="5" />
+		<damage type="Electrical" immunity="40" resistance="10" />
+		<damage type="Fire" immunity="30" resistance="5" />
+		<damage type="Negative" immunity="40" resistance="10" />
+		<damage type="Positive" immunity="70" resistance="10" />
+		<damage type="Sonic" immunity="40" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="12" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Mimic" timeStamp="2017-01-14T03:17:44.000000Z" race="Shapechanger">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="10" />
+		<damage type="Piercing" immunity="40" resistance="10" />
+		<damage type="Slashing" immunity="40" resistance="10" />
+		<damage type="Magical" immunity="40" resistance="0" />
+		<damage type="Acid" immunity="100" resistance="15" />
+		<damage type="Cold" immunity="20" resistance="10" />
+		<damage type="Divine" immunity="100" resistance="15" />
+		<damage type="Electrical" immunity="50" resistance="10" />
+		<damage type="Fire" immunity="30" resistance="10" />
+		<damage type="Negative" immunity="40" resistance="0" />
+		<damage type="Positive" immunity="40" resistance="15" />
+		<damage type="Sonic" immunity="40" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="20" resistance="0" />
+		<damage type="Psionic" immunity="20" resistance="0" />
+		<damage type="Sacred" immunity="50" resistance="0" />
+		<damage type="Vile" immunity="50" resistance="0" />
+		<damage type="Primal" immunity="50" resistance="0" />
+		<damage type="Anarchic" immunity="20" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Weird" />
+		<add name="Phantasmal Killer" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Daze" />
+		<add name="AC Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Sneak Attack" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Mivilorn" timeStamp="2018-09-22T03:30:36.413000Z" race="Magical Beast">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="60" resistance="20" />
+		<damage type="Piercing" immunity="50" resistance="15" />
+		<damage type="Slashing" immunity="40" resistance="15" />
+		<damage type="Magical" immunity="50" resistance="10" />
+		<damage type="Acid" immunity="70" resistance="15" />
+		<damage type="Cold" immunity="60" resistance="15" />
+		<damage type="Divine" immunity="50" resistance="10" />
+		<damage type="Electrical" immunity="30" resistance="15" />
+		<damage type="Fire" immunity="60" resistance="0" />
+		<damage type="Negative" immunity="20" resistance="5" />
+		<damage type="Positive" immunity="100" resistance="5" />
+		<damage type="Sonic" immunity="20" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="30" resistance="0" />
+		<damage type="Psionic" immunity="25" resistance="0" />
+		<damage type="Sacred" immunity="25" resistance="0" />
+		<damage type="Vile" immunity="25" resistance="0" />
+		<damage type="Primal" immunity="25" resistance="0" />
+		<damage type="Anarchic" immunity="17" resistance="0" />
+		<damage type="Axiomatic" immunity="37" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Fear" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Damage Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Mud Slaad" timeStamp="2018-09-15T03:27:02.351000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="15" />
+		<damage type="Piercing" immunity="30" resistance="25" />
+		<damage type="Slashing" immunity="20" resistance="10" />
+		<damage type="Magical" immunity="90" resistance="10" />
+		<damage type="Acid" immunity="0" resistance="0" healing="3" />
+		<damage type="Cold" immunity="40" resistance="5" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="30" resistance="10" />
+		<damage type="Fire" immunity="40" resistance="5" />
+		<damage type="Negative" immunity="30" resistance="5" />
+		<damage type="Positive" immunity="20" resistance="5" />
+		<damage type="Sonic" immunity="100" resistance="25" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="12" resistance="0" />
+		<damage type="Psionic" immunity="45" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="30" resistance="0" />
+		<damage type="Axiomatic" immunity="27" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Word of Faith" />
+		<add name="Word of Balance" />
+		<add name="Weird" />
+		<add name="Phantasmal Killer" />
+		<add name="Drown" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Naunet" timeStamp="2018-09-15T03:06:20.726000Z" race="Shapechanger">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="20" />
+		<damage type="Piercing" immunity="20" resistance="10" />
+		<damage type="Slashing" immunity="30" resistance="20" />
+		<damage type="Magical" immunity="50" resistance="10" />
+		<damage type="Acid" immunity="40" resistance="10" />
+		<damage type="Cold" immunity="40" resistance="10" />
+		<damage type="Divine" immunity="70" resistance="5" />
+		<damage type="Electrical" immunity="50" resistance="5" />
+		<damage type="Fire" immunity="50" resistance="5" />
+		<damage type="Negative" immunity="50" resistance="10" />
+		<damage type="Positive" immunity="50" resistance="5" />
+		<damage type="Sonic" immunity="60" resistance="0" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="25" resistance="0" />
+		<damage type="Psionic" immunity="25" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="25" resistance="0" />
+		<damage type="Axiomatic" immunity="25" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Nightseed" timeStamp="2020-12-04T03:29:02.359000Z" race="Ooze">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="90" resistance="30" />
+		<damage type="Piercing" immunity="20" resistance="10" />
+		<damage type="Slashing" immunity="30" resistance="10" />
+		<damage type="Magical" immunity="40" resistance="20" />
+		<damage type="Acid" immunity="50" resistance="25" />
+		<damage type="Cold" immunity="50" resistance="25" />
+		<damage type="Divine" immunity="70" resistance="15" />
+		<damage type="Electrical" immunity="50" resistance="25" />
+		<damage type="Fire" immunity="30" resistance="15" />
+		<damage type="Negative" immunity="0" resistance="0" healing="5" />
+		<damage type="Positive" immunity="0" resistance="15" />
+		<damage type="Sonic" immunity="60" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="20" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="12" resistance="0" />
+		<damage type="Axiomatic" immunity="12" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Entangle" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Nishruu" timeStamp="2020-12-04T03:56:21.781000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="100" resistance="45" />
+		<damage type="Piercing" immunity="100" resistance="45" />
+		<damage type="Slashing" immunity="100" resistance="45" />
+		<damage type="Magical" immunity="0" resistance="0" healing="8" />
+		<damage type="Acid" immunity="60" resistance="5" />
+		<damage type="Cold" immunity="50" resistance="10" />
+		<damage type="Divine" immunity="0" resistance="5" />
+		<damage type="Electrical" immunity="30" resistance="10" />
+		<damage type="Fire" immunity="50" resistance="15" />
+		<damage type="Negative" immunity="50" resistance="10" />
+		<damage type="Positive" immunity="60" resistance="10" />
+		<damage type="Sonic" immunity="50" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="0" resistance="0" />
+		<damage type="Vile" immunity="0" resistance="0" />
+		<damage type="Primal" immunity="0" resistance="0" />
+		<damage type="Anarchic" immunity="15" resistance="0" />
+		<damage type="Axiomatic" immunity="17" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+		<add name="Bigbys Clenched Fist" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Omnimental" timeStamp="2018-09-15T03:37:45.825000Z" race="Elemental">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="30" resistance="15" />
+		<damage type="Piercing" immunity="40" resistance="20" />
+		<damage type="Slashing" immunity="40" resistance="20" />
+		<damage type="Magical" immunity="50" resistance="0" />
+		<damage type="Acid" immunity="0" resistance="0" healing="3" />
+		<damage type="Cold" immunity="0" resistance="0" healing="3" />
+		<damage type="Divine" immunity="60" resistance="15" />
+		<damage type="Electrical" immunity="0" resistance="0" healing="3" />
+		<damage type="Fire" immunity="0" resistance="0" healing="3" />
+		<damage type="Negative" immunity="0" resistance="0" />
+		<damage type="Positive" immunity="100" resistance="15" />
+		<damage type="Sonic" immunity="0" resistance="0" healing="3" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="25" resistance="0" />
+		<damage type="Sacred" immunity="30" resistance="0" />
+		<damage type="Vile" immunity="30" resistance="0" />
+		<damage type="Primal" immunity="30" resistance="0" />
+		<damage type="Anarchic" immunity="15" resistance="0" />
+		<damage type="Axiomatic" immunity="37" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Pelagastr" race="Shapechanger" timeStamp="2016-03-19T19:33:35.3454112Z">
+        <damageImmunities>
+        </damageImmunities>
+    </creature>
+    <creature name="Phasm" timeStamp="2017-01-13T04:16:05.000000Z" race="Shapechanger">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="45" resistance="15" />
+		<damage type="Piercing" immunity="15" resistance="5" />
+		<damage type="Slashing" immunity="35" resistance="10" />
+		<damage type="Magical" immunity="70" resistance="10" />
+		<damage type="Acid" immunity="100" resistance="15" />
+		<damage type="Cold" immunity="60" resistance="10" />
+		<damage type="Divine" immunity="70" resistance="5" />
+		<damage type="Electrical" immunity="80" resistance="10" />
+		<damage type="Fire" immunity="80" resistance="10" />
+		<damage type="Negative" immunity="40" resistance="100" />
+		<damage type="Positive" immunity="80" resistance="10" />
+		<damage type="Sonic" immunity="20" resistance="100" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="30" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="27" resistance="0" />
+		<damage type="Axiomatic" immunity="37" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Ability Decrease" />
+		<add name="AC Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Pyrophor" timeStamp="2018-09-15T03:07:00.423000Z" race="Elemental">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="20" />
+		<damage type="Piercing" immunity="40" resistance="20" />
+		<damage type="Slashing" immunity="30" resistance="10" />
+		<damage type="Magical" immunity="30" resistance="5" />
+		<damage type="Acid" immunity="0" resistance="15" />
+		<damage type="Cold" immunity="0" resistance="0" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="70" resistance="10" />
+		<damage type="Fire" immunity="0" resistance="0" healing="6" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="100" resistance="10" />
+		<damage type="Sonic" immunity="50" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="15" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="10" resistance="0" />
+		<damage type="Axiomatic" immunity="32" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Quark" timeStamp="2017-01-13T03:23:15.000000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="5" />
+		<damage type="Piercing" immunity="30" resistance="10" />
+		<damage type="Slashing" immunity="20" resistance="5" />
+		<damage type="Magical" immunity="90" resistance="10" />
+		<damage type="Acid" immunity="70" resistance="10" />
+		<damage type="Cold" immunity="30" resistance="5" />
+		<damage type="Divine" immunity="50" resistance="5" />
+		<damage type="Electrical" immunity="40" resistance="15" />
+		<damage type="Fire" immunity="70" resistance="15" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="70" resistance="10" />
+		<damage type="Sonic" immunity="30" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="20" resistance="0" />
+		<damage type="Psionic" immunity="45" resistance="0" />
+		<damage type="Sacred" immunity="25" resistance="0" />
+		<damage type="Vile" immunity="25" resistance="0" />
+		<damage type="Primal" immunity="25" resistance="0" />
+		<damage type="Anarchic" immunity="25" resistance="0" />
+		<damage type="Axiomatic" immunity="40" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Weird" />
+		<add name="Phantasmal Killer" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Death Magic" />
+	</otherImmunities>
+</creature>
+<creature name="Quasit" timeStamp="2018-09-15T03:31:19.421000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="0" />
+		<damage type="Piercing" immunity="40" resistance="0" />
+		<damage type="Slashing" immunity="30" resistance="0" />
+		<damage type="Magical" immunity="70" resistance="0" />
+		<damage type="Acid" immunity="70" resistance="5" />
+		<damage type="Cold" immunity="0" resistance="5" />
+		<damage type="Divine" immunity="70" resistance="5" />
+		<damage type="Electrical" immunity="170" resistance="5" />
+		<damage type="Fire" immunity="0" resistance="5" />
+		<damage type="Negative" immunity="70" resistance="5" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="70" resistance="5" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="20" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="35" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Forceful Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Entangle" />
+		<add name="Ability Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Red Slaad" timeStamp="2020-12-04T04:16:21.854000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="60" resistance="20" />
+		<damage type="Piercing" immunity="50" resistance="20" />
+		<damage type="Slashing" immunity="40" resistance="10" />
+		<damage type="Magical" immunity="90" resistance="10" />
+		<damage type="Acid" immunity="0" resistance="0" healing="5" />
+		<damage type="Cold" immunity="30" resistance="5" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="10" resistance="10" />
+		<damage type="Fire" immunity="40" resistance="5" />
+		<damage type="Negative" immunity="20" resistance="5" />
+		<damage type="Positive" immunity="20" resistance="5" />
+		<damage type="Sonic" immunity="100" resistance="25" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="15" resistance="0" />
+		<damage type="Psionic" immunity="45" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="30" resistance="0" />
+		<damage type="Axiomatic" immunity="27" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Word of Faith" />
+		<add name="Word of Balance" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Knockdown" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Retriever" timeStamp="2018-09-15T03:05:52.653000Z" race="Construct">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="0" resistance="5" />
+		<damage type="Piercing" immunity="50" resistance="5" />
+		<damage type="Slashing" immunity="30" resistance="5" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="30" resistance="10" />
+		<damage type="Cold" immunity="90" resistance="5" />
+		<damage type="Divine" immunity="70" resistance="5" />
+		<damage type="Electrical" immunity="90" resistance="5" />
+		<damage type="Fire" immunity="90" resistance="5" />
+		<damage type="Negative" immunity="70" resistance="5" />
+		<damage type="Positive" immunity="70" resistance="5" />
+		<damage type="Sonic" immunity="30" resistance="0" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="35" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="20" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Forceful Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Ability Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Shadow Jelly" timeStamp="2018-09-22T03:58:42.038000Z" race="Ooze">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="100" resistance="20" />
+		<damage type="Piercing" immunity="80" resistance="15" />
+		<damage type="Slashing" immunity="60" resistance="15" />
+		<damage type="Magical" immunity="70" resistance="5" />
+		<damage type="Acid" immunity="50" resistance="10" />
+		<damage type="Cold" immunity="90" resistance="10" />
+		<damage type="Divine" immunity="40" resistance="10" />
+		<damage type="Electrical" immunity="30" resistance="10" />
+		<damage type="Fire" immunity="30" resistance="10" />
+		<damage type="Negative" immunity="0" resistance="0" healing="7" />
+		<damage type="Positive" immunity="0" resistance="5" />
+		<damage type="Sonic" immunity="40" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="20" resistance="0" />
+		<damage type="Vile" immunity="20" resistance="0" />
+		<damage type="Primal" immunity="20" resistance="0" />
+		<damage type="Anarchic" immunity="20" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Shardsoul Slayer" timeStamp="2017-01-14T05:33:51.000000Z" race="Construct">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="35" resistance="5" />
+		<damage type="Piercing" immunity="55" resistance="10" />
+		<damage type="Slashing" immunity="45" resistance="5" />
+		<damage type="Magical" immunity="90" resistance="10" />
+		<damage type="Acid" immunity="60" resistance="0" />
+		<damage type="Cold" immunity="70" resistance="15" />
+		<damage type="Divine" immunity="20" resistance="5" />
+		<damage type="Electrical" immunity="70" resistance="15" />
+		<damage type="Fire" immunity="70" resistance="15" />
+		<damage type="Negative" immunity="90" resistance="10" />
+		<damage type="Positive" immunity="90" resistance="5" />
+		<damage type="Sonic" immunity="70" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="45" resistance="0" />
+		<damage type="Psionic" immunity="45" resistance="0" />
+		<damage type="Sacred" immunity="10" resistance="0" />
+		<damage type="Vile" immunity="10" resistance="0" />
+		<damage type="Primal" immunity="10" resistance="0" />
+		<damage type="Anarchic" immunity="45" resistance="0" />
+		<damage type="Axiomatic" immunity="45" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+	</otherImmunities>
+</creature>
+<creature name="Taunting Haunt" timeStamp="2018-09-15T04:11:28.916000Z" race="Undead">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="45" />
+		<damage type="Piercing" immunity="40" resistance="45" />
+		<damage type="Slashing" immunity="30" resistance="45" />
+		<damage type="Magical" immunity="70" resistance="10" />
+		<damage type="Acid" immunity="60" resistance="10" />
+		<damage type="Cold" immunity="80" resistance="10" />
+		<damage type="Divine" immunity="40" resistance="10" />
+		<damage type="Electrical" immunity="30" resistance="10" />
+		<damage type="Fire" immunity="20" resistance="15" />
+		<damage type="Negative" immunity="0" resistance="0" healing="8" />
+		<damage type="Positive" immunity="0" resistance="0" />
+		<damage type="Sonic" immunity="50" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="20" resistance="0" />
+		<damage type="Vile" immunity="20" resistance="0" />
+		<damage type="Primal" immunity="20" resistance="0" />
+		<damage type="Anarchic" immunity="20" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Heal" />
+		<add name="Mass Heal" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Silence" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Thalassi" timeStamp="2018-09-22T05:22:35.146000Z" race="Elemental">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="50" resistance="5" />
+		<damage type="Piercing" immunity="60" resistance="20" />
+		<damage type="Slashing" immunity="60" resistance="20" />
+		<damage type="Magical" immunity="30" resistance="5" />
+		<damage type="Acid" immunity="90" resistance="15" />
+		<damage type="Cold" immunity="0" resistance="0" healing="6" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="60" resistance="15" />
+		<damage type="Fire" immunity="40" resistance="0" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="100" resistance="10" />
+		<damage type="Sonic" immunity="70" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="15" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="10" resistance="0" />
+		<damage type="Axiomatic" immunity="32" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Trilloch" timeStamp="2018-09-15T03:20:05.419000Z" race="Vermin">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="100" resistance="45" />
+		<damage type="Piercing" immunity="100" resistance="45" />
+		<damage type="Slashing" immunity="100" resistance="45" />
+		<damage type="Magical" immunity="50" resistance="10" />
+		<damage type="Acid" immunity="50" resistance="10" />
+		<damage type="Cold" immunity="50" resistance="15" />
+		<damage type="Divine" immunity="60" resistance="0" />
+		<damage type="Electrical" immunity="30" resistance="10" />
+		<damage type="Fire" immunity="50" resistance="5" />
+		<damage type="Negative" immunity="0" resistance="0" healing="5" />
+		<damage type="Positive" immunity="0" resistance="10" />
+		<damage type="Sonic" immunity="60" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="25" resistance="0" />
+		<damage type="Sacred" immunity="30" resistance="0" />
+		<damage type="Vile" immunity="30" resistance="0" />
+		<damage type="Primal" immunity="30" resistance="0" />
+		<damage type="Anarchic" immunity="15" resistance="0" />
+		<damage type="Axiomatic" immunity="15" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+		<add name="Pesticide" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Unfinished Minotaur" timeStamp="2018-09-22T03:58:20.901000Z" race="Monstrous Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="40" resistance="15" />
+		<damage type="Piercing" immunity="20" resistance="5" />
+		<damage type="Slashing" immunity="30" resistance="15" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="40" resistance="10" />
+		<damage type="Cold" immunity="70" resistance="10" />
+		<damage type="Divine" immunity="90" resistance="15" />
+		<damage type="Electrical" immunity="40" resistance="15" />
+		<damage type="Fire" immunity="30" resistance="5" />
+		<damage type="Negative" immunity="60" resistance="5" />
+		<damage type="Positive" immunity="60" resistance="5" />
+		<damage type="Sonic" immunity="60" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="30" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="45" resistance="0" />
+		<damage type="Vile" immunity="45" resistance="0" />
+		<damage type="Primal" immunity="45" resistance="0" />
+		<damage type="Anarchic" immunity="17" resistance="0" />
+		<damage type="Axiomatic" immunity="17" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+	</otherImmunities>
+</creature>
+<creature name="Unfinished Titan" timeStamp="2017-01-13T03:38:52.000000Z" race="Giant">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="37" resistance="20" />
+		<damage type="Piercing" immunity="17" resistance="15" />
+		<damage type="Slashing" immunity="27" resistance="20" />
+		<damage type="Magical" immunity="40" resistance="5" />
+		<damage type="Acid" immunity="40" resistance="10" />
+		<damage type="Cold" immunity="50" resistance="15" />
+		<damage type="Divine" immunity="70" resistance="10" />
+		<damage type="Electrical" immunity="80" resistance="15" />
+		<damage type="Fire" immunity="40" resistance="10" />
+		<damage type="Negative" immunity="0" resistance="5" />
+		<damage type="Positive" immunity="100" resistance="10" />
+		<damage type="Sonic" immunity="30" resistance="5" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="20" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="12" resistance="0" />
+		<damage type="Axiomatic" immunity="35" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Movement Speed Decrease" />
+		<add name="Saving Throw Decrease" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Voidworm School" timeStamp="2018-09-15T03:13:08.716000Z" race="Shapechanger">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="100" resistance="45" />
+		<damage type="Piercing" immunity="100" resistance="45" />
+		<damage type="Slashing" immunity="100" resistance="45" />
+		<damage type="Magical" immunity="70" resistance="20" />
+		<damage type="Acid" immunity="40" resistance="10" />
+		<damage type="Cold" immunity="30" resistance="5" />
+		<damage type="Divine" immunity="70" resistance="20" />
+		<damage type="Electrical" immunity="70" resistance="15" />
+		<damage type="Fire" immunity="30" resistance="10" />
+		<damage type="Negative" immunity="70" resistance="15" />
+		<damage type="Positive" immunity="0" resistance="15" />
+		<damage type="Sonic" immunity="70" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="20" resistance="0" />
+		<damage type="Psionic" immunity="35" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="35" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Warp Drifter" timeStamp="2018-09-15T03:07:20.606000Z" race="Plant">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="10" />
+		<damage type="Piercing" immunity="30" resistance="20" />
+		<damage type="Slashing" immunity="40" resistance="20" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="60" resistance="10" />
+		<damage type="Cold" immunity="50" resistance="10" />
+		<damage type="Divine" immunity="70" resistance="15" />
+		<damage type="Electrical" immunity="50" resistance="15" />
+		<damage type="Fire" immunity="30" resistance="5" />
+		<damage type="Negative" immunity="70" resistance="5" />
+		<damage type="Positive" immunity="70" resistance="5" />
+		<damage type="Sonic" immunity="50" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="35" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="35" resistance="0" />
+		<damage type="Vile" immunity="35" resistance="0" />
+		<damage type="Primal" immunity="35" resistance="0" />
+		<damage type="Anarchic" immunity="20" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Weaver" race="Unknown" timeStamp="2016-04-03T20:20:13.000000Z">
+        <damageImmunities>
+        </damageImmunities>
+    </creature>
+<creature name="White Slaad" timeStamp="2018-09-15T05:20:23.001000Z" race="Outsider">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="50" resistance="20" />
+		<damage type="Piercing" immunity="40" resistance="20" />
+		<damage type="Slashing" immunity="30" resistance="10" />
+		<damage type="Magical" immunity="40" resistance="10" />
+		<damage type="Acid" immunity="0" resistance="0" healing="9" />
+		<damage type="Cold" immunity="60" resistance="5" />
+		<damage type="Divine" immunity="80" resistance="10" />
+		<damage type="Electrical" immunity="40" resistance="10" />
+		<damage type="Fire" immunity="60" resistance="5" />
+		<damage type="Negative" immunity="40" resistance="5" />
+		<damage type="Positive" immunity="60" resistance="5" />
+		<damage type="Sonic" immunity="100" resistance="25" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="25" resistance="0" />
+		<damage type="Psionic" immunity="20" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="20" resistance="0" />
+		<damage type="Axiomatic" immunity="25" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Mordenkainens Disjunction" />
+		<add name="Word of Faith" />
+		<add name="Word of Balance" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Silence" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Windrazor" timeStamp="2016-05-15T20:56:12.000000Z" race="Reptilian Humanoid">
+      <damageImmunities>
+        <damage type="Bludgeoning" immunity="20" resistance="5" />
+        <damage type="Piercing" immunity="40" resistance="15" />
+        <damage type="Slashing" immunity="30" resistance="15" />
+        <damage type="Magical" immunity="0" resistance="5" />
+        <damage type="Acid" immunity="30" resistance="5" />
+        <damage type="Cold" immunity="40" resistance="10" />
+        <damage type="Divine" immunity="80" resistance="10" />
+        <damage type="Electrical" immunity="70" resistance="15" />
+        <damage type="Fire" immunity="30" resistance="10" />
+        <damage type="Negative" immunity="60" resistance="5" />
+        <damage type="Positive" immunity="70" resistance="10" />
+        <damage type="Sonic" immunity="70" resistance="15" />
+        <damage type="Subdual" immunity="0" resistance="0" />
+        <damage type="Ectoplasmic" immunity="32" resistance="0" />
+        <damage type="Psionic" immunity="0" resistance="0" />
+        <damage type="Sacred" immunity="40" resistance="0" />
+        <damage type="Vile" immunity="40" resistance="0" />
+        <damage type="Primal" immunity="40" resistance="0" />
+        <damage type="Anarchic" immunity="17" resistance="0" />
+        <damage type="Axiomatic" immunity="20" resistance="0" />
+        <damage type="Internal" immunity="0" resistance="0" />
+    </damageImmunities>
+    <spellImmunities>
+        <add name="Harm" />
+        <add name="Mass Harm" />
+        <add name="Earthquake" />
+        <add name="Fissure" />
+        <add name="Implosion" />
+        <add name="Drown" />
+        <add name="Disintegrate" />
+        <add name="Bigbys Crushing Hand" />
+        <add name="Bigbys Grasping Hand" />
+        <add name="Flesh to Stone" />
+        <add name="Call of Stone" />
+        <add name="Cast in Stone" />
+    </spellImmunities>
+    <otherImmunities>
+        <add name="Poison" />
+        <add name="Disease" />
+        <add name="Fear" />
+        <add name="Slow" />
+        <add name="Entangle" />
+        <add name="Stun" />
+        <add name="Sleep" />
+        <add name="Charm" />
+        <add name="Dominate" />
+        <add name="Confuse" />
+        <add name="Movement Speed Decrease" />
+        <add name="Knockdown" />
+        <add name="Death Magic" />
+        <add name="Petrification" />
+    </otherImmunities>
+    </creature>
+    <creature name="Windscythe Confessor" timeStamp="2017-01-13T03:55:03.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="20" resistance="5" />
+		<damage type="Piercing" immunity="30" resistance="15" />
+		<damage type="Slashing" immunity="40" resistance="15" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="30" resistance="5" />
+		<damage type="Cold" immunity="40" resistance="10" />
+		<damage type="Divine" immunity="100" resistance="10" />
+		<damage type="Electrical" immunity="70" resistance="15" />
+		<damage type="Fire" immunity="30" resistance="10" />
+		<damage type="Negative" immunity="40" resistance="5" />
+		<damage type="Positive" immunity="70" resistance="10" />
+		<damage type="Sonic" immunity="70" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="50" resistance="0" />
+		<damage type="Vile" immunity="50" resistance="0" />
+		<damage type="Primal" immunity="50" resistance="0" />
+		<damage type="Anarchic" immunity="12" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Mordenkainens Disjunction" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+		<add name="Protection from Alignment" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+    <creature name="Windscythe Tyrant" timeStamp="2016-05-18T03:23:48.000000Z" race="Reptilian Humanoid">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="50" resistance="10" />
+		<damage type="Piercing" immunity="60" resistance="20" />
+		<damage type="Slashing" immunity="50" resistance="20" />
+		<damage type="Magical" immunity="0" resistance="5" />
+		<damage type="Acid" immunity="60" resistance="5" />
+		<damage type="Cold" immunity="70" resistance="10" />
+		<damage type="Divine" immunity="100" resistance="10" />
+		<damage type="Electrical" immunity="100" resistance="15" />
+		<damage type="Fire" immunity="70" resistance="10" />
+		<damage type="Negative" immunity="40" resistance="5" />
+		<damage type="Positive" immunity="70" resistance="10" />
+		<damage type="Sonic" immunity="100" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="0" resistance="0" />
+		<damage type="Sacred" immunity="50" resistance="0" />
+		<damage type="Vile" immunity="50" resistance="0" />
+		<damage type="Primal" immunity="50" resistance="0" />
+		<damage type="Anarchic" immunity="12" resistance="0" />
+		<damage type="Axiomatic" immunity="20" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Xag-Az" timeStamp="2020-12-04T04:02:25.392000Z" race="Elemental">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="6" resistance="0" />
+		<damage type="Piercing" immunity="6" resistance="0" />
+		<damage type="Slashing" immunity="6" resistance="0" />
+		<damage type="Magical" immunity="100" resistance="45" />
+		<damage type="Acid" immunity="100" resistance="45" />
+		<damage type="Cold" immunity="100" resistance="45" />
+		<damage type="Divine" immunity="100" resistance="45" />
+		<damage type="Electrical" immunity="100" resistance="45" />
+		<damage type="Fire" immunity="100" resistance="45" />
+		<damage type="Negative" immunity="6" resistance="0" healing="20" />
+		<damage type="Positive" immunity="0" resistance="0" healing="20" />
+		<damage type="Sonic" immunity="100" resistance="45" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="0" resistance="0" />
+		<damage type="Psionic" immunity="50" resistance="0" />
+		<damage type="Sacred" immunity="50" resistance="0" />
+		<damage type="Vile" immunity="50" resistance="0" />
+		<damage type="Primal" immunity="50" resistance="0" />
+		<damage type="Anarchic" immunity="27" resistance="0" />
+		<damage type="Axiomatic" immunity="27" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Word of Faith" />
+		<add name="Word of Balance" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+		<add name="Spell Resistance" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Paralysis" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+	<creature name="Zeugalak" timeStamp="2016-05-18T05:50:37.000000Z" race="Magical Beast">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="35" resistance="25" />
+		<damage type="Piercing" immunity="15" resistance="5" />
+		<damage type="Slashing" immunity="25" resistance="20" />
+		<damage type="Magical" immunity="60" resistance="10" />
+		<damage type="Acid" immunity="40" resistance="5" />
+		<damage type="Cold" immunity="40" resistance="10" />
+		<damage type="Divine" immunity="50" resistance="5" />
+		<damage type="Electrical" immunity="0" resistance="0" healing="6"/>
+		<damage type="Fire" immunity="30" resistance="5" />
+		<damage type="Negative" immunity="20" resistance="0" />
+		<damage type="Positive" immunity="100" resistance="15" />
+		<damage type="Sonic" immunity="100" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="30" resistance="0" />
+		<damage type="Psionic" immunity="30" resistance="0" />
+		<damage type="Sacred" immunity="25" resistance="0" />
+		<damage type="Vile" immunity="25" resistance="0" />
+		<damage type="Primal" immunity="25" resistance="0" />
+		<damage type="Anarchic" immunity="20" resistance="0" />
+		<damage type="Axiomatic" immunity="40" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Earthquake" />
+		<add name="Fissure" />
+		<add name="Weird" />
+		<add name="Phantasmal Killer" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Blindness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Keeper of the Unbroken Circle" timeStamp="2016-05-18T06:37:45.000000Z" race="Monstrous Humanoid" type="Boss">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="50" resistance="20" />
+		<damage type="Piercing" immunity="30" resistance="15" />
+		<damage type="Slashing" immunity="40" resistance="15" />
+		<damage type="Magical" immunity="170" resistance="20" />
+		<damage type="Acid" immunity="140" resistance="10" />
+		<damage type="Cold" immunity="170" resistance="20" />
+		<damage type="Divine" immunity="170" resistance="20" />
+		<damage type="Electrical" immunity="140" resistance="15" />
+		<damage type="Fire" immunity="170" resistance="15" />
+		<damage type="Negative" immunity="170" resistance="20" />
+		<damage type="Positive" immunity="120" resistance="15" />
+		<damage type="Sonic" immunity="130" resistance="15" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="27" resistance="0" />
+		<damage type="Psionic" immunity="40" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="40" resistance="0" />
+		<damage type="Axiomatic" immunity="27" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Bigbys Interposing Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+		<add name="Spell Resistance" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Guardian of the Stone" timeStamp="2018-09-15T05:13:15.614000Z" race="Outsider" type="Boss">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="60" resistance="20" />
+		<damage type="Piercing" immunity="50" resistance="30" />
+		<damage type="Slashing" immunity="40" resistance="15" />
+		<damage type="Magical" immunity="60" resistance="20" />
+		<damage type="Acid" immunity="40" resistance="10" />
+		<damage type="Cold" immunity="60" resistance="5" />
+		<damage type="Divine" immunity="80" resistance="20" />
+		<damage type="Electrical" immunity="50" resistance="15" />
+		<damage type="Fire" immunity="60" resistance="10" />
+		<damage type="Negative" immunity="60" resistance="15" />
+		<damage type="Positive" immunity="60" resistance="15" />
+		<damage type="Sonic" immunity="100" resistance="25" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="30" resistance="0" />
+		<damage type="Psionic" immunity="30" resistance="0" />
+		<damage type="Sacred" immunity="40" resistance="0" />
+		<damage type="Vile" immunity="40" resistance="0" />
+		<damage type="Primal" immunity="40" resistance="0" />
+		<damage type="Anarchic" immunity="30" resistance="0" />
+		<damage type="Axiomatic" immunity="30" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+<creature name="Ygorl" timeStamp="2018-09-22T05:54:01.686000Z" race="Outsider" type="Boss">
+	<damageImmunities>
+		<damage type="Bludgeoning" immunity="70" resistance="25" />
+		<damage type="Piercing" immunity="60" resistance="25" />
+		<damage type="Slashing" immunity="50" resistance="15" />
+		<damage type="Magical" immunity="80" resistance="10" />
+		<damage type="Acid" immunity="60" resistance="15" />
+		<damage type="Cold" immunity="70" resistance="15" />
+		<damage type="Divine" immunity="60" resistance="10" />
+		<damage type="Electrical" immunity="60" resistance="5" />
+		<damage type="Fire" immunity="70" resistance="20" />
+		<damage type="Negative" immunity="60" resistance="5" />
+		<damage type="Positive" immunity="40" resistance="5" />
+		<damage type="Sonic" immunity="100" resistance="10" />
+		<damage type="Subdual" immunity="0" resistance="0" />
+		<damage type="Ectoplasmic" immunity="25" resistance="0" />
+		<damage type="Psionic" immunity="40" resistance="0" />
+		<damage type="Sacred" immunity="30" resistance="0" />
+		<damage type="Vile" immunity="30" resistance="0" />
+		<damage type="Primal" immunity="30" resistance="0" />
+		<damage type="Anarchic" immunity="35" resistance="0" />
+		<damage type="Axiomatic" immunity="30" resistance="0" />
+		<damage type="Internal" immunity="0" resistance="0" />
+	</damageImmunities>
+	<spellImmunities>
+		<add name="Harm" />
+		<add name="Mass Harm" />
+		<add name="Implosion" />
+		<add name="Drown" />
+		<add name="Disintegrate" />
+		<add name="Bigbys Crushing Hand" />
+		<add name="Bigbys Grasping Hand" />
+		<add name="Flesh to Stone" />
+		<add name="Call of Stone" />
+		<add name="Cast in Stone" />
+	</spellImmunities>
+	<otherImmunities>
+		<add name="Mind Spells" />
+		<add name="Poison" />
+		<add name="Disease" />
+		<add name="Fear" />
+		<add name="Paralysis" />
+		<add name="Blindness" />
+		<add name="Deafness" />
+		<add name="Slow" />
+		<add name="Entangle" />
+		<add name="Stun" />
+		<add name="Sleep" />
+		<add name="Charm" />
+		<add name="Dominate" />
+		<add name="Confuse" />
+		<add name="Daze" />
+		<add name="Ability Decrease" />
+		<add name="Movement Speed Decrease" />
+		<add name="Knockdown" />
+		<add name="Negative Levels" />
+		<add name="Sneak Attack" />
+		<add name="Critical Hits" />
+		<add name="Death Magic" />
+		<add name="Petrification" />
+	</otherImmunities>
+</creature>
+</creatures>
