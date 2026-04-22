@@ -22,7 +22,7 @@
   - literal `" attacks "`
   - defender name
   - another `:`
-- Player names often carry a level suffix like ` [3.0]`, which should be stripped before comparing against the current character name.
+- Bracketed text like ` [3.0]` can be part of the actual character name and must be preserved when comparing attack lines against the resolved player identity.
 
 ## Creature data model
 
@@ -41,7 +41,7 @@
 - A lightweight parser over captured chat lines is sufficient, as long as it:
   - strips optional log prefixes and timestamps
   - handles attack-mode prefixes like `Sneak Attack :`
-  - strips the player's ` [x.y]` suffix before comparing names
+  - preserves the full attacker and defender names exactly as they appear in the log
 - The current SimKeys Auto-AA implementation mirrors the legacy scoring model and reads from the vendored creature dataset instead of requiring the HGX runtime.
 
 ## Divine Slinger notes

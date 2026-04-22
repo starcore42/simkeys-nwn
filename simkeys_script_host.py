@@ -496,10 +496,10 @@ class AutoAAScript(ClientScriptBase):
     def _character_name(self) -> str:
         live_name = (self.host.client.character_name or "").strip()
         if live_name:
-            return hgx_combat.strip_player_level_suffix(live_name)
+            return live_name
         cached_name = (self.client.character_name or "").strip()
         if cached_name:
-            return hgx_combat.strip_player_level_suffix(cached_name)
+            return cached_name
         return ""
 
     def _mode_label(self) -> str:
@@ -1040,10 +1040,10 @@ class AutoRSMScript(ClientScriptBase):
     def _character_name(self) -> str:
         live_name = (self.host.client.character_name or "").strip()
         if live_name:
-            return hgx_combat.strip_player_level_suffix(live_name)
+            return live_name
         cached_name = (self.client.character_name or "").strip()
         if cached_name:
-            return hgx_combat.strip_player_level_suffix(cached_name)
+            return cached_name
         return ""
 
     def _close_process_handle(self):

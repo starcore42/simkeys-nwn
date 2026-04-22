@@ -9,7 +9,6 @@ CHAT_WINDOW_PREFIX_RE = re.compile(r"^\[CHAT WINDOW TEXT\]\s*", re.IGNORECASE)
 SERVER_PREFIX_RE = re.compile(r"^\[Server\]\s*", re.IGNORECASE)
 TIMESTAMP_PREFIX_RE = re.compile(r"^\[[A-Z][a-z]{2}\s+[A-Z][a-z]{2}\s+\d{2}\s+\d{2}:\d{2}:\d{2}\]\s*")
 ATTACK_LINE_RE = re.compile(r"^(?:(?P<attack_mode>[^:]+?)\s*:\s*)?(?P<attacker>.+?) attacks (?P<defender>.+?)\s*:\s*", re.IGNORECASE)
-PLAYER_LEVEL_SUFFIX_RE = re.compile(r"\s+\[\d+(?:\.\d+)?\]$")
 BOW_SET_RE = re.compile(r"Bow set to (?P<word>[A-Za-z]+) damage!", re.IGNORECASE)
 DIVINE_BULLETS_SET_RE = re.compile(r"Divine Bullets set to (?P<word>[A-Za-z]+) damage!", re.IGNORECASE)
 GI_BOLT_SET_RE = re.compile(r"You are now using (?P<word>[A-Za-z]+)!?", re.IGNORECASE)
@@ -45,10 +44,6 @@ def normalize_chat_line(text: str) -> str:
     return value.strip()
 
 
-def strip_player_level_suffix(name: str) -> str:
-    return PLAYER_LEVEL_SUFFIX_RE.sub("", str(name or "").strip()).strip()
-
-
 def parse_attack_line(text: str) -> Optional[ParsedAttackLine]:
     normalized = normalize_chat_line(text)
     if " attacks " not in normalized.lower():
@@ -58,8 +53,8 @@ def parse_attack_line(text: str) -> Optional[ParsedAttackLine]:
     if match is None:
         return None
 
-    attacker = strip_player_level_suffix(match.group("attacker"))
-    defender = strip_player_level_suffix(match.group("defender"))
+    attacker = str(match.group("attacker") or "").strip()
+    defender = str(match.group("defender") or "").strip()
     if not attacker or not defender:
         return None
 
@@ -100,7 +95,7 @@ def parse_breach_line(text: str) -> Optional[ParsedBreachLine]:
     if match is None:
         return None
 
-    target = strip_player_level_suffix(match.group("target"))
+    target = str(match.group("target") or "").strip()
     effect = str(match.group("effect") or "").strip()
     if not target or not effect:
         return None

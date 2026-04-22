@@ -68,6 +68,6 @@ This identity path is now the authoritative source for higher-level tooling:
 - the runtime probe reads the cached name and player pointer from the hook query
 - the GUI displays the resolved character name per client
 - the script host waits for this identity before parsing player-owned combat events
-- Auto-AA and Auto RSM then strip the trailing player level suffix when comparing attack lines
+- Auto-AA and Auto RSM compare combat-log names against that resolved identity verbatim, including bracketed text such as ` [3.0]` when it is part of the actual character name
 
 So this note should now be read as "confirmed working identity resolver" rather than "what we think HGX probably did".
