@@ -6,8 +6,8 @@ This note records the chat paths that moved from reverse-engineered candidates i
 
 ## Confirmed working outbound chat path
 
-- `Hgx.Client` sends request type `1005` for chat messages.
-- In `hgx.server decompile.txt`, request `1005` is dispatched by `sub_100074E0`.
+- HGX request type `1005` maps to chat messages.
+- That request is dispatched by `sub_100074E0`.
 - `sub_100074E0` copies the payload into the server's local string wrapper, reads the HGX chat mode from `[request+0x0C]`, and calls the NWN function pointer resolved at `0x0057C9F0`.
 
 That NWN target is now the live SimKeys send path as well:
@@ -25,10 +25,10 @@ The current hook path is:
 
 This is the path used by:
 
-- `simKeys_Client.py` `chat_send(...)`
-- `simkeys_runtime.send_chat(...)`
-- `simkeys_script_host.py` helpers like `send_chat(...)` and `send_console(...)`
-- higher-level scripts such as Auto-AA, AutoDrink, and Auto RSM
+- the low-level pipe client
+- the Python runtime send helper
+- script-host helpers such as `send_chat(...)` and `send_console(...)`
+- higher-level automation scripts such as Auto-AA, AutoDrink, and Auto RSM
 
 ## What `0x0057C9F0` still appears to do
 
@@ -42,12 +42,12 @@ That matters because the current hook is not inventing a parallel chat system. I
 
 ## HGX inbound log/chat events
 
-- `Hgx.Client` handles pipe responses:
+- HGX uses pipe responses:
   - `2001` as log text / game event text
   - `2002` as chat-command style text
-- In the HGX server decompile:
-  - `0x10007A40` writes response type `0x7D1` (`2001`)
-  - `0x100076E0` writes response type `0x7D2` (`2002`)
+- The relevant server-side response writers are at:
+  - `0x10007A40` for response type `0x7D1` (`2001`)
+  - `0x100076E0` for response type `0x7D2` (`2002`)
 
 Recreating HGX's whole server-side event system is still unnecessary for SimKeys because the local hook now captures the rendered NWN chat/log output directly inside the client.
 
@@ -71,7 +71,7 @@ So the current live read-side API is:
 - pipe op `3007` = poll rendered chat/log lines
 - response shape = `latest_seq` plus zero or more `(seq, text)` entries
 
-This is the feed consumed by `simkeys_script_host.py`, which means the automation scripts are now driven by the same rendered text the player sees in the in-game chat window.
+This is the feed consumed by the script host, which means the automation scripts are now driven by the same rendered text the player sees in the in-game chat window.
 
 ## Practical SimKeys result
 
@@ -79,7 +79,7 @@ The reverse-engineering conclusion is now operational:
 
 - outbound chat uses `0x0057C9F0` on the real NWN window thread
 - inbound chat/log capture uses `0x00493BD0`
-- both are exposed over the `simkeys_<pid>` pipe
+- both are exposed over the per-process SimKeys pipe
 - the higher-level Python tooling already treats those as the authoritative chat paths
 
 That makes chat one of the areas where the notes should now be read as "confirmed working hook path" rather than "future integration idea".

@@ -6,9 +6,9 @@ This note records the player-identity lookup chain that moved from HGX reverse e
 
 ## HGX `DetectCharacter`
 
-- `Hgx.Client` sends request `1008` for `DetectCharacter()`.
-- In `hgx.server decompile.txt`, request `1008` dispatches to `sub_10001A50`.
-- The reply path writes response type `2004`, which `Hgx.Client` labels `PlayerLogin`.
+- HGX request `1008` is the `DetectCharacter()` path.
+- That request dispatches to `sub_10001A50`.
+- The reply path writes response type `2004`, labeled `PlayerLogin`.
 - The payload is a single character-name string.
 
 ## Confirmed working identity chain
@@ -57,7 +57,7 @@ Operationally that means:
    - `character_name`
    - `identity_error`
    - `identity_refresh_count`
-4. Pipe query responses expose that cached identity to the Python side.
+4. Pipe query responses expose that cached identity to the higher-level runtime.
 
 So character identity no longer needs to be guessed from chat text or window titles. The current code asks NWN for the same name HGX used to return.
 
@@ -65,9 +65,9 @@ So character identity no longer needs to be guessed from chat text or window tit
 
 This identity path is now the authoritative source for higher-level tooling:
 
-- `simkeys_runtime.probe_client(...)` reads the cached name and player pointer from the hook query
-- `simkeys_gui.py` displays the resolved character name per client
-- `simkeys_script_host.py` waits for this identity before parsing player-owned combat events
+- the runtime probe reads the cached name and player pointer from the hook query
+- the GUI displays the resolved character name per client
+- the script host waits for this identity before parsing player-owned combat events
 - Auto-AA and Auto RSM then strip the trailing player level suffix when comparing attack lines
 
 So this note should now be read as "confirmed working identity resolver" rather than "what we think HGX probably did".

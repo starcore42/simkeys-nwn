@@ -2,7 +2,7 @@
 
 Date: 2026-04-23
 
-This note records the real working quickbar activation paths now used by the current SimKeys hook for the NWN Diamond client in this workspace. The earlier reverse-engineering narrowed the right functions; the current code now drives those same functions directly on the NWN window thread.
+This note records the real working quickbar activation path now used by the current SimKeys hook. It keeps the addresses and behavior that matter if another developer wants to verify the same chain in their own decompile.
 
 ## Confirmed working quickbar paths
 
@@ -27,17 +27,18 @@ This is no longer just a promising narrow candidate. It is the path SimKeys now 
 
 ## Narrow engine chain still matches the live implementation
 
-The decompile-backed quickbar execution chain is still the same:
+The quickbar execution chain is still the same:
 
 1. `sub_4269A0` at `0x004269A0` is the large command handler with the quickbar command cases.
 2. The contiguous quickbar command block is at `0x00427605` and covers cases `5-16`.
 3. That block reduces the command id to a slot index and calls `sub_51FAA0`.
 4. `sub_51FAA0` at `0x0051FAA0` reads the current page base from `[this + 0x2BB8]`, resolves the slot record, and calls `sub_5164A0(slotRecord)`.
 
-Relevant raw decompile anchors in [fullNwnDecompilePart1.txt](H:\Codex Projects\NWN\docs\reverse-engineering\decompiles\fullNwnDecompilePart1.txt):
+Addresses worth checking in an independent decompile:
 
-- `0x00427605` / `0x00427651` around lines `56197-56221`
-- `0x0051FAA0` around lines `416944-416956`
+- `0x004269A0`
+- `0x00427605`
+- `0x0051FAA0`
 
 The difference now is operational confidence: the current hook posts back onto the game window thread and calls this narrow path directly instead of only tracing it.
 
@@ -57,10 +58,10 @@ What it confirms:
 - Each slot stride is `0x134`
 - `sub_51FD10` switches the active page by rewriting `[panel + 0x2BB8]`
 
-Relevant raw decompile anchors:
+Addresses worth checking:
 
-- `sub_51F6D0` around lines `416719-416872`
-- `sub_51FD10` around lines `417211-417270`
+- `0x0051F6D0`
+- `0x0051FD10`
 
 The current hook uses that layout in two ways:
 
@@ -91,11 +92,12 @@ Why this is high-confidence:
 4. If neither modifier-state field is set, the same code falls back to `sub_51FD10(panel, 0)`.
 5. The quickbar activation block for actions `5..16` then calls `sub_51FAA0(panel, slotIndex)` using whichever page is currently active.
 
-Relevant raw anchors in [fullNwnDecompilePart1.txt](H:\Codex Projects\NWN\docs\reverse-engineering\decompiles\fullNwnDecompilePart1.txt):
+Addresses worth checking:
 
-- keymap registration strings and action ids around lines `21437-21531`
-- shift/ctrl page-state handling around lines `55734-55806`
-- shared helper `sub_42AD10` around lines `61081-61102`
+- `0x0040DAB8..0x0040DE73`
+- `0x004269A0`
+- `0x0051FD10`
+- `0x0051FAA0`
 
 The current page-slot trigger path in the hook mirrors that behavior exactly:
 
@@ -114,12 +116,12 @@ The injected window procedure now has three practical dispatch modes:
 
 For quickbar work, the important real path is path `2` or `3`.
 
-The Python side already treats this as the authoritative quickbar API:
+The higher-level runtime already treats this as the authoritative quickbar API:
 
-- `simkeys_runtime.trigger_slot(...)` uses pipe op `3001` for page `0`
-- `simkeys_runtime.trigger_slot(..., page=1|2)` uses pipe op `3008`
-- `simkeys_script_host.py` uses that runtime helper for AutoDrink and other quickbar-backed actions
-- `simkeys_gui.py` presents the three banks as Base / Shift / Ctrl rows
+- pipe op `3001` is used for page `0`
+- pipe op `3008` is used for page `1` or `2`
+- the script host uses that runtime helper for AutoDrink and other quickbar-backed actions
+- the GUI presents the three banks as Base / Shift / Ctrl rows
 
 The query snapshot also reports the rebased runtime addresses and latest quickbar capture state:
 
@@ -167,9 +169,9 @@ Important known mappings from the raw decompile:
 - raw `42` -> `sub_4D0380`
 - raw `43` -> `sub_4D03A0`
 
-Relevant anchor:
+Address worth checking:
 
-- `sub_5164A0` around lines `403495-403655`
+- `0x005164A0`
 
 This part is still useful for understanding what a given quickbar slot actually does after activation, even though the top-level activation path itself is now settled.
 
@@ -188,16 +190,12 @@ This still matters when interpreting slot traces from the working hook, because 
 
 ## Paths that are still not the activation path
 
-`sub_515690` still looks like quickbar drag/drop or assignment handling, not slot activation.
+`sub_515690` at `0x00515690` still looks like quickbar drag/drop or assignment handling, not slot activation.
 
 Why it is likely the wrong path for execution:
 
 - it starts by creating `"gui_dm_drop"`
 - it switches on `arg0 - 5`
 - it fans out to handlers like `sub_4AEB70`, `sub_4AEC50`, `sub_4AED30`, and `sub_4AEDE0`
-
-Relevant anchor:
-
-- `sub_515690` around lines `402014-402051`
 
 This remains useful for reverse engineering slot setup and manipulation, but the actual working activation path is now the `sub_51FD10` / `sub_51FAA0` chain above.
