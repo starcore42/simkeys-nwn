@@ -185,6 +185,9 @@ class ClientScriptBase:
         self.status_text = text
         self.host.notify_state_changed()
 
+    def get_state_details(self) -> dict:
+        return {}
+
 
 class AutoDrinkScript(ClientScriptBase):
     script_id = "autodrink"
@@ -843,6 +846,7 @@ class AutoAAScript(ClientScriptBase):
             f"{self.host.client.display_name}: {self._mode_label()} assumed {self._binding_display(pending_key)} is now equipped",
             script_id=self.script_id,
         )
+        self.host.notify_state_changed()
         return True
 
     def _observe_weapon_damage_line(self, text: str):
@@ -855,6 +859,8 @@ class AutoAAScript(ClientScriptBase):
             return
 
         now = time.monotonic()
+        if self.pending_weapon_key and now < self.pending_weapon_ready_at:
+            return
         self._promote_pending_weapon(now)
 
         profile = self.weapon_profiles.get(self.current_weapon_key)
@@ -961,6 +967,67 @@ class AutoAAScript(ClientScriptBase):
             f"({resolved_count}/{len(self.weapon_profiles)} typed, {learned_count} seen)"
         )
 
+    def _weapon_runtime_summary(self, profile: WeaponLearningProfile) -> str:
+        context = self._weapon_profile_context(profile)
+        if context is None:
+            compatible = "/".join(family.family_key for family in self._compatible_weapon_families(profile))
+            return f"Unknown ({compatible or 'no compatible family'}), obs {profile.observations}"
+
+        _components, family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic = context
+        return (
+            f"{self._weapon_profile_summary(family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic)}, "
+            f"obs {profile.observations}"
+        )
+
+    def _next_weapon_to_learn(self) -> Optional[WeaponLearningProfile]:
+        if not self.weapon_profiles:
+            return None
+
+        current_profile = self.weapon_profiles.get(self.current_weapon_key)
+        if current_profile is not None and self._exact_weapon_family(current_profile) is None and current_profile.observations == 0:
+            return current_profile
+
+        candidates = [
+            profile
+            for profile in self.weapon_profiles.values()
+            if profile.binding.key != self.current_weapon_key and self._exact_weapon_family(profile) is None
+        ]
+        if not candidates:
+            return None
+        return min(candidates, key=lambda profile: (profile.observations, profile.last_seen_at, profile.binding.key))
+
+    def _request_weapon_swap(self, binding: WeaponBinding, target_name: str, reason: str) -> bool:
+        try:
+            result = self.host.trigger_slot(binding.slot, page=binding.page)
+        except Exception as exc:
+            self.set_status(f"{target_name}: swap failed")
+            self.host.emit(
+                "error",
+                f"{self.host.client.display_name}: {self._mode_label()} trigger failed for {self._binding_display(binding.key)}: {exc}",
+                script_id=self.script_id,
+            )
+            return False
+
+        if result["success"]:
+            now = time.monotonic()
+            self.pending_weapon_key = binding.key
+            self.pending_weapon_ready_at = now + self._weapon_swap_cooldown_seconds()
+            self.set_status(f"{target_name}: {reason} {self._binding_display(binding.key)} ({self._weapon_swap_cooldown_seconds():.1f}s)")
+        else:
+            self.set_status(f"{target_name}: swap failed")
+
+        self.host.emit(
+            "info",
+            (
+                f"{self.host.client.display_name}: {self._mode_label()} target='{target_name}' "
+                f"weapon={self._binding_display(binding.key)} reason={reason} success={result['success']} "
+                f"rc={result['rc']} aux={result['aux_rc']} path={result['path']} err={result['err']}"
+            ),
+            script_id=self.script_id,
+        )
+        self.host.notify_state_changed()
+        return bool(result["success"])
+
     def _weapon_recommendation_summary(self, recommendation: WeaponRecommendation) -> str:
         return self._weapon_profile_summary(
             recommendation.family_label,
@@ -973,6 +1040,22 @@ class AutoAAScript(ClientScriptBase):
     def _handle_weapon_attack(self, attack):
         self.current_target = attack.defender
 
+        now = time.monotonic()
+        if self.pending_weapon_key and now < self.pending_weapon_ready_at:
+            remaining = self.pending_weapon_ready_at - now
+            self.set_status(f"{attack.defender}: waiting {self._binding_display(self.pending_weapon_key)} {remaining:.1f}s")
+            return
+
+        self._promote_pending_weapon(now)
+
+        learning_profile = self._next_weapon_to_learn()
+        if learning_profile is not None:
+            if learning_profile.binding.key == self.current_weapon_key:
+                self.set_status(f"{attack.defender}: learning {self._binding_display(self.current_weapon_key)}")
+                return
+            self._request_weapon_swap(learning_profile.binding, attack.defender, "learn")
+            return
+
         if self.db.lookup(attack.defender) is None:
             self.set_status(f"No data: {attack.defender}")
             defender_key = attack.defender.lower()
@@ -984,14 +1067,6 @@ class AutoAAScript(ClientScriptBase):
                     script_id=self.script_id,
                 )
             return
-
-        now = time.monotonic()
-        if self.pending_weapon_key and now < self.pending_weapon_ready_at:
-            remaining = self.pending_weapon_ready_at - now
-            self.set_status(f"{attack.defender}: waiting {self._binding_display(self.pending_weapon_key)} {remaining:.1f}s")
-            return
-
-        self._promote_pending_weapon(now)
 
         candidates = self._weapon_candidates_for_target(attack.defender)
         if not candidates:
@@ -1015,25 +1090,8 @@ class AutoAAScript(ClientScriptBase):
             self.set_status(f"{attack.defender}: {self._binding_display(recommendation.binding.key)} {selection_summary}")
             return
 
-        try:
-            result = self.host.trigger_slot(recommendation.binding.slot, page=recommendation.binding.page)
-        except Exception as exc:
-            self.set_status(f"{attack.defender}: swap failed")
-            self.host.emit(
-                "error",
-                f"{self.host.client.display_name}: {self._mode_label()} trigger failed for {self._binding_display(recommendation.binding.key)}: {exc}",
-                script_id=self.script_id,
-            )
+        if not self._request_weapon_swap(recommendation.binding, attack.defender, "swap"):
             return
-
-        if result["success"]:
-            self.pending_weapon_key = recommendation.binding.key
-            self.pending_weapon_ready_at = now + self._weapon_swap_cooldown_seconds()
-            self.set_status(
-                f"{attack.defender}: swap {self._binding_display(recommendation.binding.key)} ({self._weapon_swap_cooldown_seconds():.1f}s)"
-            )
-        else:
-            self.set_status(f"{attack.defender}: swap failed")
 
         self.host.emit(
             "info",
@@ -1041,8 +1099,7 @@ class AutoAAScript(ClientScriptBase):
                 f"{self.host.client.display_name}: {self._mode_label()} target='{attack.defender}' "
                 f"weapon={self._binding_display(recommendation.binding.key)} "
                 f"expected={recommendation.expected_damage} paragon={recommendation.paragon_ranks} "
-                f"profile={selection_summary} success={result['success']} rc={result['rc']} "
-                f"aux={result['aux_rc']} path={result['path']} err={result['err']}"
+                f"profile={selection_summary}"
             ),
             script_id=self.script_id,
         )
@@ -1050,9 +1107,39 @@ class AutoAAScript(ClientScriptBase):
             self.host.send_console(
                 (
                     f"SimKeys {self._mode_label()} {attack.defender} -> {self._binding_display(recommendation.binding.key)} "
-                    f"rc={result['rc']} err={result['err']}"
+                    f"profile={selection_summary}"
                 )
             )
+
+    def get_max_lines(self) -> int:
+        if self._is_weapon_mode():
+            return min(super().get_max_lines(), 20)
+        return super().get_max_lines()
+
+    def get_state_details(self) -> dict:
+        if not self._is_weapon_mode():
+            return {}
+        weapons = []
+        for binding_key in self._weapon_binding_keys():
+            binding = self.weapon_bindings.get(binding_key)
+            profile = self.weapon_profiles.get(binding_key)
+            if binding is None or profile is None:
+                continue
+            weapons.append({
+                "key": binding.key,
+                "label": binding.label,
+                "choice": binding.choice,
+                "current": binding.key == self.current_weapon_key,
+                "pending": binding.key == self.pending_weapon_key,
+                "observations": profile.observations,
+                "summary": self._weapon_runtime_summary(profile),
+            })
+        return {
+            "weapon_mode": True,
+            "current_weapon": self.current_weapon_key,
+            "pending_weapon": self.pending_weapon_key,
+            "weapons": weapons,
+        }
 
     def _damage_dice(self) -> int:
         return max(int(self.config.get("elemental_dice", 10)), 0)
@@ -1685,6 +1772,7 @@ class ClientScriptHost:
                     script_id: {
                         "running": True,
                         "status": script.status_text,
+                        "details": script.get_state_details(),
                     }
                     for script_id, script in self.scripts.items()
                 },
@@ -1695,19 +1783,52 @@ class ClientScriptHost:
         with self.lock:
             if definition.script_id in self.scripts:
                 raise RuntimeError(f"{definition.name} is already running for pid {self.client.pid}.")
-            script = definition.factory(self.client, config, self)
+
+            started_at = time.perf_counter()
+            self.emit("info", f"{self.client.display_name}: starting {definition.name}", script_id=definition.script_id)
+
+            factory_started_at = time.perf_counter()
+            try:
+                script = definition.factory(self.client, config, self)
+            except Exception as exc:
+                elapsed = time.perf_counter() - started_at
+                self.emit(
+                    "error",
+                    f"{self.client.display_name}: {definition.name} failed during setup after {elapsed:.2f}s: {exc}",
+                    script_id=definition.script_id,
+                )
+                raise
+            factory_elapsed = time.perf_counter() - factory_started_at
+
             self.scripts[definition.script_id] = script
             if self.thread is None or not self.thread.is_alive():
                 self.stop_event = threading.Event()
                 self.thread = threading.Thread(target=self._run, name=f"SimKeysHost-{self.client.pid}", daemon=True)
                 self.thread.start()
+            on_start_started_at = time.perf_counter()
             try:
                 script.on_start()
-            except Exception:
+            except Exception as exc:
                 self.scripts.pop(definition.script_id, None)
                 if not self.scripts:
                     self.stop_event.set()
+                elapsed = time.perf_counter() - started_at
+                self.emit(
+                    "error",
+                    f"{self.client.display_name}: {definition.name} failed during on_start after {elapsed:.2f}s: {exc}",
+                    script_id=definition.script_id,
+                )
                 raise
+            on_start_elapsed = time.perf_counter() - on_start_started_at
+            elapsed = time.perf_counter() - started_at
+            self.emit(
+                "info",
+                (
+                    f"{self.client.display_name}: {definition.name} ready in {elapsed:.2f}s "
+                    f"(setup {factory_elapsed:.2f}s, arm {on_start_elapsed:.2f}s)"
+                ),
+                script_id=definition.script_id,
+            )
         self.notify_state_changed()
 
     def stop_script(self, script_id: str):
@@ -1728,8 +1849,8 @@ class ClientScriptHost:
         with self.lock:
             script = self.scripts.get(script_id)
             if script is None:
-                return {"running": False, "status": "Stopped"}
-            return {"running": True, "status": script.status_text}
+                return {"running": False, "status": "Stopped", "details": {}}
+            return {"running": True, "status": script.status_text, "details": script.get_state_details()}
 
     def running_script_ids(self) -> List[str]:
         with self.lock:
@@ -1764,6 +1885,7 @@ class ClientScriptHost:
         after = 0
         initialized = False
         last_poll_error = ""
+        last_slow_log_at = 0.0
         try:
             while not self.stop_event.is_set():
                 with self.lock:
@@ -1805,10 +1927,12 @@ class ClientScriptHost:
                     continue
 
                 if polled["lines"]:
+                    batch_started_at = time.perf_counter()
                     for line in polled["lines"]:
                         with self.lock:
                             current_scripts = [script for script in self.scripts.values() if script.needs_chat_feed()]
                         for script in current_scripts:
+                            line_started_at = time.perf_counter()
                             try:
                                 script.on_chat_line(line["seq"], line["text"])
                             except Exception as exc:
@@ -1818,6 +1942,26 @@ class ClientScriptHost:
                                     f"{self.client.display_name}: {type(exc).__name__}: {exc}",
                                     script_id=getattr(script, "script_id", None),
                                 )
+                            finally:
+                                line_elapsed = time.perf_counter() - line_started_at
+                                now_perf = time.perf_counter()
+                                if line_elapsed > 0.50 and now_perf - last_slow_log_at > 10.0:
+                                    last_slow_log_at = now_perf
+                                    self.emit(
+                                        "error",
+                                        (
+                                            f"{self.client.display_name}: slow {getattr(script, 'script_id', 'script')} "
+                                            f"chat handler took {line_elapsed:.2f}s at seq {line['seq']}"
+                                        ),
+                                        script_id=getattr(script, "script_id", None),
+                                    )
+                    batch_elapsed = time.perf_counter() - batch_started_at
+                    if batch_elapsed > 1.0 and time.perf_counter() - last_slow_log_at > 10.0:
+                        last_slow_log_at = time.perf_counter()
+                        self.emit(
+                            "error",
+                            f"{self.client.display_name}: slow chat batch processed {len(polled['lines'])} lines in {batch_elapsed:.2f}s",
+                        )
                 self.stop_event.wait(poll_interval)
         except Exception as exc:
             self.emit("error", f"{self.client.display_name}: host stopped after error: {exc}")
@@ -1974,7 +2118,7 @@ class ScriptManager:
     def get_state(self, client_pid: int, script_id: str) -> dict:
         host = self.hosts.get(client_pid)
         if host is None:
-            return {"running": False, "status": "Stopped"}
+            return {"running": False, "status": "Stopped", "details": {}}
         return host.get_state(script_id)
 
     def running_script_count(self, client_pid: int) -> int:

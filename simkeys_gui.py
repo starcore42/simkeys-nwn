@@ -253,8 +253,18 @@ class ScriptCard:
         )
         self.wrap_targets.append((self.weapon_summary_label, 48))
 
+        self.weapon_learning_var = tk.StringVar(value="Learned weapons: start Weapon Swap to populate this.")
+        self.weapon_learning_label = ttk.Label(self.weapon_section, textvariable=self.weapon_learning_var, justify="left", wraplength=520)
+        self.weapon_learning_label.grid(
+            row=3,
+            column=0,
+            sticky="ew",
+            pady=(0, 8),
+        )
+        self.wrap_targets.append((self.weapon_learning_label, 48))
+
         grid = ttk.Frame(self.weapon_section)
-        grid.grid(row=3, column=0, sticky="w")
+        grid.grid(row=4, column=0, sticky="w")
         ttk.Label(grid, text="").grid(row=0, column=0, padx=(0, 8))
         for slot in range(1, 13):
             ttk.Label(grid, text=str(slot), width=4, anchor="center").grid(row=0, column=slot, padx=1, pady=(0, 2))
@@ -281,10 +291,10 @@ class ScriptCard:
             textvariable=self.advanced_toggle_var,
             command=self.on_advanced_toggle,
             width=14,
-        ).grid(row=4, column=0, sticky="w")
+        ).grid(row=5, column=0, sticky="w")
 
         self.advanced_body = ttk.LabelFrame(self.content, text="Advanced", padding=8)
-        self.advanced_body.grid(row=5, column=0, sticky="ew", pady=(8, 0))
+        self.advanced_body.grid(row=6, column=0, sticky="ew", pady=(8, 0))
         self._build_field_grid(self.advanced_body, ["poll_interval", "max_lines", "echo_console", "include_backlog"], columns=2)
         if not self.advanced_expanded:
             self.advanced_body.grid_remove()
@@ -520,8 +530,39 @@ class ScriptCard:
 
         self.set_enabled(True)
         state = self.app.script_manager.get_state(client.pid, self.definition.script_id)
-        self.status_var.set(state["status"])
+        busy_label = self.app.script_toggles_in_progress.get((client.pid, self.definition.script_id))
+        if busy_label:
+            self.status_var.set(busy_label)
+        else:
+            self.status_var.set(state["status"])
         self.toggle_button.configure(text="Stop" if state["running"] else "Start")
+        if busy_label:
+            self.toggle_button.configure(state="disabled")
+        if self.definition.script_id == "auto_aa":
+            self._refresh_auto_damage_runtime_details(state.get("details", {}), state["running"])
+
+    def _refresh_auto_damage_runtime_details(self, details, running):
+        if not hasattr(self, "weapon_learning_var"):
+            return
+        if not running or not details.get("weapon_mode"):
+            self.weapon_learning_var.set("Learned weapons: start Weapon Swap to populate this.")
+            return
+
+        weapons = list(details.get("weapons", []))
+        if not weapons:
+            self.weapon_learning_var.set("Learned weapons: waiting for configured weapon slots.")
+            return
+
+        lines = []
+        for weapon in weapons:
+            marker = "* " if weapon.get("current") else ""
+            if weapon.get("pending"):
+                marker = "> "
+            lines.append(
+                f"{marker}{weapon.get('key', '?')}/{weapon.get('label', '?')}: "
+                f"{weapon.get('summary', 'Unknown')}"
+            )
+        self.weapon_learning_var.set("Learned weapons:\n" + "\n".join(lines))
 
     def on_expand_toggle(self):
         self.expanded = not self.expanded
@@ -628,7 +669,12 @@ class ScriptCard:
                 )
 
     def on_toggle(self):
-        self.app.toggle_script(self.definition.script_id, self.parse_config())
+        try:
+            config = self.parse_config()
+        except Exception as exc:
+            messagebox.showerror("SimKeys", str(exc))
+            return
+        self.app.toggle_script(self.definition.script_id, config)
 
 
 class SimKeysDesktopApp:
@@ -646,6 +692,7 @@ class SimKeysDesktopApp:
         self.selected_pid = None
         self.refresh_in_progress = False
         self.script_configs = {}
+        self.script_toggles_in_progress = {}
 
         self.status_var = tk.StringVar(value="Ready")
         self.selected_name_var = tk.StringVar(value="No client selected")
@@ -863,6 +910,11 @@ class SimKeysDesktopApp:
             return
         if event_type == "script-state":
             self.persist_loaded_configs(self.selected_pid)
+            self.refresh_selected_client_ui()
+            self.refresh_client_tree_rows()
+            return
+        if event_type == "script-toggle-finished":
+            self.script_toggles_in_progress.pop((event.get("client_pid"), event.get("script_id")), None)
             self.refresh_selected_client_ui()
             self.refresh_client_tree_rows()
             return
@@ -1132,18 +1184,37 @@ class SimKeysDesktopApp:
             return
 
         self.set_script_config(client.pid, script_id, config)
+        toggle_key = (client.pid, script_id)
+        if toggle_key in self.script_toggles_in_progress:
+            self.log(f"{client.display_name}: {script_id} is already changing state", "info")
+            return
+
         state = self.script_manager.get_state(client.pid, script_id)
-        try:
-            if state["running"]:
-                self.script_manager.stop_script(client.pid, script_id)
-                self.log(f"{client.display_name}: stopped {script_id}", "info")
-            else:
+        starting = not state["running"]
+        self.script_toggles_in_progress[toggle_key] = "Starting..." if starting else "Stopping..."
+
+        row = self.script_rows.get(script_id)
+        if row is not None:
+            row.status_var.set("Starting..." if starting else "Stopping...")
+            row.toggle_button.configure(state="disabled")
+
+        def action():
+            try:
+                current_state = self.script_manager.get_state(client.pid, script_id)
+                if current_state["running"]:
+                    self.script_manager.stop_script(client.pid, script_id)
+                    return f"{client.display_name}: stopped {script_id}"
+
                 self.script_manager.start_script(client, script_id, config)
-                self.log(f"{client.display_name}: started {script_id}", "info")
-        except Exception as exc:
-            self.log(f"{client.display_name}: could not toggle {script_id}: {exc}", "error")
-        self.refresh_selected_client_ui()
-        self.refresh_client_tree_rows()
+                return f"{client.display_name}: started {script_id}"
+            finally:
+                self.enqueue_event({
+                    "type": "script-toggle-finished",
+                    "client_pid": client.pid,
+                    "script_id": script_id,
+                })
+
+        self.run_background(f"Toggle {script_id}", action)
 
     def on_close(self):
         try:
