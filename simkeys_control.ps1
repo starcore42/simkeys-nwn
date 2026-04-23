@@ -17,6 +17,14 @@ function Resolve-PythonInterpreter {
     }
   }
 
+  $defaultPython = Get-Command python -ErrorAction SilentlyContinue
+  if ($null -ne $defaultPython) {
+    return [pscustomobject]@{
+      Path = $defaultPython.Source
+      Source = "default-python"
+    }
+  }
+
   $pyLauncher = Get-Command py -ErrorAction SilentlyContinue
   if ($null -ne $pyLauncher) {
     try {
@@ -31,15 +39,12 @@ function Resolve-PythonInterpreter {
         }
         $versionTag = $Matches[1]
         $candidatePath = $Matches[2].Trim()
-        if ($versionTag -notlike "*-32") {
-          continue
-        }
         if (-not (Test-Path -LiteralPath $candidatePath)) {
           continue
         }
         return [pscustomobject]@{
           Path = $candidatePath
-          Source = "py-launcher-x86"
+          Source = "py-launcher-$versionTag"
         }
       }
     } catch {
@@ -47,40 +52,49 @@ function Resolve-PythonInterpreter {
     }
   }
 
-  $commonCandidates = @(
-    "C:\Program Files (x86)\Python313-32\python.exe",
-    "C:\Program Files (x86)\Python312-32\python.exe",
-    "C:\Program Files (x86)\Python311-32\python.exe",
-    (Join-Path $env:LOCALAPPDATA "Programs\Python\Python313-32\python.exe"),
-    (Join-Path $env:LOCALAPPDATA "Programs\Python\Python312-32\python.exe"),
-    (Join-Path $env:LOCALAPPDATA "Programs\Python\Python311-32\python.exe")
-  ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+  $commonCandidates = @()
+  if (-not [string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)) {
+    $commonCandidates += @(
+      (Join-Path $env:LOCALAPPDATA "Programs\Python\Python313\python.exe"),
+      (Join-Path $env:LOCALAPPDATA "Programs\Python\Python312\python.exe"),
+      (Join-Path $env:LOCALAPPDATA "Programs\Python\Python311\python.exe")
+    )
+  }
+  if (-not [string]::IsNullOrWhiteSpace($env:ProgramFiles)) {
+    $commonCandidates += @(
+      (Join-Path $env:ProgramFiles "Python313\python.exe"),
+      (Join-Path $env:ProgramFiles "Python312\python.exe"),
+      (Join-Path $env:ProgramFiles "Python311\python.exe")
+    )
+  }
+  $programFilesX86 = ${env:ProgramFiles(x86)}
+  if (-not [string]::IsNullOrWhiteSpace($programFilesX86)) {
+    $commonCandidates += @(
+      (Join-Path $programFilesX86 "Python313-32\python.exe"),
+      (Join-Path $programFilesX86 "Python312-32\python.exe"),
+      (Join-Path $programFilesX86 "Python311-32\python.exe")
+    )
+  }
 
   foreach ($candidatePath in $commonCandidates) {
     if (-not (Test-Path -LiteralPath $candidatePath)) {
       continue
     }
+    $source = "common-python"
+    if ($candidatePath -match '\\Python\d+-32\\') {
+      $source = "common-x86"
+    }
     return [pscustomobject]@{
       Path = $candidatePath
-      Source = "common-x86"
+      Source = $source
     }
   }
 
-  $defaultPython = Get-Command python -ErrorAction Stop
-  return [pscustomobject]@{
-    Path = $defaultPython.Source
-    Source = "default-python"
-  }
+  throw "Could not find a usable Python interpreter."
 }
 
 $python = Resolve-PythonInterpreter -RequestedPath $PythonExe
 Write-Host "Using Python '$($python.Path)' via $($python.Source)." -ForegroundColor Cyan
-if ($ControlArgs.Count -gt 0 -and @("inject-next", "inject-all") -contains $ControlArgs[0]) {
-  $pointerSize = (& $python.Path -c "import ctypes; print(ctypes.sizeof(ctypes.c_void_p))" 2>$null | Select-Object -First 1)
-  if ([string]$pointerSize -ne "4") {
-    Write-Warning "The selected Python interpreter is not 32-bit. Inject commands will fail until an x86 Python is available or passed via -PythonExe."
-  }
-}
 
 $srcPath = Join-Path $PSScriptRoot "src"
 if (-not (Test-Path -LiteralPath $srcPath)) {

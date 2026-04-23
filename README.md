@@ -19,8 +19,7 @@ This public repository contains the SimKeys source, a bundled hook DLL, build fi
 
 - Windows
 - Neverwinter Nights Diamond / `nwmain.exe`
-- A 32-bit Python installation for injection into the 32-bit NWN client
-- A normal Python installation for the GUI and controller scripts
+- Python for the GUI, controller scripts, and injection. 64-bit Python can inject the 32-bit NWN client.
 - Visual Studio 2022 Build Tools with the C++ workload, only if rebuilding the hook DLL yourself
 
 ## Repository Layout
@@ -48,10 +47,10 @@ From the repository root:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_gui.ps1
 ```
 
-If you want to supply an explicit x86 Python path:
+If you want to supply an alternate Python path for injection:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_gui.ps1 -InjectPython "C:\Program Files (x86)\Python313-32\python.exe"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_gui.ps1 -InjectPython "C:\Users\you\AppData\Local\Programs\Python\Python313\python.exe"
 ```
 
 ## Run the CLI Controller

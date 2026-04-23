@@ -25,81 +25,27 @@ function Resolve-AnyPython {
   }
 }
 
-function Resolve-X86Python {
+function Resolve-ExplicitPython {
   param([string]$RequestedPath)
 
-  if (-not [string]::IsNullOrWhiteSpace($RequestedPath)) {
-    $resolved = Resolve-Path -LiteralPath $RequestedPath -ErrorAction Stop
-    return [pscustomobject]@{
-      Path = $resolved.Path
-      Source = "explicit"
-    }
+  if ([string]::IsNullOrWhiteSpace($RequestedPath)) {
+    return $null
   }
 
-  $pyLauncher = Get-Command py -ErrorAction SilentlyContinue
-  if ($null -ne $pyLauncher) {
-    try {
-      $launcherOutput = & $pyLauncher.Source -0p 2>$null
-      foreach ($line in @($launcherOutput)) {
-        $text = [string]$line
-        if ([string]::IsNullOrWhiteSpace($text)) {
-          continue
-        }
-        if ($text -notmatch '^\s*-V:([^\s]+)\s+\*?\s*(.+python(?:w)?\.exe)\s*$') {
-          continue
-        }
-        $versionTag = $Matches[1]
-        $candidatePath = $Matches[2].Trim()
-        if ($versionTag -notlike "*-32") {
-          continue
-        }
-        if (-not (Test-Path -LiteralPath $candidatePath)) {
-          continue
-        }
-        return [pscustomobject]@{
-          Path = $candidatePath
-          Source = "py-launcher-x86"
-        }
-      }
-    } catch {
-      # fall through
-    }
+  $resolved = Resolve-Path -LiteralPath $RequestedPath -ErrorAction Stop
+  return [pscustomobject]@{
+    Path = $resolved.Path
+    Source = "explicit"
   }
-
-  $programFilesX86 = ${env:ProgramFiles(x86)}
-  $localAppData = $env:LOCALAPPDATA
-  $candidates = @(
-    (Join-Path $programFilesX86 "Python313-32\python.exe"),
-    (Join-Path $programFilesX86 "Python312-32\python.exe"),
-    (Join-Path $programFilesX86 "Python311-32\python.exe"),
-    (Join-Path $localAppData "Programs\Python\Python313-32\python.exe"),
-    (Join-Path $localAppData "Programs\Python\Python312-32\python.exe"),
-    (Join-Path $localAppData "Programs\Python\Python311-32\python.exe")
-  )
-
-  foreach ($candidate in $candidates) {
-    if ([string]::IsNullOrWhiteSpace($candidate)) {
-      continue
-    }
-    if (-not (Test-Path -LiteralPath $candidate)) {
-      continue
-    }
-    return [pscustomobject]@{
-      Path = $candidate
-      Source = "common-x86"
-    }
-  }
-
-  return $null
 }
 
 $guiPython = Resolve-AnyPython -RequestedPath $PythonExe
-$injectorPython = Resolve-X86Python -RequestedPath $InjectPython
+$injectorPython = Resolve-ExplicitPython -RequestedPath $InjectPython
 Write-Host "Using GUI Python '$($guiPython.Path)' via $($guiPython.Source)." -ForegroundColor Cyan
 if ($null -ne $injectorPython) {
-  Write-Host "Using injection Python '$($injectorPython.Path)' via $($injectorPython.Source)." -ForegroundColor Cyan
+  Write-Host "Using alternate injection Python '$($injectorPython.Path)' via $($injectorPython.Source)." -ForegroundColor Cyan
 } else {
-  Write-Warning "No 32-bit Python interpreter was found automatically. Inject buttons may fail until one is provided via -InjectPython."
+  Write-Host "Using GUI Python for injection as well." -ForegroundColor Cyan
 }
 
 $srcPath = Join-Path $PSScriptRoot "src"

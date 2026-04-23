@@ -1485,7 +1485,7 @@ def build_parser():
     parser.add_argument("--process-name", default="nwmain.exe", help="Process image name to discover. Default: nwmain.exe")
     parser.add_argument("--dll", default=runtime.default_dll_path())
     parser.add_argument("--export", default="InitSimKeys")
-    parser.add_argument("--inject-python", help="32-bit Python interpreter to use for injection if this process is not x86.")
+    parser.add_argument("--inject-python", help="Optional alternate Python interpreter to use for injection.")
     parser.add_argument("--refresh-ms", type=int, default=2500, help="Auto-refresh interval in milliseconds. Default: 2500")
     return parser
 

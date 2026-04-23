@@ -1,4 +1,4 @@
-import argparse, ctypes as C, os, struct, sys, time
+import argparse, ctypes as C, os, struct, time
 from ctypes import wintypes as W
 
 k32 = C.WinDLL("kernel32", use_last_error=True)
@@ -15,12 +15,6 @@ WriteProcessMemory = k32.WriteProcessMemory
 WriteProcessMemory.argtypes = [W.HANDLE, W.LPVOID, W.LPCVOID, C.c_size_t, C.POINTER(C.c_size_t)]
 WriteProcessMemory.restype  = W.BOOL
 
-GetModuleHandleW = k32.GetModuleHandleW
-GetModuleHandleW.argtypes = [W.LPCWSTR]
-GetModuleHandleW.restype = W.HMODULE
-GetProcAddress = k32.GetProcAddress
-GetProcAddress.argtypes = [W.HMODULE, W.LPCSTR]
-GetProcAddress.restype = W.LPVOID
 CreateRemoteThread = k32.CreateRemoteThread
 CreateRemoteThread.argtypes = [W.HANDLE, W.LPVOID, C.c_size_t, W.LPVOID, W.LPVOID, W.DWORD, C.POINTER(W.DWORD)]
 CreateRemoteThread.restype = W.HANDLE
@@ -36,16 +30,6 @@ CloseHandle.restype = W.BOOL
 GetLastError = k32.GetLastError
 GetLastError.argtypes = []
 GetLastError.restype = W.DWORD
-LoadLibraryW = k32.LoadLibraryW
-LoadLibraryW.argtypes = [W.LPCWSTR]
-LoadLibraryW.restype = W.HMODULE
-LoadLibraryA = k32.LoadLibraryA
-LoadLibraryA.argtypes = [W.LPCSTR]
-LoadLibraryA.restype = W.HMODULE
-FreeLibrary  = k32.FreeLibrary
-FreeLibrary.argtypes = [W.HMODULE]
-FreeLibrary.restype = W.BOOL
-
 PROCESS_CREATE_THREAD = 0x0002
 PROCESS_VM_OPERATION = 0x0008
 PROCESS_VM_READ = 0x0010
@@ -59,12 +43,57 @@ PROCESS_ACCESS_INJECT = (
     | PROCESS_VM_WRITE
     | PROCESS_QUERY_INFORMATION
 )
+TH32CS_SNAPMODULE = 0x00000008
+TH32CS_SNAPMODULE32 = 0x00000010
+MAX_MODULE_NAME32 = 255
+ERROR_BAD_LENGTH = 24
+INVALID_HANDLE_VALUE = C.c_void_p(-1).value
+IMAGE_FILE_MACHINE_UNKNOWN = 0x0000
+IMAGE_FILE_MACHINE_I386 = 0x014C
+IMAGE_FILE_MACHINE_AMD64 = 0x8664
+IMAGE_FILE_MACHINE_ARM64 = 0xAA64
 MEM_COMMIT  = 0x1000
 MEM_RESERVE = 0x2000
 PAGE_READWRITE = 0x04
 INFINITE = 0xFFFFFFFF
 
+CreateToolhelp32Snapshot = k32.CreateToolhelp32Snapshot
+CreateToolhelp32Snapshot.argtypes = [W.DWORD, W.DWORD]
+CreateToolhelp32Snapshot.restype = W.HANDLE
+Module32FirstW = k32.Module32FirstW
+Module32FirstW.argtypes = [W.HANDLE, W.LPVOID]
+Module32FirstW.restype = W.BOOL
+Module32NextW = k32.Module32NextW
+Module32NextW.argtypes = [W.HANDLE, W.LPVOID]
+Module32NextW.restype = W.BOOL
+IsWow64Process = k32.IsWow64Process
+IsWow64Process.argtypes = [W.HANDLE, C.POINTER(W.BOOL)]
+IsWow64Process.restype = W.BOOL
+IsWow64Process2 = getattr(k32, "IsWow64Process2", None)
+if IsWow64Process2 is not None:
+    IsWow64Process2.argtypes = [W.HANDLE, C.POINTER(W.WORD), C.POINTER(W.WORD)]
+    IsWow64Process2.restype = W.BOOL
+
 _log_file = None
+
+
+class MODULEENTRY32W(C.Structure):
+    _fields_ = [
+        ("dwSize", W.DWORD),
+        ("th32ModuleID", W.DWORD),
+        ("th32ProcessID", W.DWORD),
+        ("GlblcntUsage", W.DWORD),
+        ("ProccntUsage", W.DWORD),
+        ("modBaseAddr", C.c_void_p),
+        ("modBaseSize", W.DWORD),
+        ("hModule", W.HMODULE),
+        ("szModule", W.WCHAR * (MAX_MODULE_NAME32 + 1)),
+        ("szExePath", W.WCHAR * W.MAX_PATH),
+    ]
+
+
+Module32FirstW.argtypes = [W.HANDLE, C.POINTER(MODULEENTRY32W)]
+Module32NextW.argtypes = [W.HANDLE, C.POINTER(MODULEENTRY32W)]
 
 def repo_root():
     here = os.path.dirname(os.path.abspath(__file__))
@@ -106,7 +135,111 @@ def _read_u16(buf, off):
 def _read_u32(buf, off):
     return struct.unpack_from("<I", buf, off)[0]
 
-def get_export_rva(dll_path, export_name):
+def _machine_pointer_size(machine):
+    if machine == IMAGE_FILE_MACHINE_I386:
+        return 4
+    if machine in (IMAGE_FILE_MACHINE_AMD64, IMAGE_FILE_MACHINE_ARM64):
+        return 8
+    return 0
+
+def get_process_pointer_size(process_handle):
+    if IsWow64Process2 is not None:
+        process_machine = W.WORD(0)
+        native_machine = W.WORD(0)
+        if IsWow64Process2(process_handle, C.byref(process_machine), C.byref(native_machine)):
+            if process_machine.value == IMAGE_FILE_MACHINE_UNKNOWN:
+                return _machine_pointer_size(native_machine.value) or C.sizeof(C.c_void_p)
+            pointer_size = _machine_pointer_size(process_machine.value)
+            if pointer_size:
+                return pointer_size
+
+    is_wow64 = W.BOOL(False)
+    if not IsWow64Process(process_handle, C.byref(is_wow64)):
+        raise OSError(f"IsWow64Process failed, err={GetLastError()}")
+    if is_wow64.value:
+        return 4
+    return C.sizeof(C.c_void_p)
+
+def get_pe_pointer_size(dll_path):
+    with open(dll_path, "rb") as f:
+        data = f.read(0x1000)
+
+    if data[:2] != b"MZ":
+        raise OSError(f"{dll_path} is not a PE file")
+
+    pe_off = _read_u32(data, 0x3C)
+    needed = pe_off + 4 + 20 + 2
+    if len(data) < needed:
+        with open(dll_path, "rb") as f:
+            data = f.read(needed)
+
+    if data[pe_off:pe_off + 4] != b"PE\x00\x00":
+        raise OSError(f"{dll_path} has an invalid PE header")
+
+    file_header_off = pe_off + 4
+    machine = _read_u16(data, file_header_off)
+    pointer_size = _machine_pointer_size(machine)
+    if pointer_size:
+        return pointer_size
+
+    optional_off = file_header_off + 20
+    magic = _read_u16(data, optional_off)
+    if magic == 0x10B:
+        return 4
+    if magic == 0x20B:
+        return 8
+    raise OSError(f"{dll_path} has unsupported PE machine 0x{machine:04X} and optional header magic 0x{magic:04X}")
+
+def _iter_process_modules(pid):
+    flags = TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32
+    last_error = 0
+    for _attempt in range(8):
+        snapshot = CreateToolhelp32Snapshot(flags, pid)
+        if snapshot not in (None, 0, INVALID_HANDLE_VALUE):
+            break
+        last_error = GetLastError()
+        if last_error != ERROR_BAD_LENGTH:
+            raise OSError(f"CreateToolhelp32Snapshot(modules) failed, err={last_error}")
+        time.sleep(0.05)
+    else:
+        raise OSError(f"CreateToolhelp32Snapshot(modules) failed, err={last_error}")
+
+    entry = MODULEENTRY32W()
+    entry.dwSize = C.sizeof(entry)
+    try:
+        ok = Module32FirstW(snapshot, C.byref(entry))
+        while ok:
+            yield {
+                "name": entry.szModule,
+                "path": entry.szExePath,
+                "base": int(entry.modBaseAddr or 0),
+                "size": int(entry.modBaseSize),
+            }
+            entry = MODULEENTRY32W()
+            entry.dwSize = C.sizeof(entry)
+            ok = Module32NextW(snapshot, C.byref(entry))
+    finally:
+        CloseHandle(snapshot)
+
+def _normalize_module_name(name):
+    base = os.path.basename(str(name)).lower()
+    if not base.endswith(".dll"):
+        base += ".dll"
+    return base
+
+def find_remote_module(pid, module_name):
+    wanted = _normalize_module_name(module_name)
+    wanted_stem = wanted[:-4]
+    for module in _iter_process_modules(pid):
+        module_base = os.path.basename(module["name"]).lower()
+        module_stem = module_base[:-4] if module_base.endswith(".dll") else module_base
+        path_base = os.path.basename(module["path"]).lower()
+        path_stem = path_base[:-4] if path_base.endswith(".dll") else path_base
+        if module_base == wanted or module_stem == wanted_stem or path_base == wanted or path_stem == wanted_stem:
+            return module
+    raise OSError(f"Could not find {wanted} in pid {pid}")
+
+def get_export(dll_path, export_name):
     with open(dll_path, "rb") as f:
         data = f.read()
 
@@ -174,27 +307,90 @@ def get_export_rva(dll_path, export_name):
         if ordinal >= number_of_functions:
             raise OSError(f"Export ordinal {ordinal} for {export_name} is out of range")
         func_rva = _read_u32(data, functions_off + ordinal * 4)
-        return func_rva
+        if export_rva <= func_rva < export_rva + export_size:
+            forwarder_off = rva_to_offset(func_rva)
+            end = data.index(b"\x00", forwarder_off)
+            return None, data[forwarder_off:end].decode("ascii")
+        return func_rva, None
 
     raise OSError(f"Could not find export {export_name} in {dll_path}")
 
-def inject_and_init(pid, path, export_name="InitSimKeys"):
-    if C.sizeof(C.c_void_p) != 4:
-        raise OSError("This injector must run as 32-bit Python for 32-bit NWN targets.")
+def get_export_rva(dll_path, export_name):
+    rva, forwarder = get_export(dll_path, export_name)
+    if forwarder:
+        raise OSError(f"Export {export_name} in {dll_path} is forwarded to {forwarder}")
+    return rva
 
-    _open_log(pid)
-    log(f"opening pid={pid}")
+def _split_forwarder(forwarder):
+    module_name, sep, export_name = str(forwarder).rpartition(".")
+    if not sep or not module_name or not export_name:
+        raise OSError(f"Unsupported export forwarder {forwarder!r}")
+    if not module_name.lower().endswith(".dll"):
+        module_name += ".dll"
+    if export_name.startswith("#"):
+        raise OSError(f"Ordinal export forwarder {forwarder!r} is not supported")
+    return module_name, export_name
+
+def resolve_remote_export(pid, module_name, export_name, _depth=0):
+    if _depth > 8:
+        raise OSError(f"Export forwarder chain for {module_name}!{export_name} is too deep")
+
+    try:
+        module = find_remote_module(pid, module_name)
+    except OSError:
+        normalized = _normalize_module_name(module_name)
+        if normalized.startswith("api-ms-win-") or normalized.startswith("ext-ms-win-"):
+            module = find_remote_module(pid, "kernelbase.dll")
+        else:
+            raise
+
+    rva, forwarder = get_export(module["path"], export_name)
+    if forwarder:
+        next_module, next_export = _split_forwarder(forwarder)
+        log(f"{module['name']}!{export_name} forwards to {next_module}!{next_export}")
+        return resolve_remote_export(pid, next_module, next_export, _depth + 1)
+
+    return module["base"] + rva, module
+
+def _ensure_remote_pointer(value, target_pointer_size, label):
+    address = int(value or 0)
+    if not address:
+        raise OSError(f"{label} resolved to NULL")
+    if target_pointer_size == 4 and address > 0xFFFFFFFF:
+        raise OSError(f"{label} address 0x{address:X} does not fit in the 32-bit target")
+    return address
+
+def _open_process_for_injection(pid):
     h = OpenProcess(PROCESS_ACCESS_INJECT, False, pid)
-    if not h:
-        err = GetLastError()
-        if err == 87:
-            probe = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-            if not probe:
-                raise OSError(f"OpenProcess failed, err=87 (pid {pid} is invalid or the process has already exited)")
-            CloseHandle(probe)
-            raise OSError(f"OpenProcess failed, err=87 (the pid exists, but the requested injection rights were rejected)")
-        raise OSError(f"OpenProcess failed, err={err}")
+    if h:
+        return h
 
+    err = GetLastError()
+    if err == 87:
+        probe = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+        if not probe:
+            raise OSError(f"OpenProcess failed, err=87 (pid {pid} is invalid or the process has already exited)")
+        CloseHandle(probe)
+        raise OSError(f"OpenProcess failed, err=87 (the pid exists, but the requested injection rights were rejected)")
+    raise OSError(f"OpenProcess failed, err={err}")
+
+def _create_remote_thread_and_wait(process_handle, start_address, parameter, label, target_pointer_size):
+    start_address = _ensure_remote_pointer(start_address, target_pointer_size, label)
+    if parameter is not None:
+        parameter = _ensure_remote_pointer(parameter, target_pointer_size, f"{label} parameter")
+    th = CreateRemoteThread(process_handle, None, 0, start_address, parameter, 0, None)
+    if not th:
+        raise OSError(f"CreateRemoteThread({label}) failed, err={GetLastError()}")
+    try:
+        WaitForSingleObject(th, INFINITE)
+        code = W.DWORD(0)
+        if not GetExitCodeThread(th, C.byref(code)):
+            raise OSError(f"GetExitCodeThread({label}) failed, err={GetLastError()}")
+        return int(code.value)
+    finally:
+        CloseHandle(th)
+
+def _load_remote_library(process_handle, pid, path, target_pointer_size):
     use_ansi = all(ord(ch) < 128 for ch in path)
     if use_ansi:
         dll_bytes = (path + "\x00").encode("ascii")
@@ -204,53 +400,88 @@ def inject_and_init(pid, path, export_name="InitSimKeys"):
         load_library_name = b"LoadLibraryW"
     log(f"using {load_library_name.decode('ascii')} with {'ASCII' if use_ansi else 'UTF-16'} DLL path bytes")
     log(f"allocating {len(dll_bytes)} bytes for DLL path")
-    addr = VirtualAllocEx(h, None, len(dll_bytes), MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE)
-    if not addr: CloseHandle(h); raise OSError(f"VirtualAllocEx failed, err={GetLastError()}")
+    addr = VirtualAllocEx(process_handle, None, len(dll_bytes), MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE)
+    if not addr:
+        raise OSError(f"VirtualAllocEx failed, err={GetLastError()}")
+    addr = _ensure_remote_pointer(addr, target_pointer_size, "VirtualAllocEx")
     nw = C.c_size_t(0)
+    dll_buffer = C.create_string_buffer(dll_bytes, len(dll_bytes))
     log("about to call WriteProcessMemory")
-    if not WriteProcessMemory(h, addr, dll_bytes, len(dll_bytes), C.byref(nw)):
-        err = GetLastError(); CloseHandle(h); raise OSError(f"WriteProcessMemory failed, err={err}")
+    if not WriteProcessMemory(process_handle, addr, dll_buffer, len(dll_bytes), C.byref(nw)):
+        raise OSError(f"WriteProcessMemory failed, err={GetLastError()}")
     log(f"WriteProcessMemory succeeded, wrote {nw.value} bytes")
-    h_kernel32 = GetModuleHandleW("kernel32.dll")
-    if not h_kernel32:
-        err = GetLastError(); CloseHandle(h); raise OSError(f"GetModuleHandleW(kernel32.dll) failed, err={err}")
-    p_loadlib = GetProcAddress(h_kernel32, load_library_name)
-    if not p_loadlib:
-        err = GetLastError(); CloseHandle(h); raise OSError(f"GetProcAddress({load_library_name.decode('ascii')}) failed, err={err}")
-    log(f"{load_library_name.decode('ascii')}={int(p_loadlib):#x}")
-    th = CreateRemoteThread(h, None, 0, p_loadlib, addr, 0, None)
-    if not th: err = GetLastError(); CloseHandle(h); raise OSError(f"CreateRemoteThread({load_library_name.decode('ascii')}) failed, err={err}")
-    WaitForSingleObject(th, INFINITE)
-    hmod_remote = W.DWORD(0)
-    if not GetExitCodeThread(th, C.byref(hmod_remote)):
-        err = GetLastError(); CloseHandle(th); CloseHandle(h); raise OSError(f"GetExitCodeThread({load_library_name.decode('ascii')}) failed, err={err}")
-    CloseHandle(th)
 
-    if hmod_remote.value == 0:
-        CloseHandle(h)
+    load_library_export = load_library_name.decode("ascii")
+    p_loadlib, module = resolve_remote_export(pid, "kernel32.dll", load_library_export)
+    p_loadlib = _ensure_remote_pointer(p_loadlib, target_pointer_size, load_library_export)
+    log(f"remote {module['name']}!{load_library_export}=0x{p_loadlib:08X}")
+    hmod_remote = _create_remote_thread_and_wait(
+        process_handle,
+        p_loadlib,
+        addr,
+        load_library_export,
+        target_pointer_size,
+    )
+
+    if hmod_remote == 0:
         raise OSError(f"{load_library_name.decode('ascii')} in remote returned NULL")
-    log(f"remote module=0x{hmod_remote.value:08X}")
+    log(f"remote module=0x{hmod_remote:08X}")
+    return hmod_remote
 
-    # compute RVA of the exported entrypoint without loading the DLL locally.
-    rva = get_export_rva(path, export_name)
-    remote_func = hmod_remote.value + rva
-    log(f"{export_name} rva=0x{rva:08X} remote=0x{remote_func:08X}")
+def _validate_target_and_dll(process_handle, path):
+    target_pointer_size = get_process_pointer_size(process_handle)
+    dll_pointer_size = get_pe_pointer_size(path)
+    log(
+        "bitness: "
+        f"injector={C.sizeof(C.c_void_p) * 8}-bit "
+        f"target={target_pointer_size * 8}-bit "
+        f"dll={dll_pointer_size * 8}-bit"
+    )
+    if target_pointer_size != dll_pointer_size:
+        raise OSError(
+            f"Cannot inject a {dll_pointer_size * 8}-bit DLL into a "
+            f"{target_pointer_size * 8}-bit process."
+        )
+    if target_pointer_size != 4:
+        raise OSError("SimKeysHook2.dll is intended for the 32-bit NWN Diamond client.")
+    return target_pointer_size
 
-    # call export in remote
-    th2 = CreateRemoteThread(h, None, 0, remote_func, None, 0, None)
-    if not th2: err = GetLastError(); CloseHandle(h); raise OSError(f"CreateRemoteThread(export) failed, err={err}")
-    WaitForSingleObject(th2, INFINITE)
-    code = W.DWORD(0)
-    if not GetExitCodeThread(th2, C.byref(code)):
-        err = GetLastError(); CloseHandle(th2); CloseHandle(h); raise OSError(f"GetExitCodeThread(export) failed, err={err}")
-    CloseHandle(th2)
-    CloseHandle(h)
+def load_remote_library(pid, path):
+    _open_log(pid)
+    path = os.path.abspath(path)
+    log(f"opening pid={pid}")
+    h = _open_process_for_injection(pid)
+    try:
+        target_pointer_size = _validate_target_and_dll(h, path)
+        return _load_remote_library(h, pid, path, target_pointer_size)
+    finally:
+        CloseHandle(h)
 
-    if code.value == 0:
+def inject_and_init(pid, path, export_name="InitSimKeys"):
+    _open_log(pid)
+    path = os.path.abspath(path)
+    log(f"opening pid={pid}")
+    h = _open_process_for_injection(pid)
+    try:
+        target_pointer_size = _validate_target_and_dll(h, path)
+        hmod_remote = _load_remote_library(h, pid, path, target_pointer_size)
+
+        # compute RVA of the exported entrypoint without loading the DLL locally.
+        rva = get_export_rva(path, export_name)
+        remote_func = hmod_remote + rva
+        remote_func = _ensure_remote_pointer(remote_func, target_pointer_size, export_name)
+        log(f"{export_name} rva=0x{rva:08X} remote=0x{remote_func:08X}")
+
+        # call export in remote
+        code = _create_remote_thread_and_wait(h, remote_func, None, "export", target_pointer_size)
+    finally:
+        CloseHandle(h)
+
+    if code == 0:
         raise OSError(f"{export_name} returned FALSE in remote")
 
-    log(f"remote init rc=0x{code.value:08X}")
-    return hmod_remote.value, remote_func
+    log(f"remote init rc=0x{code:08X}")
+    return hmod_remote, remote_func
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()

@@ -77,6 +77,7 @@ class PythonInterpreter:
     path: str
     source: str
     is_x86: bool
+    bits: int
 
 
 def filetime_to_ticks(ft: FILETIME) -> int:
@@ -164,15 +165,22 @@ def resolve_python_interpreter(preferred_path: Optional[str] = None, require_x86
                     line = raw_line.strip()
                     if not line:
                         continue
-                    parts = line.split()
-                    if len(parts) >= 2:
-                        add_candidate(parts[-1], "py-launcher")
+                    match = re.match(r"^\s*-V:\S+\s+\*?\s*(.+python(?:w)?\.exe)\s*$", line, re.IGNORECASE)
+                    if match:
+                        add_candidate(match.group(1).strip(), "py-launcher")
         except Exception:
             pass
 
     local_appdata = os.environ.get("LOCALAPPDATA", "")
+    program_files = os.environ.get("ProgramFiles", r"C:\Program Files")
     program_files_x86 = os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")
     for candidate in (
+        os.path.join(program_files, "Python313", "python.exe"),
+        os.path.join(program_files, "Python312", "python.exe"),
+        os.path.join(program_files, "Python311", "python.exe"),
+        os.path.join(local_appdata, "Programs", "Python", "Python313", "python.exe"),
+        os.path.join(local_appdata, "Programs", "Python", "Python312", "python.exe"),
+        os.path.join(local_appdata, "Programs", "Python", "Python311", "python.exe"),
         os.path.join(program_files_x86, "Python313-32", "python.exe"),
         os.path.join(program_files_x86, "Python312-32", "python.exe"),
         os.path.join(program_files_x86, "Python311-32", "python.exe"),
@@ -180,20 +188,20 @@ def resolve_python_interpreter(preferred_path: Optional[str] = None, require_x86
         os.path.join(local_appdata, "Programs", "Python", "Python312-32", "python.exe"),
         os.path.join(local_appdata, "Programs", "Python", "Python311-32", "python.exe"),
     ):
-        add_candidate(candidate, "common-x86")
+        add_candidate(candidate, "common-python")
 
     resolved = []
     for path, source in candidates:
         bits = _probe_python_bits(path)
         if bits is None:
             continue
-        resolved.append(PythonInterpreter(path=path, source=source, is_x86=(bits == 4)))
+        resolved.append(PythonInterpreter(path=path, source=source, is_x86=(bits == 4), bits=bits * 8))
 
     if require_x86:
         for interpreter in resolved:
             if interpreter.is_x86:
                 return interpreter
-        raise RuntimeError("Could not find a 32-bit Python interpreter for injection.")
+        raise RuntimeError("Could not find a Python interpreter matching the requested bitness.")
 
     if resolved:
         return resolved[0]
@@ -489,10 +497,10 @@ def send_chat(record_or_pid, text: str, mode: int = 2):
 
 def inject_client(record: ClientRecord, dll_path: str, export_name: str = "InitSimKeys", python_path: Optional[str] = None):
     dll_path = os.path.abspath(dll_path)
-    if C.sizeof(C.c_void_p) == 4 and (python_path is None or os.path.abspath(python_path).lower() == os.path.abspath(sys.executable).lower()):
+    if python_path is None or os.path.abspath(python_path).lower() == os.path.abspath(sys.executable).lower():
         return inject_simkeys.inject_and_init(record.pid, dll_path, export_name)
 
-    interpreter = resolve_python_interpreter(preferred_path=python_path, require_x86=True)
+    interpreter = resolve_python_interpreter(preferred_path=python_path, require_x86=False)
     script_path = os.path.join(package_dir(), "inject_simkeys.py")
     completed = subprocess.run(
         [
