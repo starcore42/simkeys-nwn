@@ -2642,6 +2642,137 @@ class AutoAttackScript(ClientScriptBase):
         return max(float(self.config.get("cooldown_seconds", 3.0)), 0.1)
 
 
+class AutoFollowScript(ClientScriptBase):
+    script_id = "auto_follow"
+    FOLLOW_CUES = ("fall in", "follow me", "follow my")
+    ASO_COMMAND = "!action aso target"
+
+    def __init__(self, client, config: Dict[str, object], host):
+        super().__init__(client, config, host)
+        self.enabled = False
+        self.cooldown_until = 0.0
+        self.follow_count = 0
+        self.last_speaker = ""
+        self.last_message = ""
+        self.last_error_key = ""
+
+    def on_start(self):
+        super().on_start()
+        self.enabled = True
+        self.cooldown_until = 0.0
+        self.follow_count = 0
+        self.last_speaker = ""
+        self.last_message = ""
+        self.last_error_key = ""
+        self.set_status("Listening for follow cues")
+        self.host.emit("info", f"{self.host.client.display_name}: Auto Follow started", script_id=self.script_id)
+
+    def on_stop(self):
+        super().on_stop()
+        self.enabled = False
+        self.host.emit("info", f"{self.host.client.display_name}: Auto Follow stopped", script_id=self.script_id)
+
+    def on_chat_line(self, sequence: int, text: str):
+        if not self.should_process(sequence) or not self.enabled:
+            return
+
+        parsed = self._parse_follow_cue(text)
+        if parsed is None:
+            return
+
+        speaker, message = parsed
+        if self._speaker_matches_character(speaker):
+            self.set_status(f"Ignored own cue ({speaker})")
+            return
+
+        now = time.monotonic()
+        if now < self.cooldown_until:
+            self.set_status(f"{speaker}: cooldown")
+            return
+
+        tell_command = f'/tell "{speaker}" !target'
+        try:
+            aso_result = self.host.send_chat(self.ASO_COMMAND, 2)
+            target_result = self.host.send_chat(tell_command, 2)
+        except Exception as exc:
+            self.cooldown_until = now + 1.0
+            self.set_status(f"{speaker}: follow failed")
+            self.host.emit(
+                "error",
+                f"{self.host.client.display_name}: Auto Follow chat send failed for '{speaker}': {exc}",
+                script_id=self.script_id,
+            )
+            return
+
+        self.cooldown_until = now + self._cooldown_seconds()
+        self.follow_count += 1
+        self.last_speaker = speaker
+        self.last_message = message
+        success = bool(aso_result["success"] and target_result["success"])
+        if success:
+            self.set_status(f"{speaker}: followed")
+            if self.last_error_key:
+                self.host.emit("info", f"{self.host.client.display_name}: Auto Follow recovered", script_id=self.script_id)
+                self.last_error_key = ""
+        else:
+            self.set_status(f"{speaker}: follow failed")
+            self.last_error_key = f"{aso_result['rc']}:{aso_result['err']}:{target_result['rc']}:{target_result['err']}"
+
+        self.host.emit(
+            "info" if success else "error",
+            (
+                f"{self.host.client.display_name}: Auto Follow cue from '{speaker}' message='{message}' "
+                f"aso success={aso_result['success']} rc={aso_result['rc']} err={aso_result['err']} "
+                f"target success={target_result['success']} rc={target_result['rc']} err={target_result['err']}"
+            ),
+            script_id=self.script_id,
+        )
+        if success and bool(self.config.get("echo_console", False)):
+            self.host.send_console(f"SimKeys Auto Follow -> {speaker}")
+        self.host.notify_state_changed()
+
+    def _parse_follow_cue(self, text: str) -> Optional[Tuple[str, str]]:
+        normalized = hgx_combat.normalize_chat_line(text)
+        if ":" not in normalized:
+            return None
+
+        speaker_text, message_text = normalized.split(":", 1)
+        speaker = hgx_combat.normalize_actor_name(speaker_text)
+        message = hgx_combat.normalize_actor_name(message_text)
+        if not speaker or not message:
+            return None
+
+        lowered_message = message.lower()
+        if not any(cue in lowered_message for cue in self.FOLLOW_CUES):
+            return None
+        return speaker, message
+
+    def _speaker_matches_character(self, speaker: str) -> bool:
+        character_name = (self.host.client.character_name or self.client.character_name or "").strip()
+        if not character_name:
+            return False
+
+        speaker_key = self._strip_level_suffix(hgx_combat.normalize_actor_name(speaker).lower())
+        character_key = self._strip_level_suffix(hgx_combat.normalize_actor_name(character_name).lower())
+        return bool(speaker_key and character_key and speaker_key == character_key)
+
+    def _strip_level_suffix(self, value: str) -> str:
+        text = str(value or "").strip()
+        if " [" in text and text.endswith("]"):
+            return text.split(" [", 1)[0].strip()
+        return text
+
+    def _cooldown_seconds(self) -> float:
+        return max(float(self.config.get("cooldown_seconds", 1.0)), 0.1)
+
+    def get_state_details(self) -> dict:
+        return {
+            "follow_count": self.follow_count,
+            "last_speaker": self.last_speaker,
+            "last_message": self.last_message,
+        }
+
+
 class AutoRSMScript(ClientScriptBase):
     script_id = "auto_rsm"
 
@@ -3176,6 +3307,24 @@ class ScriptManager:
             factory=AutoAttackScript,
         )
         self.registry[auto_attack.script_id] = auto_attack
+
+        auto_follow = ScriptDefinition(
+            script_id="auto_follow",
+            name="Auto Follow",
+            description=(
+                "Listen for follow voice cues such as 'fall in' or 'follow me', then target the speaker "
+                "using the old HGXLE autoFollow.py command sequence."
+            ),
+            fields=[
+                ScriptField("cooldown_seconds", "Cooldown", "float", 1.0, minimum=0.1, maximum=30.0, step=0.1, width=6),
+                ScriptField("poll_interval", "Poll", "float", 0.10, minimum=0.05, maximum=2.0, step=0.05, width=6),
+                ScriptField("max_lines", "Batch", "int", 60, minimum=1, maximum=200, step=1, width=5),
+                ScriptField("echo_console", "Echo", "bool", False),
+                ScriptField("include_backlog", "Backlog", "bool", False),
+            ],
+            factory=AutoFollowScript,
+        )
+        self.registry[auto_follow.script_id] = auto_follow
 
         auto_rsm = ScriptDefinition(
             script_id="auto_rsm",

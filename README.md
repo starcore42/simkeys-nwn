@@ -13,7 +13,7 @@ This public repository contains the SimKeys source, a bundled hook DLL, build fi
 - Triggers quickbar slots directly through game functions, including Base, Shift, and Control quickbar banks.
 - Sends chat through an unfocused client path.
 - Provides a desktop GUI for multi-client script control.
-- Includes automations for AutoDrink, Stop Hitting, Auto Damage, Auto Attack, Auto Action, and Auto RSM.
+- Includes automations for AutoDrink, Stop Hitting, Auto Damage, Auto Attack, Auto Follow, Auto Action, and Auto RSM.
 
 ## Requirements
 
@@ -144,6 +144,12 @@ The GUI script panel runs these automations per injected client. Chat-driven scr
   - Before enabling it, set the lead role in game with `!role lead`; the repeated command expects that role to exist so `lead:opponent` resolves to the right target.
   - This matches the old HGXLE `autoAttack.py` behavior and is useful for keeping an unfocused client attacking the lead opponent without foreground key presses.
   - It does not parse combat chat; the only runtime setting is the repeat cooldown.
+
+- **Auto Follow**
+  - Listens for another player saying a follow cue such as `fall in`, `follow me`, or `follow my`.
+  - When a cue is seen, it sends `!action aso target` and then `/tell "<speaker>" !target`, matching the old HGXLE `autoFollow.py` behavior.
+  - It ignores cues from the current character, uses a short cooldown to avoid duplicate rapid triggers, and can optionally echo successful follow actions to the in-game console.
+  - This is useful for box/follower clients that should automatically target and follow the caller when the leader asks the group to fall in.
 
 - **Auto RSM**
   - Watches your attack lines, reads the client RSM status byte from NWN memory, and sends `!action rsm self` when you attack while RSM is not active.

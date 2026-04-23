@@ -49,6 +49,13 @@ SCRIPT_CARD_LAYOUTS = {
         ],
         "advanced": [],
     },
+    "auto_follow": {
+        "expanded": False,
+        "sections": [
+            ("Trigger", ["cooldown_seconds"]),
+        ],
+        "advanced": ["poll_interval", "max_lines", "echo_console", "include_backlog"],
+    },
     "auto_rsm": {
         "expanded": False,
         "sections": [
@@ -63,6 +70,7 @@ SCRIPT_CARD_ACCENTS = {
     "auto_aa": "#00a878",
     "auto_action": "#f59f00",
     "auto_attack": "#d9480f",
+    "auto_follow": "#0ca678",
     "auto_rsm": "#7950f2",
 }
 BANK_PAGE_TO_VALUE = {"None": 0, "Shift": 1, "Control": 2}
