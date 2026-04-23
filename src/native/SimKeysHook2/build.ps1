@@ -5,6 +5,9 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$repoRoot = Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..\..")
+$repoRootPath = $repoRoot.Path
+
 $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
 if (-not (Test-Path $vswhere)) {
   throw "vswhere.exe was not found. Install Visual Studio 2022 Build Tools with the C++ workload first."
@@ -41,4 +44,21 @@ $intDirForMsbuild = $intDir -replace '\\', '/'
 
 Write-Host "Building SimKeysHook2 ($Configuration|x86) with $msbuild"
 & $msbuild $project /t:Rebuild "/p:Configuration=$Configuration;Platform=x86;OutDir=$outDirForMsbuild;IntDir=$intDirForMsbuild;WholeProgramOptimization=false;UseMultiToolTask=false" /m:1 /nodeReuse:false /verbosity:minimal
-exit $LASTEXITCODE
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+
+$builtDll = Join-Path $outDir "SimKeysHook2.dll"
+if (-not (Test-Path -LiteralPath $builtDll)) {
+  throw "Build completed but '$builtDll' was not found."
+}
+
+$binDir = Join-Path $repoRootPath "bin"
+if (-not (Test-Path -LiteralPath $binDir)) {
+  New-Item -ItemType Directory -Path $binDir | Out-Null
+}
+
+$bundledDll = Join-Path $binDir "SimKeysHook2.dll"
+Copy-Item -LiteralPath $builtDll -Destination $bundledDll -Force
+Write-Host "Bundled DLL copied to $bundledDll"
+exit 0

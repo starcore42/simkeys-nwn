@@ -10,8 +10,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
 
-import inject_simkeys
-import simKeys_Client as simkeys
+from . import inject_simkeys
+from . import simKeys_Client as simkeys
 
 
 TH32CS_SNAPPROCESS = 0x00000002
@@ -91,11 +91,26 @@ def ticks_to_text(ticks: int) -> str:
 
 
 def root_dir() -> str:
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = (
+        os.path.abspath(os.path.join(here, os.pardir, os.pardir)),
+        os.path.abspath(os.path.join(here, os.pardir)),
+    )
+    for candidate in candidates:
+        if os.path.isfile(os.path.join(candidate, "README.md")):
+            return candidate
+    return candidates[0]
+
+
+def package_dir() -> str:
     return os.path.dirname(os.path.abspath(__file__))
 
 
 def default_dll_path() -> str:
-    return os.path.join(root_dir(), "SimKeysHook2", "Release", "SimKeysHook2.dll")
+    bundled_dll = os.path.join(root_dir(), "bin", "SimKeysHook2.dll")
+    if os.path.isfile(bundled_dll):
+        return bundled_dll
+    return os.path.join(root_dir(), "src", "native", "SimKeysHook2", "Release", "SimKeysHook2.dll")
 
 
 def _probe_python_bits(path: str) -> Optional[int]:
@@ -478,7 +493,7 @@ def inject_client(record: ClientRecord, dll_path: str, export_name: str = "InitS
         return inject_simkeys.inject_and_init(record.pid, dll_path, export_name)
 
     interpreter = resolve_python_interpreter(preferred_path=python_path, require_x86=True)
-    script_path = os.path.join(root_dir(), "inject_simkeys.py")
+    script_path = os.path.join(package_dir(), "inject_simkeys.py")
     completed = subprocess.run(
         [
             interpreter.path,

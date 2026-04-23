@@ -1,70 +1,48 @@
 # SimKeys for NWN Higher Ground
 
-SimKeys is a Windows-based injection and control toolkit for **Neverwinter Nights** clients running on the **Higher Ground** server. It was written by **Starcore** to drive in-game functionality without window focus, using direct in-process hooks and a named-pipe control layer instead of foreground key sending.
+SimKeys is a Windows control toolkit for **Neverwinter Nights** clients running on the **Higher Ground** server. It was written by **Starcore** to drive in-game functionality without window focus, using direct in-process hooks and a named-pipe control layer instead of foreground key sending.
 
-This public repository contains the **SimKeys source, project files, notes, and packaged `characters.d` support data**. It intentionally does **not** include the NWN game install or the old HGX client/script folders from the working workspace.
+This public repository contains the SimKeys source, a bundled hook DLL, build files, notes, and packaged `characters.d` support data. It intentionally does not include a game install or unrelated third-party client/script folders.
+
+![SimKeys Control Center](docs/assets/simkeys-control-center.png)
 
 ## What it does
 
-- Injects a custom DLL into `nwmain.exe`
-- Exposes a per-client named pipe for control
-- Triggers quickbar slots directly through game functions
-- Sends chat through the unfocused client path
-- Provides a desktop GUI for:
-  - client discovery
-  - next-client injection
-  - quickbar/chat testing
-  - multi-client script control
-- Includes scripted automation such as:
-  - AutoDrink
-  - Auto Damage for Arcane Archer, Zen Ranger, Divine Slinger, and Gnomish Inventor
-  - Auto Action
-  - Auto RSM
+- Discovers running `nwmain.exe` clients and injects the next uninjected client.
+- Exposes a per-client named pipe for quickbar, chat, state, and automation control.
+- Triggers quickbar slots directly through game functions, including Base, Shift, and Control quickbar banks.
+- Sends chat through an unfocused client path.
+- Provides a desktop GUI for multi-client script control.
+- Includes automations for AutoDrink, Auto Damage, Auto Attack, Auto Action, and Auto RSM.
 
 ## Requirements
 
 - Windows
 - Neverwinter Nights Diamond / `nwmain.exe`
-- Visual Studio 2022 Build Tools with the C++ workload
 - A 32-bit Python installation for injection into the 32-bit NWN client
 - A normal Python installation for the GUI and controller scripts
+- Visual Studio 2022 Build Tools with the C++ workload, only if rebuilding the hook DLL yourself
 
-## Repository layout
+## Repository Layout
 
-- `SimKeysHook2/`
-  - Visual Studio solution and DLL hook project
-- `simkeys_gui.py`
-  - desktop control UI
-- `simkeys_control.py`
-  - CLI controller for listing, injecting, querying, slot triggering, and chat send
-- `simKeys_Client.py`
-  - named-pipe client protocol wrapper
-- `simkeys_script_host.py`
-  - per-client script runtime and GUI script registry
-- `simkeys_runtime.py`
-  - client discovery, injection helpers, and shared runtime utilities
-- `simkeys_hgx_data.py`
-  - Higher Ground combat-data scoring helpers
-- `simkeys_hgx_combat.py`
-  - HGX/NWN combat log parsing helpers
+- `simkeys_gui.ps1`
+  - Main GUI launcher.
+- `simkeys_control.ps1`
+  - CLI launcher for listing, injecting, querying, slot triggering, and chat send.
+- `bin/SimKeysHook2.dll`
+  - Bundled prebuilt hook DLL used by default.
+- `src/simkeys_app/`
+  - Python GUI, controller, pipe client, runtime helpers, and automation host.
+- `src/native/SimKeysHook2/`
+  - Visual Studio native hook source, solution, and build wrapper.
+- `data/characters.d/`
+  - Packaged `characters.d` XML data used by Auto Damage scoring.
 - `docs/reverse-engineering/notes/`
-  - SimKeys-specific reverse-engineering notes
-- `simkeys_data/characters.d/`
-  - packaged `characters.d` XML data used by Auto Damage scoring
-
-## Build
-
-From the repository root:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\SimKeysHook2\build.ps1
-```
-
-That builds the hook DLL in `SimKeysHook2\Release\SimKeysHook2.dll`.
+  - SimKeys-specific reverse-engineering notes.
 
 ## Run the GUI
 
-The PowerShell launcher will pick a normal Python for the GUI and try to locate a 32-bit Python for injection:
+From the repository root:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_gui.ps1
@@ -76,57 +54,67 @@ If you want to supply an explicit x86 Python path:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_gui.ps1 -InjectPython "C:\Program Files (x86)\Python313-32\python.exe"
 ```
 
-## Run the CLI controller
+## Run the CLI Controller
 
 List clients:
 
 ```powershell
-python .\simkeys_control.py list
+powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 list
 ```
 
 Inject the next uninjected client:
 
 ```powershell
-python .\simkeys_control.py inject-next
+powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 inject-next
 ```
 
 Inject all discovered clients:
 
 ```powershell
-python .\simkeys_control.py inject-all
+powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 inject-all
 ```
 
 Query one injected client:
 
 ```powershell
-python .\simkeys_control.py query 1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 query 1
 ```
 
 Trigger a quickbar slot:
 
 ```powershell
-python .\simkeys_control.py slot 1 1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 slot 1 1
 ```
 
 Send chat through a client:
 
 ```powershell
-python .\simkeys_control.py chat-send 1 "!action rsm self"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 chat-send 1 "!action rsm self"
 ```
 
-## Live test helper
+## Bundled DLL
 
-There is also a scripted live-test entry point:
+The repository includes `bin\SimKeysHook2.dll`, so users do not need Visual Studio just to run SimKeys. The GUI and CLI prefer this bundled DLL automatically.
+
+Runtime logs are written under `logs\` in the repository root. They are ignored by git.
+
+## Rebuild the DLL
+
+If you want to rebuild the hook from source, install Visual Studio 2022 Build Tools with the C++ workload, then run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\live_test_simkeys.ps1 -NoLaunch -Slot 1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\src\native\SimKeysHook2\build.ps1
 ```
 
-This rebuilds the DLL, injects the selected/discovered client, and writes detailed diagnostics under `SimKeysHook2\logs\`.
+The build wrapper rebuilds the x86 Release DLL and copies it into `bin\SimKeysHook2.dll`, replacing the bundled copy.
 
-## Higher Ground data
+## Data
 
-The repository includes the `simkeys_data\characters.d\` XML data used by the Higher Ground damage-selection logic, so Auto Damage works out of the box with the packaged dataset.
+The repository includes `data\characters.d\` so Auto Damage works out of the box with the packaged dataset.
+
+## License
+
+SimKeys is released under the MIT License. See `LICENSE`.
 
 ## Notes
 

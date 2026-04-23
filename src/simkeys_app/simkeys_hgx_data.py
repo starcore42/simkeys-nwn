@@ -263,11 +263,19 @@ class DamageComponentEstimate:
 
 
 def project_root() -> str:
-    return os.path.dirname(os.path.abspath(__file__))
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = (
+        os.path.abspath(os.path.join(here, os.pardir, os.pardir)),
+        os.path.abspath(os.path.join(here, os.pardir)),
+    )
+    for candidate in candidates:
+        if os.path.isfile(os.path.join(candidate, "README.md")):
+            return candidate
+    return candidates[0]
 
 
 def default_character_data_dir() -> str:
-    return os.path.join(project_root(), "simkeys_data", "characters.d")
+    return os.path.join(project_root(), "data", "characters.d")
 
 
 def _normalize_damage_type_name(text: str) -> str:

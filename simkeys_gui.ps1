@@ -95,8 +95,6 @@ function Resolve-X86Python {
 
 $guiPython = Resolve-AnyPython -RequestedPath $PythonExe
 $injectorPython = Resolve-X86Python -RequestedPath $InjectPython
-$guiScript = Join-Path $PSScriptRoot "simkeys_gui.py"
-
 Write-Host "Using GUI Python '$($guiPython.Path)' via $($guiPython.Source)." -ForegroundColor Cyan
 if ($null -ne $injectorPython) {
   Write-Host "Using injection Python '$($injectorPython.Path)' via $($injectorPython.Source)." -ForegroundColor Cyan
@@ -104,11 +102,29 @@ if ($null -ne $injectorPython) {
   Write-Warning "No 32-bit Python interpreter was found automatically. Inject buttons may fail until one is provided via -InjectPython."
 }
 
-$argsToPass = @($guiScript)
+$srcPath = Join-Path $PSScriptRoot "src"
+if (-not (Test-Path -LiteralPath $srcPath)) {
+  throw "Could not find SimKeys source directory '$srcPath'."
+}
+
+$argsToPass = @("-m", "simkeys_app.simkeys_gui")
 if ($null -ne $injectorPython) {
   $argsToPass += @("--inject-python", $injectorPython.Path)
 }
 $argsToPass += $GuiArgs
 
-& $guiPython.Path @argsToPass
-exit $LASTEXITCODE
+$previousPythonPath = $env:PYTHONPATH
+if ([string]::IsNullOrWhiteSpace($previousPythonPath)) {
+  $env:PYTHONPATH = $srcPath
+} else {
+  $env:PYTHONPATH = "$srcPath;$previousPythonPath"
+}
+
+$exitCode = 0
+try {
+  & $guiPython.Path @argsToPass
+  $exitCode = $LASTEXITCODE
+} finally {
+  $env:PYTHONPATH = $previousPythonPath
+}
+exit $exitCode

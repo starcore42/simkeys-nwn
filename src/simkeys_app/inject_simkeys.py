@@ -66,12 +66,28 @@ INFINITE = 0xFFFFFFFF
 
 _log_file = None
 
+def repo_root():
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = (
+        os.path.abspath(os.path.join(here, os.pardir, os.pardir)),
+        os.path.abspath(os.path.join(here, os.pardir)),
+    )
+    for candidate in candidates:
+        if os.path.isfile(os.path.join(candidate, "README.md")):
+            return candidate
+    return candidates[0]
+
+def default_dll_path():
+    bundled_dll = os.path.join(repo_root(), "bin", "SimKeysHook2.dll")
+    if os.path.isfile(bundled_dll):
+        return bundled_dll
+    return os.path.join(repo_root(), "src", "native", "SimKeysHook2", "Release", "SimKeysHook2.dll")
+
 def _open_log(pid):
     global _log_file
     if _log_file is not None:
         return
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    log_dir = os.path.join(script_dir, "SimKeysHook2", "logs")
+    log_dir = os.path.join(repo_root(), "logs")
     os.makedirs(log_dir, exist_ok=True)
     stamp = time.strftime("%Y%m%d_%H%M%S")
     path = os.path.join(log_dir, f"pyinject_{pid}_{stamp}_{os.getpid()}.log")
@@ -237,10 +253,9 @@ def inject_and_init(pid, path, export_name="InitSimKeys"):
     return hmod_remote.value, remote_func
 
 if __name__ == "__main__":
-    script_dir = os.path.dirname(os.path.abspath(__file__))
     ap = argparse.ArgumentParser()
     ap.add_argument("--pid", type=int, required=True)
-    ap.add_argument("--dll", default=os.path.join(script_dir, "SimKeysHook2", "Release", "SimKeysHook2.dll"))
+    ap.add_argument("--dll", default=default_dll_path())
     ap.add_argument("--export", default="InitSimKeys")
     args = ap.parse_args()
     dll_path = os.path.abspath(args.dll)

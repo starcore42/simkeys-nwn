@@ -6,10 +6,10 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional, Set, Tuple
 
-import simKeys_Client as simkeys
-import simkeys_hgx_combat as hgx_combat
-import simkeys_hgx_data as hgx_data
-import simkeys_runtime as runtime
+from . import simKeys_Client as simkeys
+from . import simkeys_hgx_combat as hgx_combat
+from . import simkeys_hgx_data as hgx_data
+from . import simkeys_runtime as runtime
 
 PROCESS_QUERY_INFORMATION = 0x0400
 PROCESS_VM_READ = 0x0010

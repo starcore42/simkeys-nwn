@@ -6,8 +6,12 @@ __pycache__/
 .vs/
 **/.vs/
 **/Release/
+**/Debug/
 **/x64/
+**/.int/
 *.obj
+*.exp
+*.lib
 *.ipdb
 *.iobj
 *.ilk
@@ -22,9 +26,11 @@ __pycache__/
 *.log
 
 # SimKeys generated outputs
-SimKeysHook2/Release/
-SimKeysHook2/x64/
-SimKeysHook2/logs/
+logs/
+bin/logs/
+src/native/SimKeysHook2/Release/
+src/native/SimKeysHook2/x64/
+src/native/SimKeysHook2/logs/
 
 # Large reverse-engineering reference dumps stay local only.
 docs/reverse-engineering/decompiles/

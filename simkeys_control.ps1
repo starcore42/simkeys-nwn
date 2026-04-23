@@ -74,8 +74,6 @@ function Resolve-PythonInterpreter {
 }
 
 $python = Resolve-PythonInterpreter -RequestedPath $PythonExe
-$controller = Join-Path $PSScriptRoot "simkeys_control.py"
-
 Write-Host "Using Python '$($python.Path)' via $($python.Source)." -ForegroundColor Cyan
 if ($ControlArgs.Count -gt 0 -and @("inject-next", "inject-all") -contains $ControlArgs[0]) {
   $pointerSize = (& $python.Path -c "import ctypes; print(ctypes.sizeof(ctypes.c_void_p))" 2>$null | Select-Object -First 1)
@@ -83,5 +81,24 @@ if ($ControlArgs.Count -gt 0 -and @("inject-next", "inject-all") -contains $Cont
     Write-Warning "The selected Python interpreter is not 32-bit. Inject commands will fail until an x86 Python is available or passed via -PythonExe."
   }
 }
-& $python.Path $controller @ControlArgs
-exit $LASTEXITCODE
+
+$srcPath = Join-Path $PSScriptRoot "src"
+if (-not (Test-Path -LiteralPath $srcPath)) {
+  throw "Could not find SimKeys source directory '$srcPath'."
+}
+
+$previousPythonPath = $env:PYTHONPATH
+if ([string]::IsNullOrWhiteSpace($previousPythonPath)) {
+  $env:PYTHONPATH = $srcPath
+} else {
+  $env:PYTHONPATH = "$srcPath;$previousPythonPath"
+}
+
+$exitCode = 0
+try {
+  & $python.Path -m simkeys_app.simkeys_control @ControlArgs
+  $exitCode = $LASTEXITCODE
+} finally {
+  $env:PYTHONPATH = $previousPythonPath
+}
+exit $exitCode

@@ -7,8 +7,8 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
 
-import simkeys_runtime as runtime
-from simkeys_script_host import AutoAAScript, ScriptManager, WEAPON_CURRENT_UNKNOWN, WEAPON_SLOT_CHOICES, WEAPON_SLOT_NONE
+from . import simkeys_runtime as runtime
+from .simkeys_script_host import AutoAAScript, ScriptManager, WEAPON_CURRENT_UNKNOWN, WEAPON_SLOT_CHOICES, WEAPON_SLOT_NONE
 
 
 def _probe_error_is_busy(text):
@@ -748,8 +748,8 @@ class SimKeysDesktopApp:
         self.auto_refresh_var = tk.BooleanVar(value=True)
         self.manual_controls_expanded = False
         self.manual_controls_toggle_var = tk.StringVar(value="Show Test Controls")
-        self.target_analysis_expanded = True
-        self.target_analysis_toggle_var = tk.StringVar(value="Hide Target Analysis")
+        self.target_analysis_expanded = False
+        self.target_analysis_toggle_var = tk.StringVar(value="Show Target Analysis")
         self.target_analysis_text = None
         self.analysis_paned = None
         self.target_analysis_frame = None

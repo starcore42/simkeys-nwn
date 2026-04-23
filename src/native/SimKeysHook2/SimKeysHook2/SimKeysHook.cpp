@@ -1144,7 +1144,7 @@ bool BuildLogDirectory(const char* module_path, char* log_dir, size_t capacity) 
   char* leaf = strrchr(log_dir, '\\');
   if (leaf != nullptr) {
     const char* leaf_name = leaf + 1;
-    if (_stricmp(leaf_name, "Release") == 0 || _stricmp(leaf_name, "Debug") == 0) {
+    if (_stricmp(leaf_name, "Release") == 0 || _stricmp(leaf_name, "Debug") == 0 || _stricmp(leaf_name, "bin") == 0) {
       *leaf = '\0';
     }
   }

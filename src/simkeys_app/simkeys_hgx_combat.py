@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
-from simkeys_hgx_data import AA_WORD_TO_TYPE, DAMAGE_TYPE_NAME_TO_ID, GI_WORD_TO_TYPE
+from .simkeys_hgx_data import AA_WORD_TO_TYPE, DAMAGE_TYPE_NAME_TO_ID, GI_WORD_TO_TYPE
 
 
 CHAT_WINDOW_PREFIX_RE = re.compile(r"^\[CHAT WINDOW TEXT\]\s*", re.IGNORECASE)

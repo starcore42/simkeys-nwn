@@ -4,13 +4,12 @@ import queue
 import threading
 import time
 
-import simKeys_Client as simkeys
-import simkeys_runtime as runtime
+from . import simKeys_Client as simkeys
+from . import simkeys_runtime as runtime
 
 
 def default_dll_path():
-    root = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(root, "SimKeysHook2", "Release", "SimKeysHook2.dll")
+    return runtime.default_dll_path()
 
 
 def print_clients(records):
