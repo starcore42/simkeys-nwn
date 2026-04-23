@@ -130,11 +130,17 @@ class ScriptCard:
         self.status_label = ttk.Label(header, textvariable=self.status_var)
         self.status_label.grid(row=0, column=1, padx=(12, 10), sticky="w")
 
+        next_column = 2
+        if self.definition.script_id == "auto_aa":
+            self._create_header_mode_control(header, next_column)
+            next_column += 2
+
         self.expand_button = ttk.Button(header, text="", command=self.on_expand_toggle, width=12)
-        self.expand_button.grid(row=0, column=2, padx=(0, 8), sticky="e")
+        self.expand_button.grid(row=0, column=next_column, padx=(0, 8), sticky="e")
+        next_column += 1
 
         self.toggle_button = ttk.Button(header, text="Start", command=self.on_toggle, width=10)
-        self.toggle_button.grid(row=0, column=3, sticky="e")
+        self.toggle_button.grid(row=0, column=next_column, sticky="e")
 
         self.body = ttk.Frame(self.frame, padding=(16, 8, 0, 0))
         self.body.columnconfigure(0, weight=1)
@@ -161,6 +167,21 @@ class ScriptCard:
         self.separator.grid(row=2, column=0, sticky="ew", pady=(8, 0))
         self.frame.bind("<Configure>", self._on_card_resize)
         self._apply_expanded_state()
+
+    def _create_header_mode_control(self, parent, column):
+        field = self.fields_by_key["mode"]
+        ttk.Label(parent, text=f"{field.label}:").grid(row=0, column=column, padx=(0, 4), sticky="e")
+        var = tk.StringVar(value=str(field.default))
+        widget = ttk.Combobox(
+            parent,
+            textvariable=var,
+            values=list(field.choices or []),
+            width=field.width,
+            state="readonly",
+        )
+        widget.grid(row=0, column=column + 1, padx=(0, 8), sticky="e")
+        widget.bind("<<ComboboxSelected>>", self.on_auto_damage_mode_changed)
+        self.vars[field.key] = (field, var, widget)
 
     def _build_generic_content(self):
         layout = SCRIPT_CARD_LAYOUTS.get(self.definition.script_id, {"sections": [], "advanced": []})
@@ -189,15 +210,10 @@ class ScriptCard:
                 self.advanced_body.grid_remove()
 
     def _build_auto_damage_content(self):
-        top = ttk.Frame(self.content)
-        top.grid(row=0, column=0, sticky="ew", pady=(0, 8))
-        self._create_field_holder(top, "mode", row=0, column=0)
-        self.vars["mode"][2].bind("<<ComboboxSelected>>", self.on_auto_damage_mode_changed)
-
         self.mode_hint_var = tk.StringVar(value="")
         self.mode_hint_label = ttk.Label(self.content, textvariable=self.mode_hint_var, justify="left", wraplength=520)
         self.mode_hint_label.grid(
-            row=1,
+            row=0,
             column=0,
             sticky="ew",
             pady=(0, 8),
@@ -205,33 +221,19 @@ class ScriptCard:
         self.wrap_targets.append((self.mode_hint_label, 36))
 
         self.command_section = ttk.LabelFrame(self.content, text="Command Switching", padding=8)
-        self.command_section.grid(row=2, column=0, sticky="ew", pady=(0, 8))
+        self.command_section.grid(row=1, column=0, sticky="ew", pady=(0, 8))
         self._create_field_holder(self.command_section, "elemental_dice", row=0, column=0)
         self._create_field_holder(self.command_section, "auto_canister", row=0, column=1)
         self._create_field_holder(self.command_section, "canister_cooldown_seconds", row=1, column=0)
 
         self.weapon_section = ttk.LabelFrame(self.content, text="Weapon Swapping", padding=8)
-        self.weapon_section.grid(row=3, column=0, sticky="ew", pady=(0, 8))
+        self.weapon_section.grid(row=2, column=0, sticky="ew", pady=(0, 8))
         self.weapon_section.columnconfigure(0, weight=1)
 
         weapon_top = ttk.Frame(self.weapon_section)
         weapon_top.grid(row=0, column=0, sticky="ew")
 
-        current_holder = ttk.Frame(weapon_top)
-        current_holder.grid(row=0, column=0, sticky="nw", padx=(0, 12), pady=(0, 8))
-        ttk.Label(current_holder, text="Initial State").grid(row=0, column=0, sticky="w")
-        self.weapon_current_var = tk.StringVar(value=WEAPON_CURRENT_UNKNOWN)
-        self.weapon_current_combo = ttk.Combobox(
-            current_holder,
-            textvariable=self.weapon_current_var,
-            values=[WEAPON_CURRENT_UNKNOWN],
-            width=16,
-            state="readonly",
-        )
-        self.weapon_current_combo.grid(row=1, column=0, sticky="w")
-        self.extra_controls.append(("choice", self.weapon_current_combo))
-
-        self._create_field_holder(weapon_top, "swap_cooldown_seconds", row=0, column=1)
+        self._create_field_holder(weapon_top, "swap_cooldown_seconds", row=0, column=0)
 
         self.weapon_limit_var = tk.StringVar(value="")
         self.weapon_limit_label = ttk.Label(self.weapon_section, textvariable=self.weapon_limit_var, justify="left", wraplength=520)
@@ -291,10 +293,10 @@ class ScriptCard:
             textvariable=self.advanced_toggle_var,
             command=self.on_advanced_toggle,
             width=14,
-        ).grid(row=5, column=0, sticky="w")
+        ).grid(row=3, column=0, sticky="w")
 
         self.advanced_body = ttk.LabelFrame(self.content, text="Advanced", padding=8)
-        self.advanced_body.grid(row=6, column=0, sticky="ew", pady=(8, 0))
+        self.advanced_body.grid(row=4, column=0, sticky="ew", pady=(8, 0))
         self._build_field_grid(self.advanced_body, ["poll_interval", "max_lines", "echo_console", "include_backlog"], columns=2)
         if not self.advanced_expanded:
             self.advanced_body.grid_remove()
@@ -400,13 +402,6 @@ class ScriptCard:
                 selected_choices.append(choice)
                 self.weapon_slot_vars[choice][0].set(True)
 
-        current_value = str(config.get("current_weapon", WEAPON_CURRENT_UNKNOWN)).strip() or WEAPON_CURRENT_UNKNOWN
-        current_choice = WEAPON_CURRENT_UNKNOWN
-        if current_value.startswith("W") and current_value[1:].isdigit():
-            index = int(current_value[1:]) - 1
-            if 0 <= index < len(selected_choices):
-                current_choice = selected_choices[index]
-        self.weapon_current_var.set(current_choice)
         self.on_auto_damage_mode_changed()
 
     def set_enabled(self, enabled):
@@ -501,20 +496,16 @@ class ScriptCard:
         for index in range(1, 7):
             config[f"weapon_slot_{index}"] = selected[index - 1] if index <= len(selected) else WEAPON_SLOT_NONE
 
-        current_choice = str(self.weapon_current_var.get()).strip() or WEAPON_CURRENT_UNKNOWN
-        if current_choice != WEAPON_CURRENT_UNKNOWN and current_choice in selected:
-            config["current_weapon"] = f"W{selected.index(current_choice) + 1}"
-        elif current_choice != WEAPON_CURRENT_UNKNOWN and validate_for_start:
-            if current_choice not in selected:
-                raise RuntimeError("Initial State must be Unknown or one of the selected weapon quickbar buttons.")
-        else:
-            config["current_weapon"] = WEAPON_CURRENT_UNKNOWN
+        config["current_weapon"] = WEAPON_CURRENT_UNKNOWN
 
         mode = str(config.get("mode", "")).strip()
         if validate_for_start and mode in AUTO_DAMAGE_WEAPON_MODES:
             max_bindings = _weapon_mode_limit(mode)
             if not selected:
-                raise RuntimeError("Select at least one weapon quickbar button for weapon mode.")
+                raise RuntimeError(
+                    "Weapon Swap needs at least one weapon quickbar button selected. "
+                    "Open Show Settings and tick the quickbar slots that contain weapons."
+                )
             if len(selected) > max_bindings:
                 raise RuntimeError(f"{mode} supports at most {max_bindings} weapon quickbar buttons.")
         return config
@@ -625,7 +616,7 @@ class ScriptCard:
             max_bindings = _weapon_mode_limit(mode)
             self.mode_hint_var.set(
                 f"{mode} swaps weapons by quickbar and auto-detects each weapon family from combat log damage lines. "
-                f"Select up to {max_bindings} weapon buttons. Initial State can stay Unknown; the script will probe from combat."
+                f"Select up to {max_bindings} weapon buttons. The starting weapon is assumed Unknown and reconciled from combat."
             )
             self.weapon_limit_var.set(
                 "Round delay: the swap lands at the start of the next combat round. "
@@ -674,12 +665,6 @@ class ScriptCard:
             return
 
         selected = self._selected_weapon_choices()
-        values = [WEAPON_CURRENT_UNKNOWN, *selected]
-        current_choice = str(self.weapon_current_var.get()).strip() or WEAPON_CURRENT_UNKNOWN
-        self.weapon_current_combo.configure(values=values)
-        if current_choice not in values:
-            self.weapon_current_var.set(WEAPON_CURRENT_UNKNOWN)
-
         if selected:
             rendered = ", ".join(_weapon_choice_display(choice) for choice in selected)
             self.weapon_summary_var.set(f"Selected: {rendered}")
