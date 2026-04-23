@@ -62,9 +62,9 @@ def _parse_quickbar_slot_choice(value: object) -> Optional[Tuple[int, int]]:
 
 
 def _format_damage_type_label(damage_type: int) -> str:
-    if damage_type in hgx_data.GI_TYPE_TO_WORD:
-        return hgx_data.GI_TYPE_TO_WORD[damage_type].title()
-    return hgx_data.AA_TYPE_TO_WORD.get(damage_type, str(damage_type)).title()
+    if damage_type in hgx_data.AA_TYPE_TO_WORD:
+        return hgx_data.AA_TYPE_TO_WORD[damage_type].title()
+    return hgx_data.GI_TYPE_TO_WORD.get(damage_type, str(damage_type)).title()
 
 
 @dataclass
@@ -125,7 +125,9 @@ class WeaponBinding:
 class WeaponLearningProfile:
     binding: WeaponBinding
     observations: int = 0
+    attack_attempts: int = 0
     last_seen_at: float = 0.0
+    last_attack_at: float = 0.0
     elemental_counts: Dict[int, int] = field(default_factory=dict)
     exotic_counts: Dict[int, int] = field(default_factory=dict)
     elemental_max_amounts: Dict[int, int] = field(default_factory=dict)
@@ -425,6 +427,7 @@ class AutoAAScript(ClientScriptBase):
         (config.elemental_count, config.exotic_count): family_key
         for family_key, config in WEAPON_FAMILY_CONFIG.items()
     }
+    WEAPON_LEARNING_ATTACKS_BEFORE_ROTATE = 3
     SLINGER_PENDING_SECONDS = 9.0
     SLINGER_STATE_TTL_SECONDS = 45.0
     SMALL_FETCH_TARGETS = {
@@ -459,6 +462,13 @@ class AutoAAScript(ClientScriptBase):
         self.current_weapon_key = ""
         self.pending_weapon_key = ""
         self.pending_weapon_ready_at = 0.0
+        self.weapon_attack_seen_count = 0
+        self.weapon_attack_matched_count = 0
+        self.weapon_damage_seen_count = 0
+        self.weapon_damage_matched_count = 0
+        self.weapon_damage_parse_miss_count = 0
+        self.weapon_last_ignored_attack_actor = ""
+        self.weapon_last_ignored_damage_actor = ""
         self.db = hgx_data.load_default_database()
 
     def on_start(self):
@@ -477,6 +487,13 @@ class AutoAAScript(ClientScriptBase):
         self.current_weapon_key = ""
         self.pending_weapon_key = ""
         self.pending_weapon_ready_at = 0.0
+        self.weapon_attack_seen_count = 0
+        self.weapon_attack_matched_count = 0
+        self.weapon_damage_seen_count = 0
+        self.weapon_damage_matched_count = 0
+        self.weapon_damage_parse_miss_count = 0
+        self.weapon_last_ignored_attack_actor = ""
+        self.weapon_last_ignored_damage_actor = ""
 
         if self._is_weapon_mode():
             self._initialize_weapon_mode()
@@ -545,6 +562,9 @@ class AutoAAScript(ClientScriptBase):
         if attack is None:
             return
 
+        if self._is_weapon_mode():
+            self.weapon_attack_seen_count += 1
+
         character_name = self._character_name()
         if not character_name:
             self.set_status("Waiting for character name")
@@ -557,8 +577,15 @@ class AutoAAScript(ClientScriptBase):
                 )
             return
 
-        if attack.attacker.lower() != character_name.lower():
+        character_key = hgx_combat.normalize_actor_name(character_name).lower()
+        if attack.attacker.lower() != character_key:
+            if self._is_weapon_mode():
+                self.weapon_last_ignored_attack_actor = attack.attacker
+                self.host.notify_state_changed()
             return
+
+        if self._is_weapon_mode():
+            self.weapon_attack_matched_count += 1
 
         if self._mode_label() == self.MODE_GNOMISH_INVENTOR:
             self.current_target = attack.defender
@@ -833,8 +860,8 @@ class AutoAAScript(ClientScriptBase):
     def _weapon_swap_cooldown_seconds(self) -> float:
         return max(float(self.config.get("swap_cooldown_seconds", 6.2)), 0.1)
 
-    def _promote_pending_weapon(self, now: float) -> bool:
-        if not self.pending_weapon_key or now < self.pending_weapon_ready_at:
+    def _confirm_pending_weapon(self, reason: str) -> bool:
+        if not self.pending_weapon_key:
             return False
 
         pending_key = self.pending_weapon_key
@@ -843,40 +870,89 @@ class AutoAAScript(ClientScriptBase):
         self.pending_weapon_ready_at = 0.0
         self.host.emit(
             "info",
-            f"{self.host.client.display_name}: {self._mode_label()} assumed {self._binding_display(pending_key)} is now equipped",
+            f"{self.host.client.display_name}: {self._mode_label()} confirmed {self._binding_display(pending_key)} ({reason})",
             script_id=self.script_id,
         )
         self.host.notify_state_changed()
         return True
 
+    def _profile_damage_types(self, profile: Optional[WeaponLearningProfile]) -> Set[int]:
+        if profile is None:
+            return set()
+        return set(profile.elemental_counts.keys()) | set(profile.exotic_counts.keys())
+
+    def _observed_weapon_damage_types(self, damage_line) -> Set[int]:
+        observed_types: Set[int] = set()
+        for component in damage_line.components:
+            if component.damage_type in WEAPON_ELEMENTAL_TYPES or component.damage_type in WEAPON_EXOTIC_TYPES:
+                observed_types.add(component.damage_type)
+        return observed_types
+
+    def _profile_for_observed_damage(
+        self,
+        observed_types: Set[int],
+        now: float,
+        defender_name: str,
+    ) -> Optional[WeaponLearningProfile]:
+        current_profile = self.weapon_profiles.get(self.current_weapon_key)
+        if not self.pending_weapon_key:
+            return current_profile
+
+        if now < self.pending_weapon_ready_at:
+            return None
+
+        pending_profile = self.weapon_profiles.get(self.pending_weapon_key)
+        if pending_profile is None:
+            self.pending_weapon_key = ""
+            self.pending_weapon_ready_at = 0.0
+            return current_profile
+
+        current_types = self._profile_damage_types(current_profile)
+        pending_types = self._profile_damage_types(pending_profile)
+
+        if pending_types and observed_types == pending_types:
+            self._confirm_pending_weapon("matched pending damage")
+            return pending_profile
+
+        if current_types and observed_types == current_types:
+            self.set_status(f"{defender_name}: awaiting {self._binding_display(self.pending_weapon_key)} damage")
+            return current_profile
+
+        if observed_types and (not current_types or observed_types != current_types):
+            self._confirm_pending_weapon("damage types changed")
+            return pending_profile
+
+        self.set_status(f"{defender_name}: awaiting {self._binding_display(self.pending_weapon_key)} damage")
+        return None
+
     def _observe_weapon_damage_line(self, text: str):
+        if " damages " in str(text or "").lower():
+            self.weapon_damage_parse_miss_count += 1
+
         damage_line = hgx_combat.parse_damage_line(text)
         if damage_line is None:
             return
 
+        self.weapon_damage_parse_miss_count = max(self.weapon_damage_parse_miss_count - 1, 0)
+        self.weapon_damage_seen_count += 1
         character_name = self._character_name()
-        if not character_name or damage_line.attacker.lower() != character_name.lower():
+        character_key = hgx_combat.normalize_actor_name(character_name).lower() if character_name else ""
+        if not character_key or damage_line.attacker.lower() != character_key:
+            self.weapon_last_ignored_damage_actor = damage_line.attacker
+            self.host.notify_state_changed()
             return
+        self.weapon_damage_matched_count += 1
 
         now = time.monotonic()
-        if self.pending_weapon_key and now < self.pending_weapon_ready_at:
+        observed_types = self._observed_weapon_damage_types(damage_line)
+        if not observed_types:
             return
-        self._promote_pending_weapon(now)
 
-        profile = self.weapon_profiles.get(self.current_weapon_key)
+        profile = self._profile_for_observed_damage(observed_types, now, damage_line.defender)
         if profile is None:
             return
 
         before_context = self._weapon_profile_context(profile)
-        observed_types: Set[int] = set()
-        for component in damage_line.components:
-            if component.damage_type in WEAPON_ELEMENTAL_TYPES:
-                observed_types.add(component.damage_type)
-            elif component.damage_type in WEAPON_EXOTIC_TYPES:
-                observed_types.add(component.damage_type)
-        if not observed_types:
-            return
-
         profile.observations += 1
         profile.last_seen_at = now
         for component in damage_line.components:
@@ -971,12 +1047,13 @@ class AutoAAScript(ClientScriptBase):
         context = self._weapon_profile_context(profile)
         if context is None:
             compatible = "/".join(family.family_key for family in self._compatible_weapon_families(profile))
-            return f"Unknown ({compatible or 'no compatible family'}), obs {profile.observations}"
+            return f"Unknown ({compatible or 'no compatible family'}), obs {profile.observations}, attacks {profile.attack_attempts}"
 
         _components, family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic = context
+        prefix = "" if self._exact_weapon_family(profile) is not None else "Unknown "
         return (
-            f"{self._weapon_profile_summary(family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic)}, "
-            f"obs {profile.observations}"
+            f"{prefix}{self._weapon_profile_summary(family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic)}, "
+            f"obs {profile.observations}, attacks {profile.attack_attempts}"
         )
 
     def _next_weapon_to_learn(self) -> Optional[WeaponLearningProfile]:
@@ -984,7 +1061,12 @@ class AutoAAScript(ClientScriptBase):
             return None
 
         current_profile = self.weapon_profiles.get(self.current_weapon_key)
-        if current_profile is not None and self._exact_weapon_family(current_profile) is None and current_profile.observations == 0:
+        if (
+            current_profile is not None
+            and self._exact_weapon_family(current_profile) is None
+            and current_profile.observations == 0
+            and current_profile.attack_attempts < self.WEAPON_LEARNING_ATTACKS_BEFORE_ROTATE
+        ):
             return current_profile
 
         candidates = [
@@ -1046,12 +1128,20 @@ class AutoAAScript(ClientScriptBase):
             self.set_status(f"{attack.defender}: waiting {self._binding_display(self.pending_weapon_key)} {remaining:.1f}s")
             return
 
-        self._promote_pending_weapon(now)
+        if self.pending_weapon_key:
+            self.set_status(f"{attack.defender}: awaiting {self._binding_display(self.pending_weapon_key)} damage")
+            return
+
+        current_profile = self.weapon_profiles.get(self.current_weapon_key)
+        if current_profile is not None and self._exact_weapon_family(current_profile) is None:
+            current_profile.attack_attempts += 1
+            current_profile.last_attack_at = now
 
         learning_profile = self._next_weapon_to_learn()
         if learning_profile is not None:
             if learning_profile.binding.key == self.current_weapon_key:
                 self.set_status(f"{attack.defender}: learning {self._binding_display(self.current_weapon_key)}")
+                self.host.notify_state_changed()
                 return
             self._request_weapon_swap(learning_profile.binding, attack.defender, "learn")
             return
@@ -1138,6 +1228,15 @@ class AutoAAScript(ClientScriptBase):
             "weapon_mode": True,
             "current_weapon": self.current_weapon_key,
             "pending_weapon": self.pending_weapon_key,
+            "combat": {
+                "attack_seen": self.weapon_attack_seen_count,
+                "attack_matched": self.weapon_attack_matched_count,
+                "damage_seen": self.weapon_damage_seen_count,
+                "damage_matched": self.weapon_damage_matched_count,
+                "damage_parse_miss": self.weapon_damage_parse_miss_count,
+                "ignored_attack_actor": self.weapon_last_ignored_attack_actor,
+                "ignored_damage_actor": self.weapon_last_ignored_damage_actor,
+            },
             "weapons": weapons,
         }
 
@@ -1608,7 +1707,8 @@ class AutoRSMScript(ClientScriptBase):
                 )
             return
 
-        if attack.attacker.lower() != character_name.lower():
+        character_key = hgx_combat.normalize_actor_name(character_name).lower()
+        if attack.attacker.lower() != character_key:
             return
 
         now = time.monotonic()

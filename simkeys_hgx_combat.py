@@ -8,6 +8,9 @@ from simkeys_hgx_data import AA_WORD_TO_TYPE, DAMAGE_TYPE_NAME_TO_ID, GI_WORD_TO
 CHAT_WINDOW_PREFIX_RE = re.compile(r"^\[CHAT WINDOW TEXT\]\s*", re.IGNORECASE)
 SERVER_PREFIX_RE = re.compile(r"^\[Server\]\s*", re.IGNORECASE)
 TIMESTAMP_PREFIX_RE = re.compile(r"^\[[A-Z][a-z]{2}\s+[A-Z][a-z]{2}\s+\d{2}\s+\d{2}:\d{2}:\d{2}\]\s*")
+INLINE_MARKUP_RE = re.compile(r"</?c[^>\r\n]{0,128}>|<[^>\r\n]{0,128}>", re.IGNORECASE)
+CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]")
+WHITESPACE_RE = re.compile(r"\s+")
 ATTACK_LINE_RE = re.compile(r"^(?:(?P<attack_mode>[^:]+?)\s*:\s*)?(?P<attacker>.+?) attacks (?P<defender>.+?)\s*:\s*", re.IGNORECASE)
 DAMAGE_LINE_RE = re.compile(
     r"^(?P<attacker>.+?) damages (?P<defender>.+?)\s*:\s*(?P<total>-?\d+)\s*\((?P<breakdown>.+)\)\s*$",
@@ -113,6 +116,26 @@ def normalize_chat_line(text: str) -> str:
     value = CHAT_WINDOW_PREFIX_RE.sub("", value)
     value = TIMESTAMP_PREFIX_RE.sub("", value)
     value = SERVER_PREFIX_RE.sub("", value)
+    value = strip_inline_markup(value)
+    return value.strip()
+
+
+def strip_inline_markup(text: str) -> str:
+    value = str(text or "")
+    if not value:
+        return ""
+
+    # HGX/NWN chat often wraps speaker and combat names in color tags. The
+    # encoded color bytes can render as replacement characters, so strip any
+    # short inline angle-bracket tag before actor-name comparisons.
+    value = INLINE_MARKUP_RE.sub("", value)
+    value = CONTROL_CHAR_RE.sub("", value)
+    return value.replace("\ufffd", "")
+
+
+def normalize_actor_name(text: str) -> str:
+    value = strip_inline_markup(text)
+    value = WHITESPACE_RE.sub(" ", value)
     return value.strip()
 
 
@@ -125,8 +148,8 @@ def parse_attack_line(text: str) -> Optional[ParsedAttackLine]:
     if match is None:
         return None
 
-    attacker = str(match.group("attacker") or "").strip()
-    defender = str(match.group("defender") or "").strip()
+    attacker = normalize_actor_name(match.group("attacker"))
+    defender = normalize_actor_name(match.group("defender"))
     if not attacker or not defender:
         return None
 
@@ -149,8 +172,8 @@ def parse_damage_line(text: str) -> Optional[ParsedDamageLine]:
     if match is None:
         return None
 
-    attacker = str(match.group("attacker") or "").strip()
-    defender = str(match.group("defender") or "").strip()
+    attacker = normalize_actor_name(match.group("attacker"))
+    defender = normalize_actor_name(match.group("defender"))
     if not attacker or not defender:
         return None
 
@@ -213,7 +236,7 @@ def parse_breach_line(text: str) -> Optional[ParsedBreachLine]:
     if match is None:
         return None
 
-    target = str(match.group("target") or "").strip()
+    target = normalize_actor_name(match.group("target"))
     effect = str(match.group("effect") or "").strip()
     if not target or not effect:
         return None

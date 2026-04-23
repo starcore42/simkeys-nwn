@@ -562,6 +562,17 @@ class ScriptCard:
                 f"{marker}{weapon.get('key', '?')}/{weapon.get('label', '?')}: "
                 f"{weapon.get('summary', 'Unknown')}"
             )
+        combat = dict(details.get("combat", {}))
+        if combat:
+            lines.append(
+                "Combat seen: "
+                f"attacks {combat.get('attack_matched', 0)}/{combat.get('attack_seen', 0)}, "
+                f"damage {combat.get('damage_matched', 0)}/{combat.get('damage_seen', 0)}, "
+                f"parse misses {combat.get('damage_parse_miss', 0)}"
+            )
+            ignored = combat.get("ignored_attack_actor") or combat.get("ignored_damage_actor")
+            if ignored:
+                lines.append(f"Last ignored actor: {ignored}")
         self.weapon_learning_var.set("Learned weapons:\n" + "\n".join(lines))
 
     def on_expand_toggle(self):
