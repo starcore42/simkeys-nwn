@@ -72,6 +72,18 @@ def _parse_quickbar_slot_choice(value: object) -> Optional[Tuple[int, int]]:
     return None
 
 
+def _parse_quickbar_bank_page(value: object) -> int:
+    if isinstance(value, str):
+        text = value.strip().lower()
+        if text in ("", "none", "base", "normal", "0"):
+            return 0
+        if text in ("shift", "1"):
+            return 1
+        if text in ("control", "ctrl", "2"):
+            return 2
+    return int(value)
+
+
 def _format_damage_type_label(damage_type: int) -> str:
     if damage_type in _DAMAGE_TYPE_LABEL_BY_ID:
         return _DAMAGE_TYPE_LABEL_BY_ID[damage_type]
@@ -274,7 +286,7 @@ class AutoDrinkScript(ClientScriptBase):
             return
 
         slot = int(self.config.get("slot", 2))
-        page = int(self.config.get("page", 0))
+        page = _parse_quickbar_bank_page(self.config.get("page", 0))
         trigger_name = self.host.format_slot(page, slot)
         if bool(self.config.get("lock_target", True)):
             try:
@@ -2380,6 +2392,88 @@ class AutoActionScript(ClientScriptBase):
         return max(float(self.config.get("cooldown_seconds", 6.2)), 0.1)
 
 
+class AutoAttackScript(ClientScriptBase):
+    script_id = "auto_attack"
+    COMMAND = "!action attack lead:opponent"
+
+    def __init__(self, client, config: Dict[str, object], host):
+        super().__init__(client, config, host)
+        self.enabled = False
+        self.loop_thread = None
+        self.loop_stop = threading.Event()
+        self.last_error_key = ""
+
+    def needs_chat_feed(self) -> bool:
+        return False
+
+    def on_start(self):
+        super().on_start()
+        self.enabled = True
+        self.loop_stop = threading.Event()
+        self.last_error_key = ""
+        self.loop_thread = threading.Thread(
+            target=self._run_loop,
+            name=f"AutoAttack-{self.client.pid}",
+            daemon=True,
+        )
+        self.loop_thread.start()
+        self.set_status(f"Attacking every {self._cooldown_seconds():.1f}s")
+        self.host.emit(
+            "info",
+            f"{self.host.client.display_name}: Auto Attack started ({self.COMMAND} every {self._cooldown_seconds():.1f}s)",
+            script_id=self.script_id,
+        )
+
+    def on_stop(self):
+        super().on_stop()
+        self.enabled = False
+        self.loop_stop.set()
+        self.host.emit("info", f"{self.host.client.display_name}: Auto Attack stopped", script_id=self.script_id)
+
+    def on_chat_line(self, sequence: int, text: str):
+        return
+
+    def _run_loop(self):
+        while not self.loop_stop.is_set():
+            try:
+                result = self.host.send_chat(self.COMMAND, 2)
+                if result["success"]:
+                    if self.last_error_key:
+                        self.host.emit(
+                            "info",
+                            f"{self.host.client.display_name}: Auto Attack recovered",
+                            script_id=self.script_id,
+                        )
+                        self.last_error_key = ""
+                else:
+                    error_key = f"send:{result['rc']}:{result['err']}"
+                    if error_key != self.last_error_key:
+                        self.last_error_key = error_key
+                        self.host.emit(
+                            "error",
+                            (
+                                f"{self.host.client.display_name}: Auto Attack send failed "
+                                f"command={self.COMMAND} rc={result['rc']} err={result['err']}"
+                            ),
+                            script_id=self.script_id,
+                        )
+            except Exception as exc:
+                error_key = f"exc:{type(exc).__name__}:{exc}"
+                if error_key != self.last_error_key:
+                    self.last_error_key = error_key
+                    self.host.emit(
+                        "error",
+                        f"{self.host.client.display_name}: Auto Attack chat send failed: {exc}",
+                        script_id=self.script_id,
+                    )
+
+            if self.loop_stop.wait(self._cooldown_seconds()):
+                break
+
+    def _cooldown_seconds(self) -> float:
+        return max(float(self.config.get("cooldown_seconds", 3.0)), 0.1)
+
+
 class AutoRSMScript(ClientScriptBase):
     script_id = "auto_rsm"
 
@@ -2819,7 +2913,7 @@ class ScriptManager:
             description="Watch combat activity, sample HP, and drink from the selected quickbar slot when health falls below the configured threshold.",
             fields=[
                 ScriptField("slot", "Slot", "int", 2, minimum=1, maximum=12, step=1, width=4),
-                ScriptField("page", "Bank", "int", 0, minimum=0, maximum=2, step=1, width=4),
+                ScriptField("page", "Bank", "choice", "None", choices=["None", "Shift", "Control"], width=8),
                 ScriptField("threshold_percent", "HP %", "float", 80.0, minimum=1.0, maximum=100.0, step=1.0, width=6),
                 ScriptField("cooldown_seconds", "Cooldown", "float", 3.0, minimum=0.1, maximum=10.0, step=0.1, width=6),
                 ScriptField("lock_target", "Lock", "bool", True),
@@ -2883,6 +2977,17 @@ class ScriptManager:
             factory=AutoActionScript,
         )
         self.registry[auto_action.script_id] = auto_action
+
+        auto_attack = ScriptDefinition(
+            script_id="auto_attack",
+            name="Auto Attack",
+            description="Repeatedly issue `!action attack lead:opponent`, matching the old HGXLE autoAttack.py behavior.",
+            fields=[
+                ScriptField("cooldown_seconds", "Cooldown", "float", 3.0, minimum=0.1, maximum=30.0, step=0.1, width=6),
+            ],
+            factory=AutoAttackScript,
+        )
+        self.registry[auto_attack.script_id] = auto_attack
 
         auto_rsm = ScriptDefinition(
             script_id="auto_rsm",

@@ -35,6 +35,13 @@ SCRIPT_CARD_LAYOUTS = {
         ],
         "advanced": [],
     },
+    "auto_attack": {
+        "expanded": False,
+        "sections": [
+            ("Trigger", ["cooldown_seconds"]),
+        ],
+        "advanced": [],
+    },
     "auto_rsm": {
         "expanded": False,
         "sections": [
@@ -43,6 +50,15 @@ SCRIPT_CARD_LAYOUTS = {
         "advanced": ["poll_interval", "max_lines", "echo_console", "include_backlog"],
     },
 }
+SCRIPT_CARD_ACCENTS = {
+    "autodrink": "#2c7be5",
+    "auto_aa": "#00a878",
+    "auto_action": "#f59f00",
+    "auto_attack": "#d9480f",
+    "auto_rsm": "#7950f2",
+}
+BANK_PAGE_TO_VALUE = {"None": 0, "Shift": 1, "Control": 2}
+BANK_VALUE_TO_PAGE = {value: label for label, value in BANK_PAGE_TO_VALUE.items()}
 WEAPON_SLOT_RENDER_ORDER = [choice for choice in WEAPON_SLOT_CHOICES if choice != WEAPON_SLOT_NONE]
 AUTO_DAMAGE_WEAPON_MODES = (AutoAAScript.MODE_WEAPON_SWAP,)
 
@@ -117,10 +133,13 @@ class ScriptCard:
         self.loaded_client_pid = None
 
         self.frame = ttk.Frame(parent, padding=(0, 8))
-        self.frame.columnconfigure(0, weight=1)
+        self.frame.columnconfigure(1, weight=1)
+
+        accent = tk.Frame(self.frame, width=5, background=SCRIPT_CARD_ACCENTS.get(definition.script_id, "#868e96"))
+        accent.grid(row=0, column=0, rowspan=3, sticky="ns", padx=(0, 8))
 
         header = ttk.Frame(self.frame)
-        header.grid(row=0, column=0, sticky="ew")
+        header.grid(row=0, column=1, sticky="ew")
         header.columnconfigure(1, weight=1)
 
         self.name_label = ttk.Label(header, text=definition.name)
@@ -139,11 +158,12 @@ class ScriptCard:
         self.expand_button.grid(row=0, column=next_column, padx=(0, 8), sticky="e")
         next_column += 1
 
-        self.toggle_button = ttk.Button(header, text="Start", command=self.on_toggle, width=10)
+        self.toggle_button = ttk.Button(header, text=self._toggle_button_text(False), command=self.on_toggle, width=18)
         self.toggle_button.grid(row=0, column=next_column, sticky="e")
 
         self.body = ttk.Frame(self.frame, padding=(16, 8, 0, 0))
         self.body.columnconfigure(0, weight=1)
+        self.body.grid(row=1, column=1, sticky="ew")
 
         self.description_label = ttk.Label(
             self.body,
@@ -164,9 +184,13 @@ class ScriptCard:
             self._build_generic_content()
 
         self.separator = ttk.Separator(self.frame, orient="horizontal")
-        self.separator.grid(row=2, column=0, sticky="ew", pady=(8, 0))
+        self.separator.grid(row=2, column=1, sticky="ew", pady=(8, 0))
         self.frame.bind("<Configure>", self._on_card_resize)
         self._apply_expanded_state()
+
+    def _toggle_button_text(self, running: bool) -> str:
+        action = "Stop" if running else "Start"
+        return f"{action} {self.definition.name}"
 
     def _create_header_mode_control(self, parent, column):
         field = self.fields_by_key["mode"]
@@ -368,6 +392,12 @@ class ScriptCard:
     def _load_standard_config(self, config):
         for field, var, _widget in self.vars.values():
             value = config.get(field.key, field.default)
+            if self.definition.script_id == "autodrink" and field.key == "page":
+                if isinstance(value, str) and value.strip() in BANK_PAGE_TO_VALUE:
+                    var.set(value.strip())
+                else:
+                    var.set(BANK_VALUE_TO_PAGE.get(int(value or 0), "None"))
+                continue
             if field.kind == "bool":
                 var.set(bool(value))
             else:
@@ -413,6 +443,7 @@ class ScriptCard:
         self.toggle_button.configure(state=button_state)
         if not enabled:
             self.status_var.set("Unavailable")
+            self.toggle_button.configure(text=self._toggle_button_text(False))
 
     def _set_widget_state(self, widget, kind, enabled):
         if kind == "choice":
@@ -523,7 +554,7 @@ class ScriptCard:
             self.status_var.set(busy_label)
         else:
             self.status_var.set(state["status"])
-        self.toggle_button.configure(text="Stop" if state["running"] else "Start")
+        self.toggle_button.configure(text=self._toggle_button_text(state["running"]))
         if busy_label:
             self.toggle_button.configure(state="disabled")
         if self.definition.script_id == "auto_aa":
@@ -592,7 +623,7 @@ class ScriptCard:
 
     def _apply_expanded_state(self):
         if self.expanded:
-            self.body.grid(row=1, column=0, sticky="ew")
+            self.body.grid(row=1, column=1, sticky="ew")
             self.expand_button.configure(text="Hide Settings")
         else:
             self.body.grid_remove()
@@ -717,8 +748,12 @@ class SimKeysDesktopApp:
         self.auto_refresh_var = tk.BooleanVar(value=True)
         self.manual_controls_expanded = False
         self.manual_controls_toggle_var = tk.StringVar(value="Show Test Controls")
+        self.target_analysis_expanded = True
+        self.target_analysis_toggle_var = tk.StringVar(value="Hide Target Analysis")
         self.target_analysis_text = None
         self.analysis_paned = None
+        self.target_analysis_frame = None
+        self.target_analysis_last_height = 300
 
         self._configure_style()
         self._build_ui()
@@ -869,10 +904,24 @@ class SimKeysDesktopApp:
         self.analysis_paned = analysis_paned
 
         target = ttk.LabelFrame(analysis_paned, text="Target Analysis", padding=10)
+        self.target_analysis_frame = target
         target.columnconfigure(0, weight=1)
-        target.rowconfigure(0, weight=1)
+        target.rowconfigure(1, weight=1)
+        target_header = ttk.Frame(target)
+        target_header.grid(row=0, column=0, sticky="ew", pady=(0, 6))
+        target_header.columnconfigure(0, weight=1)
+        ttk.Label(
+            target_header,
+            text="Current target resistances, healing, and learned weapon estimates.",
+        ).grid(row=0, column=0, sticky="w")
+        ttk.Button(
+            target_header,
+            textvariable=self.target_analysis_toggle_var,
+            command=self.toggle_target_analysis,
+            width=20,
+        ).grid(row=0, column=1, padx=(12, 0), sticky="e")
         self.target_analysis_text = ScrolledText(target, wrap="word", height=14, font=("Consolas", 9))
-        self.target_analysis_text.grid(row=0, column=0, sticky="nsew")
+        self.target_analysis_text.grid(row=1, column=0, sticky="nsew")
         self.target_analysis_text.configure(state="disabled")
         self._set_target_analysis_text("Start Auto Damage in Weapon Swap mode to see target resistances and weapon estimates.")
         analysis_paned.add(target, weight=2)
@@ -897,6 +946,7 @@ class SimKeysDesktopApp:
         self.log_text.grid(row=0, column=0, sticky="nsew")
         self.log_text.configure(state="disabled")
         analysis_paned.add(logs, weight=2)
+        self._apply_target_analysis_state()
 
         status_bar = ttk.Label(outer, textvariable=self.status_var, anchor="w")
         status_bar.grid(row=2, column=0, sticky="ew", pady=(10, 0))
@@ -913,6 +963,60 @@ class SimKeysDesktopApp:
             self.manual_controls_body.grid_remove()
             self.manual_controls_toggle_var.set("Show Test Controls")
 
+    def toggle_target_analysis(self):
+        if self.target_analysis_expanded:
+            self._remember_target_analysis_height()
+        self.target_analysis_expanded = not self.target_analysis_expanded
+        self._apply_target_analysis_state()
+
+    def _apply_target_analysis_state(self):
+        if self.target_analysis_text is None:
+            return
+        if self.target_analysis_expanded:
+            self.target_analysis_text.grid()
+            self.target_analysis_toggle_var.set("Hide Target Analysis")
+            self.root.after_idle(self._restore_target_analysis_height)
+        else:
+            self.target_analysis_text.grid_remove()
+            self.target_analysis_toggle_var.set("Show Target Analysis")
+            self.root.after_idle(self._shrink_target_analysis_height)
+
+    def _remember_target_analysis_height(self):
+        if self.analysis_paned is None:
+            return
+        try:
+            height = int(self.analysis_paned.sashpos(0))
+        except tk.TclError:
+            return
+        if height > 90:
+            self.target_analysis_last_height = height
+
+    def _target_analysis_collapsed_height(self) -> int:
+        if self.target_analysis_frame is None:
+            return 48
+        try:
+            return max(44, int(self.target_analysis_frame.winfo_reqheight()))
+        except tk.TclError:
+            return 48
+
+    def _shrink_target_analysis_height(self):
+        if self.analysis_paned is None:
+            return
+        try:
+            self.analysis_paned.sashpos(0, self._target_analysis_collapsed_height())
+        except tk.TclError:
+            pass
+
+    def _restore_target_analysis_height(self):
+        if self.analysis_paned is None:
+            return
+        try:
+            total_height = max(int(self.analysis_paned.winfo_height()), 1)
+            target_height = max(220, min(int(self.target_analysis_last_height), max(total_height - 260, 120)))
+            self.analysis_paned.sashpos(0, target_height)
+        except tk.TclError:
+            pass
+
     def _set_initial_pane_sizes(self):
         try:
             if self.main_paned.winfo_width() > 0:
@@ -922,7 +1026,10 @@ class SimKeysDesktopApp:
         try:
             if self.analysis_paned is not None and self.analysis_paned.winfo_height() > 0:
                 height = self.analysis_paned.winfo_height()
-                target_height = max(240, min(380, height // 3))
+                if self.target_analysis_expanded:
+                    target_height = max(240, min(380, height // 3))
+                else:
+                    target_height = self._target_analysis_collapsed_height()
                 automation_height = max(260, min(520, height // 2))
                 self.analysis_paned.sashpos(0, target_height)
                 self.analysis_paned.sashpos(1, min(target_height + automation_height, max(height - 180, target_height + 120)))
@@ -1336,7 +1443,7 @@ class SimKeysDesktopApp:
         row = self.script_rows.get(script_id)
         if row is not None:
             row.status_var.set("Starting..." if starting else "Stopping...")
-            row.toggle_button.configure(state="disabled")
+            row.toggle_button.configure(state="disabled", text="Starting..." if starting else "Stopping...")
 
         def action():
             try:
