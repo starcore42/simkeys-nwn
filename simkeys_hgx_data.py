@@ -253,6 +253,15 @@ class CombatProfile:
     paragon_ranks: int
 
 
+@dataclass(frozen=True)
+class DamageComponentEstimate:
+    requested_name: str
+    matched_name: str
+    expected_damage: int
+    paragon_ranks: int
+    healing_types: Tuple[int, ...]
+
+
 def project_root() -> str:
     return os.path.dirname(os.path.abspath(__file__))
 
@@ -601,6 +610,45 @@ class HgxCharacterDatabase:
         )
         self._store_cached_recommendation(cache_key, recommendation)
         return recommendation
+
+    def estimate_custom_damage(self, creature_name: str, components: Dict[int, float]) -> Optional[DamageComponentEstimate]:
+        if not creature_name or not components:
+            return None
+
+        profile = self._resolve_combat_profile(creature_name)
+        if profile is None:
+            return None
+
+        expected_damage = 0
+        healing_types = []
+        for damage_type, base_damage in sorted(components.items()):
+            if not isinstance(damage_type, int):
+                continue
+            if damage_type < 0 or damage_type >= HGX_DAMAGE_TYPE_COUNT:
+                continue
+
+            base_damage = float(base_damage)
+            if base_damage <= 0.0:
+                continue
+
+            if profile.healing[damage_type] != 0:
+                healing_types.append(damage_type)
+                continue
+
+            expected_damage += self._apply_immunity_and_resistance(
+                base_damage,
+                profile.immunity[damage_type],
+                profile.resistance[damage_type],
+                profile.paragon_ranks,
+            )
+
+        return DamageComponentEstimate(
+            requested_name=creature_name,
+            matched_name=profile.matched_name,
+            expected_damage=expected_damage,
+            paragon_ranks=profile.paragon_ranks,
+            healing_types=tuple(sorted(set(healing_types))),
+        )
 
     def _resolve_combat_profile(self, creature_name: str) -> Optional[CombatProfile]:
         record = self.lookup(creature_name)

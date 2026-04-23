@@ -28,19 +28,22 @@ class ScriptRow:
         self.frame.columnconfigure(1, weight=1)
 
         self.name_label = ttk.Label(self.frame, text=definition.name, width=14)
-        self.name_label.grid(row=0, column=0, sticky="w")
+        self.name_label.grid(row=0, column=0, sticky="nw")
 
         self.controls_frame = ttk.Frame(self.frame)
         self.controls_frame.grid(row=0, column=1, sticky="w")
 
-        col = 0
-        for field in definition.fields:
-            ttk.Label(self.controls_frame, text=field.label).grid(row=0, column=col, padx=(0, 4), sticky="w")
+        fields_per_row = 6 if len(definition.fields) > 6 else max(len(definition.fields), 1)
+        for index, field in enumerate(definition.fields):
+            row = index // fields_per_row
+            col = (index % fields_per_row) * 2
+
+            ttk.Label(self.controls_frame, text=field.label).grid(row=row, column=col, padx=(0, 4), pady=(0, 4), sticky="w")
             col += 1
             if field.kind == "bool":
                 var = tk.BooleanVar(value=bool(field.default))
                 widget = ttk.Checkbutton(self.controls_frame, variable=var)
-                widget.grid(row=0, column=col, padx=(0, 10), sticky="w")
+                widget.grid(row=row, column=col, padx=(0, 10), pady=(0, 4), sticky="w")
             elif field.kind == "choice":
                 default_value = str(field.default)
                 var = tk.StringVar(value=default_value)
@@ -51,20 +54,19 @@ class ScriptRow:
                     width=field.width,
                     state="readonly",
                 )
-                widget.grid(row=0, column=col, padx=(0, 10), sticky="w")
+                widget.grid(row=row, column=col, padx=(0, 10), pady=(0, 4), sticky="w")
             else:
                 var = tk.StringVar(value=str(field.default))
                 widget = ttk.Entry(self.controls_frame, textvariable=var, width=field.width)
-                widget.grid(row=0, column=col, padx=(0, 10), sticky="w")
+                widget.grid(row=row, column=col, padx=(0, 10), pady=(0, 4), sticky="w")
             self.vars[field.key] = (field, var, widget)
-            col += 1
 
         self.status_var = tk.StringVar(value="Stopped")
         self.status_label = ttk.Label(self.frame, textvariable=self.status_var, width=20)
-        self.status_label.grid(row=0, column=2, padx=(12, 8), sticky="w")
+        self.status_label.grid(row=0, column=2, padx=(12, 8), sticky="nw")
 
         self.toggle_button = ttk.Button(self.frame, text="Start", command=self.on_toggle, width=10)
-        self.toggle_button.grid(row=0, column=3, sticky="e")
+        self.toggle_button.grid(row=0, column=3, sticky="ne")
 
     def grid(self, **kwargs):
         self.frame.grid(**kwargs)

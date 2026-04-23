@@ -3,8 +3,8 @@ import time
 import ctypes as C
 import ctypes.wintypes as W
 from copy import deepcopy
-from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Callable, Dict, List, Optional, Set, Tuple
 
 import simKeys_Client as simkeys
 import simkeys_hgx_combat as hgx_combat
@@ -28,6 +28,43 @@ kLegacyHpPointerOffset = 0x0053165C
 kLegacyHpOwnerOffset = 0x2B8
 kLegacyCurrentHpOffset = 0x4C
 kLegacyMaxHpProbeOffsets = (2, 4, 6, 8, 0xA, 0xC, 0xE, 0x10)
+
+WEAPON_SLOT_NONE = "-"
+WEAPON_CURRENT_UNKNOWN = "Unknown"
+WEAPON_BINDING_KEYS = tuple(f"W{index}" for index in range(1, 7))
+WEAPON_ELEMENTAL_TYPES = frozenset({3, 4, 5, 6, 7})
+WEAPON_EXOTIC_TYPES = frozenset({8, 9, 10, 11})
+
+
+def _build_quickbar_slot_choices() -> List[str]:
+    values = [WEAPON_SLOT_NONE]
+    values.extend(f"F{slot}" for slot in range(1, 13))
+    values.extend(f"S+F{slot}" for slot in range(1, 13))
+    values.extend(f"C+F{slot}" for slot in range(1, 13))
+    return values
+
+
+WEAPON_SLOT_CHOICES = _build_quickbar_slot_choices()
+WEAPON_CURRENT_CHOICES = [WEAPON_CURRENT_UNKNOWN, *WEAPON_BINDING_KEYS]
+
+
+def _parse_quickbar_slot_choice(value: object) -> Optional[Tuple[int, int]]:
+    text = str(value or "").strip().upper()
+    if not text or text == WEAPON_SLOT_NONE:
+        return None
+    if text.startswith("S+F"):
+        return 1, int(text[3:])
+    if text.startswith("C+F"):
+        return 2, int(text[3:])
+    if text.startswith("F"):
+        return 0, int(text[1:])
+    return None
+
+
+def _format_damage_type_label(damage_type: int) -> str:
+    if damage_type in hgx_data.GI_TYPE_TO_WORD:
+        return hgx_data.GI_TYPE_TO_WORD[damage_type].title()
+    return hgx_data.AA_TYPE_TO_WORD.get(damage_type, str(damage_type)).title()
 
 
 @dataclass
@@ -64,6 +101,47 @@ class SlingerTargetState:
     blind_confirmed: bool = False
     blind_pending_until: float = 0.0
     last_blind_command_at: float = 0.0
+
+
+@dataclass(frozen=True)
+class WeaponModeConfig:
+    mode_label: str
+    max_bindings: int
+    elemental_count: int
+    elemental_dice: int
+    exotic_count: int
+    exotic_dice: int
+
+
+@dataclass(frozen=True)
+class WeaponBinding:
+    key: str
+    choice: str
+    page: int
+    slot: int
+    label: str
+
+
+@dataclass
+class WeaponLearningProfile:
+    binding: WeaponBinding
+    observations: int = 0
+    last_seen_at: float = 0.0
+    elemental_counts: Dict[int, int] = field(default_factory=dict)
+    exotic_counts: Dict[int, int] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class WeaponRecommendation:
+    binding: WeaponBinding
+    expected_damage: int
+    matched_name: str
+    paragon_ranks: int
+    learned_elemental: Tuple[int, ...]
+    learned_exotic: Tuple[int, ...]
+    healing_types: Tuple[int, ...]
+    missing_elemental: int
+    missing_exotic: int
 
 
 class ClientScriptBase:
@@ -331,6 +409,14 @@ class AutoAAScript(ClientScriptBase):
     MODE_ZEN_RANGER = "Zen Ranger"
     MODE_DIVINE_SLINGER = "Divine Slinger"
     MODE_GNOMISH_INVENTOR = "Gnomish Inventor"
+    MODE_WEAPON_DB = "Weapon DB"
+    MODE_WEAPON_P1 = "Weapon P1"
+    MODE_WEAPON_XR = "Weapon XR"
+    WEAPON_MODE_CONFIG = {
+        MODE_WEAPON_DB: WeaponModeConfig(MODE_WEAPON_DB, max_bindings=6, elemental_count=3, elemental_dice=5, exotic_count=3, exotic_dice=2),
+        MODE_WEAPON_P1: WeaponModeConfig(MODE_WEAPON_P1, max_bindings=3, elemental_count=1, elemental_dice=9, exotic_count=2, exotic_dice=6),
+        MODE_WEAPON_XR: WeaponModeConfig(MODE_WEAPON_XR, max_bindings=3, elemental_count=2, elemental_dice=11, exotic_count=1, exotic_dice=8),
+    }
     SLINGER_PENDING_SECONDS = 9.0
     SLINGER_STATE_TTL_SECONDS = 45.0
     SMALL_FETCH_TARGETS = {
@@ -360,6 +446,11 @@ class AutoAAScript(ClientScriptBase):
         self.canister_thread = None
         self.last_canister_error_key = ""
         self.slinger_states: Dict[str, SlingerTargetState] = {}
+        self.weapon_bindings: Dict[str, WeaponBinding] = {}
+        self.weapon_profiles: Dict[str, WeaponLearningProfile] = {}
+        self.current_weapon_key = ""
+        self.pending_weapon_key = ""
+        self.pending_weapon_ready_at = 0.0
         self.db = hgx_data.load_default_database()
 
     def on_start(self):
@@ -373,6 +464,23 @@ class AutoAAScript(ClientScriptBase):
         self.last_canister_error_key = ""
         self.canister_stop = threading.Event()
         self.slinger_states = {}
+        self.weapon_bindings = {}
+        self.weapon_profiles = {}
+        self.current_weapon_key = ""
+        self.pending_weapon_key = ""
+        self.pending_weapon_ready_at = 0.0
+
+        if self._is_weapon_mode():
+            self._initialize_weapon_mode()
+            current_label = self._binding_display(self.current_weapon_key)
+            self.set_status(f"{self._mode_label()} armed ({current_label})")
+            self.host.emit(
+                "info",
+                f"{self.host.client.display_name}: {self._mode_label()} started ({current_label})",
+                script_id=self.script_id,
+            )
+            return
+
         damage_dice = self._damage_dice()
         self.set_status(f"{self._mode_label()} armed ({damage_dice}{self._dice_unit()})")
         self.host.emit(
@@ -398,12 +506,20 @@ class AutoAAScript(ClientScriptBase):
         self.enabled = False
         self.current_secondary_mode = "damage"
         self.slinger_states = {}
+        self.weapon_bindings = {}
+        self.weapon_profiles = {}
+        self.current_weapon_key = ""
+        self.pending_weapon_key = ""
+        self.pending_weapon_ready_at = 0.0
         self.canister_stop.set()
         self.host.emit("info", f"{self.host.client.display_name}: {self._mode_label()} stopped", script_id=self.script_id)
 
     def on_chat_line(self, sequence: int, text: str):
         if not self.should_process(sequence) or not self.enabled:
             return
+
+        if self._is_weapon_mode():
+            self._observe_weapon_damage_line(text)
 
         if self._mode_label() == self.MODE_DIVINE_SLINGER:
             self._observe_slinger_line(text)
@@ -441,6 +557,10 @@ class AutoAAScript(ClientScriptBase):
 
         if self._mode_label() == self.MODE_DIVINE_SLINGER:
             self._handle_slinger_attack(attack)
+            return
+
+        if self._is_weapon_mode():
+            self._handle_weapon_attack(attack)
             return
 
         recommendation = self._recommend_for_target(attack.defender)
@@ -504,9 +624,347 @@ class AutoAAScript(ClientScriptBase):
 
     def _mode_label(self) -> str:
         mode = str(self.config.get("mode", self.MODE_ARCANE_ARCHER)).strip()
-        if mode in (self.MODE_ARCANE_ARCHER, self.MODE_ZEN_RANGER, self.MODE_DIVINE_SLINGER, self.MODE_GNOMISH_INVENTOR):
+        if mode in (
+            self.MODE_ARCANE_ARCHER,
+            self.MODE_ZEN_RANGER,
+            self.MODE_DIVINE_SLINGER,
+            self.MODE_GNOMISH_INVENTOR,
+            self.MODE_WEAPON_DB,
+            self.MODE_WEAPON_P1,
+            self.MODE_WEAPON_XR,
+        ):
             return mode
         return self.MODE_ARCANE_ARCHER
+
+    def _is_weapon_mode(self) -> bool:
+        return self._mode_label() in self.WEAPON_MODE_CONFIG
+
+    def _weapon_mode_config(self) -> Optional[WeaponModeConfig]:
+        return self.WEAPON_MODE_CONFIG.get(self._mode_label())
+
+    def _weapon_binding_keys(self) -> Tuple[str, ...]:
+        mode_config = self._weapon_mode_config()
+        if mode_config is None:
+            return ()
+        return WEAPON_BINDING_KEYS[:mode_config.max_bindings]
+
+    def _initialize_weapon_mode(self):
+        mode_config = self._weapon_mode_config()
+        if mode_config is None:
+            return
+
+        bindings: Dict[str, WeaponBinding] = {}
+        used_choices: Dict[str, str] = {}
+        for index, binding_key in enumerate(WEAPON_BINDING_KEYS, start=1):
+            choice = str(self.config.get(f"weapon_slot_{index}", WEAPON_SLOT_NONE)).strip() or WEAPON_SLOT_NONE
+            if choice == WEAPON_SLOT_NONE:
+                continue
+            if index > mode_config.max_bindings:
+                raise RuntimeError(f"{mode_config.mode_label} only uses W1-W{mode_config.max_bindings}; clear W{index}.")
+
+            parsed = _parse_quickbar_slot_choice(choice)
+            if parsed is None:
+                raise RuntimeError(f"{binding_key} uses an invalid quickbar selector: {choice}")
+            if choice in used_choices:
+                raise RuntimeError(f"{binding_key} duplicates {used_choices[choice]} ({choice}).")
+
+            page, slot = parsed
+            bindings[binding_key] = WeaponBinding(
+                key=binding_key,
+                choice=choice,
+                page=page,
+                slot=slot,
+                label=self.host.format_slot(page, slot),
+            )
+            used_choices[choice] = binding_key
+
+        if not bindings:
+            raise RuntimeError(f"{mode_config.mode_label} requires at least one weapon quickbar slot.")
+
+        current_weapon_key = str(self.config.get("current_weapon", WEAPON_CURRENT_UNKNOWN)).strip() or WEAPON_CURRENT_UNKNOWN
+        if current_weapon_key == WEAPON_CURRENT_UNKNOWN:
+            raise RuntimeError(f"{mode_config.mode_label} requires Cur to be set before starting.")
+        if current_weapon_key not in bindings:
+            raise RuntimeError(f"Current weapon {current_weapon_key} is not assigned to a quickbar slot.")
+
+        self.weapon_bindings = bindings
+        self.weapon_profiles = {
+            binding_key: WeaponLearningProfile(binding=binding)
+            for binding_key, binding in bindings.items()
+        }
+        self.current_weapon_key = current_weapon_key
+
+        if len(bindings) < mode_config.max_bindings:
+            self.host.emit(
+                "info",
+                (
+                    f"{self.host.client.display_name}: {mode_config.mode_label} is configured with "
+                    f"{len(bindings)}/{mode_config.max_bindings} weapon slots; missing slots will be skipped"
+                ),
+                script_id=self.script_id,
+            )
+
+    def _binding_display(self, binding_key: str) -> str:
+        binding = self.weapon_bindings.get(str(binding_key or "").strip())
+        if binding is None:
+            return str(binding_key or WEAPON_CURRENT_UNKNOWN)
+        return f"{binding.key}/{binding.label}"
+
+    def _top_damage_types(self, counts: Dict[int, int], limit: int) -> Tuple[int, ...]:
+        if limit <= 0 or not counts:
+            return ()
+        ranked = sorted(
+            counts.items(),
+            key=lambda item: (-item[1], _format_damage_type_label(item[0]), item[0]),
+        )
+        return tuple(damage_type for damage_type, _count in ranked[:limit])
+
+    def _learned_weapon_types(self, profile: WeaponLearningProfile) -> Tuple[Tuple[int, ...], Tuple[int, ...], int, int]:
+        mode_config = self._weapon_mode_config()
+        if mode_config is None:
+            return (), (), 0, 0
+
+        learned_elemental = self._top_damage_types(profile.elemental_counts, mode_config.elemental_count)
+        learned_exotic = self._top_damage_types(profile.exotic_counts, mode_config.exotic_count)
+        missing_elemental = max(mode_config.elemental_count - len(learned_elemental), 0)
+        missing_exotic = max(mode_config.exotic_count - len(learned_exotic), 0)
+        return learned_elemental, learned_exotic, missing_elemental, missing_exotic
+
+    def _weapon_profile_summary(
+        self,
+        learned_elemental: Tuple[int, ...],
+        learned_exotic: Tuple[int, ...],
+        missing_elemental: int,
+        missing_exotic: int,
+    ) -> str:
+        parts = []
+        if learned_elemental:
+            parts.append("Elem " + "/".join(_format_damage_type_label(value) for value in learned_elemental))
+        if learned_exotic:
+            parts.append("Exo " + "/".join(_format_damage_type_label(value) for value in learned_exotic))
+        if missing_elemental or missing_exotic:
+            parts.append(f"Learn E{missing_elemental}/X{missing_exotic}")
+        return ", ".join(parts) if parts else "Unlearned"
+
+    def _weapon_components(self, profile: WeaponLearningProfile):
+        mode_config = self._weapon_mode_config()
+        if mode_config is None:
+            return {}, (), (), 0, 0
+
+        learned_elemental, learned_exotic, missing_elemental, missing_exotic = self._learned_weapon_types(profile)
+        components: Dict[int, float] = {}
+        elemental_base_damage = 6.5 * float(mode_config.elemental_dice)
+        exotic_base_damage = 6.5 * float(mode_config.exotic_dice)
+
+        for damage_type in learned_elemental:
+            components[damage_type] = components.get(damage_type, 0.0) + elemental_base_damage
+        for damage_type in learned_exotic:
+            components[damage_type] = components.get(damage_type, 0.0) + exotic_base_damage
+
+        return components, learned_elemental, learned_exotic, missing_elemental, missing_exotic
+
+    def _weapon_swap_cooldown_seconds(self) -> float:
+        return max(float(self.config.get("swap_cooldown_seconds", 6.2)), 0.1)
+
+    def _promote_pending_weapon(self, now: float) -> bool:
+        if not self.pending_weapon_key or now < self.pending_weapon_ready_at:
+            return False
+
+        pending_key = self.pending_weapon_key
+        self.current_weapon_key = pending_key
+        self.pending_weapon_key = ""
+        self.pending_weapon_ready_at = 0.0
+        self.host.emit(
+            "info",
+            f"{self.host.client.display_name}: {self._mode_label()} assumed {self._binding_display(pending_key)} is now equipped",
+            script_id=self.script_id,
+        )
+        return True
+
+    def _observe_weapon_damage_line(self, text: str):
+        damage_line = hgx_combat.parse_damage_line(text)
+        if damage_line is None:
+            return
+
+        character_name = self._character_name()
+        if not character_name or damage_line.attacker.lower() != character_name.lower():
+            return
+
+        now = time.monotonic()
+        self._promote_pending_weapon(now)
+
+        profile = self.weapon_profiles.get(self.current_weapon_key)
+        if profile is None:
+            return
+
+        observed_types: Set[int] = set()
+        for component in damage_line.components:
+            if component.damage_type in WEAPON_ELEMENTAL_TYPES or component.damage_type in WEAPON_EXOTIC_TYPES:
+                observed_types.add(component.damage_type)
+        if not observed_types:
+            return
+
+        before = self._learned_weapon_types(profile)
+        profile.observations += 1
+        profile.last_seen_at = now
+        for damage_type in observed_types:
+            if damage_type in WEAPON_ELEMENTAL_TYPES:
+                profile.elemental_counts[damage_type] = profile.elemental_counts.get(damage_type, 0) + 1
+            elif damage_type in WEAPON_EXOTIC_TYPES:
+                profile.exotic_counts[damage_type] = profile.exotic_counts.get(damage_type, 0) + 1
+        after = self._learned_weapon_types(profile)
+
+        if after != before:
+            learned_elemental, learned_exotic, missing_elemental, missing_exotic = after
+            self.host.emit(
+                "info",
+                (
+                    f"{self.host.client.display_name}: {self._mode_label()} learned {self._binding_display(profile.binding.key)} "
+                    f"from '{damage_line.defender}' -> "
+                    f"{self._weapon_profile_summary(learned_elemental, learned_exotic, missing_elemental, missing_exotic)}"
+                ),
+                script_id=self.script_id,
+            )
+
+    def _weapon_candidates_for_target(self, creature_name: str) -> List[WeaponRecommendation]:
+        candidates: List[WeaponRecommendation] = []
+        for profile in self.weapon_profiles.values():
+            components, learned_elemental, learned_exotic, missing_elemental, missing_exotic = self._weapon_components(profile)
+            if not components:
+                continue
+
+            estimate = self.db.estimate_custom_damage(creature_name, components)
+            if estimate is None:
+                continue
+
+            candidates.append(
+                WeaponRecommendation(
+                    binding=profile.binding,
+                    expected_damage=estimate.expected_damage,
+                    matched_name=estimate.matched_name,
+                    paragon_ranks=estimate.paragon_ranks,
+                    learned_elemental=learned_elemental,
+                    learned_exotic=learned_exotic,
+                    healing_types=estimate.healing_types,
+                    missing_elemental=missing_elemental,
+                    missing_exotic=missing_exotic,
+                )
+            )
+        return candidates
+
+    def _choose_best_weapon(self, candidates: List[WeaponRecommendation]) -> Optional[WeaponRecommendation]:
+        if not candidates:
+            return None
+
+        return max(
+            candidates,
+            key=lambda candidate: (
+                candidate.expected_damage,
+                1 if candidate.binding.key == self.current_weapon_key else 0,
+                -(candidate.missing_elemental + candidate.missing_exotic),
+                candidate.binding.key,
+            ),
+        )
+
+    def _weapon_learning_status(self, target_name: str) -> str:
+        learned_count = 0
+        for profile in self.weapon_profiles.values():
+            components, _learned_elemental, _learned_exotic, _missing_elemental, _missing_exotic = self._weapon_components(profile)
+            if components:
+                learned_count += 1
+        return f"{target_name}: learning weapons ({learned_count}/{len(self.weapon_profiles)})"
+
+    def _weapon_recommendation_summary(self, recommendation: WeaponRecommendation) -> str:
+        return self._weapon_profile_summary(
+            recommendation.learned_elemental,
+            recommendation.learned_exotic,
+            recommendation.missing_elemental,
+            recommendation.missing_exotic,
+        )
+
+    def _handle_weapon_attack(self, attack):
+        self.current_target = attack.defender
+
+        if self.db.lookup(attack.defender) is None:
+            self.set_status(f"No data: {attack.defender}")
+            defender_key = attack.defender.lower()
+            if defender_key not in self.unknown_targets:
+                self.unknown_targets.add(defender_key)
+                self.host.emit(
+                    "info",
+                    f"{self.host.client.display_name}: {self._mode_label()} has no characters.d entry for '{attack.defender}'",
+                    script_id=self.script_id,
+                )
+            return
+
+        now = time.monotonic()
+        if self.pending_weapon_key and now < self.pending_weapon_ready_at:
+            remaining = self.pending_weapon_ready_at - now
+            self.set_status(f"{attack.defender}: waiting {self._binding_display(self.pending_weapon_key)} {remaining:.1f}s")
+            return
+
+        self._promote_pending_weapon(now)
+
+        candidates = self._weapon_candidates_for_target(attack.defender)
+        if not candidates:
+            self.set_status(self._weapon_learning_status(attack.defender))
+            return
+
+        safe_candidates = [candidate for candidate in candidates if not candidate.healing_types]
+        if not safe_candidates:
+            unsafe_candidate = self._choose_best_weapon(candidates)
+            healing_text = ", ".join(_format_damage_type_label(value) for value in unsafe_candidate.healing_types) if unsafe_candidate else "unknown"
+            self.set_status(f"{attack.defender}: unsafe ({healing_text})")
+            return
+
+        recommendation = self._choose_best_weapon(safe_candidates)
+        if recommendation is None:
+            self.set_status(self._weapon_learning_status(attack.defender))
+            return
+
+        selection_summary = self._weapon_recommendation_summary(recommendation)
+        if recommendation.binding.key == self.current_weapon_key:
+            self.set_status(f"{attack.defender}: {self._binding_display(recommendation.binding.key)} {selection_summary}")
+            return
+
+        try:
+            result = self.host.trigger_slot(recommendation.binding.slot, page=recommendation.binding.page)
+        except Exception as exc:
+            self.set_status(f"{attack.defender}: swap failed")
+            self.host.emit(
+                "error",
+                f"{self.host.client.display_name}: {self._mode_label()} trigger failed for {self._binding_display(recommendation.binding.key)}: {exc}",
+                script_id=self.script_id,
+            )
+            return
+
+        if result["success"]:
+            self.pending_weapon_key = recommendation.binding.key
+            self.pending_weapon_ready_at = now + self._weapon_swap_cooldown_seconds()
+            self.set_status(
+                f"{attack.defender}: swap {self._binding_display(recommendation.binding.key)} ({self._weapon_swap_cooldown_seconds():.1f}s)"
+            )
+        else:
+            self.set_status(f"{attack.defender}: swap failed")
+
+        self.host.emit(
+            "info",
+            (
+                f"{self.host.client.display_name}: {self._mode_label()} target='{attack.defender}' "
+                f"weapon={self._binding_display(recommendation.binding.key)} "
+                f"expected={recommendation.expected_damage} paragon={recommendation.paragon_ranks} "
+                f"profile={selection_summary} success={result['success']} rc={result['rc']} "
+                f"aux={result['aux_rc']} path={result['path']} err={result['err']}"
+            ),
+            script_id=self.script_id,
+        )
+        if bool(self.config.get("echo_console", False)):
+            self.host.send_console(
+                (
+                    f"SimKeys {self._mode_label()} {attack.defender} -> {self._binding_display(recommendation.binding.key)} "
+                    f"rc={result['rc']} err={result['err']}"
+                )
+            )
 
     def _damage_dice(self) -> int:
         return max(int(self.config.get("elemental_dice", 10)), 0)
@@ -515,6 +973,8 @@ class AutoAAScript(ClientScriptBase):
         return "d20" if self._mode_label() == self.MODE_ARCANE_ARCHER else "d12"
 
     def _parse_feedback_type(self, text: str) -> Optional[int]:
+        if self._is_weapon_mode():
+            return None
         if self._mode_label() == self.MODE_GNOMISH_INVENTOR:
             return hgx_combat.parse_gi_feedback_type(text)
         feedback_type = hgx_combat.parse_damage_feedback_type(text)
@@ -1153,7 +1613,13 @@ class ClientScriptHost:
                 self.stop_event = threading.Event()
                 self.thread = threading.Thread(target=self._run, name=f"SimKeysHost-{self.client.pid}", daemon=True)
                 self.thread.start()
-            script.on_start()
+            try:
+                script.on_start()
+            except Exception:
+                self.scripts.pop(definition.script_id, None)
+                if not self.scripts:
+                    self.stop_event.set()
+                raise
         self.notify_state_changed()
 
     def stop_script(self, script_id: str):
@@ -1306,7 +1772,7 @@ class ScriptManager:
         auto_aa = ScriptDefinition(
             script_id="auto_aa",
             name="Auto Damage",
-            description="GUI-controlled rewrite of HGX auto_aa_2.4.py and auto_slinger.py.old: switch Arcane Archer, Zen Ranger, Divine Slinger, or Gnomish Inventor damage modes from HGX-formatted combat log lines without relying on in-game toggles.",
+            description="GUI-controlled rewrite of HGX auto_aa_2.4.py and auto_slinger.py.old, plus weapon-swap modes for DB/P1/XR builds: switch Arcane Archer, Zen Ranger, Divine Slinger, Gnomish Inventor, or learned weapon sets from combat log lines without relying on in-game toggles.",
             fields=[
                 ScriptField(
                     "mode",
@@ -1318,9 +1784,20 @@ class ScriptManager:
                         AutoAAScript.MODE_ZEN_RANGER,
                         AutoAAScript.MODE_DIVINE_SLINGER,
                         AutoAAScript.MODE_GNOMISH_INVENTOR,
+                        AutoAAScript.MODE_WEAPON_DB,
+                        AutoAAScript.MODE_WEAPON_P1,
+                        AutoAAScript.MODE_WEAPON_XR,
                     ],
-                    width=18,
+                    width=16,
                 ),
+                ScriptField("current_weapon", "Cur", "choice", WEAPON_CURRENT_UNKNOWN, choices=WEAPON_CURRENT_CHOICES, width=8),
+                ScriptField("weapon_slot_1", "W1", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
+                ScriptField("weapon_slot_2", "W2", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
+                ScriptField("weapon_slot_3", "W3", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
+                ScriptField("weapon_slot_4", "W4", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
+                ScriptField("weapon_slot_5", "W5", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
+                ScriptField("weapon_slot_6", "W6", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
+                ScriptField("swap_cooldown_seconds", "Swap", "float", 6.2, minimum=0.1, maximum=20.0, step=0.1, width=6),
                 ScriptField("elemental_dice", "Dice", "int", 10, minimum=1, maximum=30, step=1, width=5),
                 ScriptField("auto_canister", "Canister", "bool", True),
                 ScriptField("canister_cooldown_seconds", "Can CD", "float", 6.1, minimum=0.1, maximum=30.0, step=0.1, width=6),
