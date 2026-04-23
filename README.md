@@ -113,9 +113,42 @@ The repository includes `data\characters.d\` so Auto Damage works out of the box
 
 ## Automation Notes
 
-- Auto Damage uses `characters.d` resistances, immunities, healing, and weapon-learning data to choose safe damage.
-- Stop Hitting watches your outgoing damage and drinks the configured healing potion if you hit a `characters.d` creature marked `kickback="Area"`.
-- Stop Hitting intentionally does not resume attacking after drinking, so the potion acts as an interrupt rather than a heal-and-continue loop.
+The GUI script panel runs these automations per injected client. Chat-driven scripts only process new lines by default; enable `Backlog` if you intentionally want a script to inspect older buffered combat lines when it starts.
+
+- **AutoDrink**
+  - Watches combat activity involving the client, reads the character HP directly from NWN memory, and fires a configured quickbar slot when HP falls at or below the configured percentage.
+  - The potion slot can be on the Base, Shift, or Control quickbar bank. By default it uses slot 2, locks the current opponent before drinking, waits for the drink cooldown, then resumes with `!action attack locked`.
+  - Useful for general survival automation where you still want the client to keep fighting after the drink completes. If `Resume` is disabled, the script drinks but does not restart attacks.
+  - Logs the HP snapshot, threshold, quickbar trigger, and remote trigger result; optional console echo prints a compact in-game status line.
+
+- **Stop Hitting**
+  - Watches your outgoing damage lines and checks the defender against the packaged `characters.d` data.
+  - If the target is marked `kickback="Area"`, it immediately triggers the configured healing potion slot and enters a short interrupt cooldown so repeated damage lines do not spam potions.
+  - Unlike AutoDrink, Stop Hitting intentionally does not resume attacking after the potion. The drink acts as an interrupt so you stop feeding area kickback or similar punishment mechanics.
+  - Requires the injected client identity to be known so it can distinguish your damage from party, summon, or environmental damage lines.
+
+- **Auto Damage**
+  - Watches your attack and damage log lines, identifies the current target, and uses `characters.d` immunity, resistance, healing, and paragon data to choose the safest/highest expected damage option without needing game focus.
+  - `Arcane Archer` mode selects the best `!dam*` type for AA-style damage. `Zen Ranger` mode accounts for linked elemental/exotic damage pairs. `Divine Slinger` mode selects elemental/divine damage and can also sequence breach (`!dambr`) or blind (`!dambd`) for known targets that need those effects.
+  - `Gnomish Inventor` mode selects the best `!gi bolt` type, resets to zappers before non-zapper bolt changes when needed, and can keep a canister loop running for the current target. Small fetch-style targets use `!gi canister 4`; other targets use `!gi canister 2`.
+  - `Weapon Swap` mode learns configured weapon quickbar slots from observed damage components, matches those learned profiles against target defenses, avoids weapons that would heal the target, and swaps to the best safe weapon. The target analysis panel shows learned weapon profiles, expected damage, healing warnings, and the recommended slot.
+  - The `Dice`, poll, batch, echo, backlog, and weapon-swap cooldown settings tune how quickly it reacts and how much detail it reports.
+
+- **Auto Action**
+  - Runs a simple cooldown loop that repeatedly sends one selected HG action command through the injected chat path.
+  - Supported modes are Called Shot (`!action cs opponent`), Knockdown (`!action kd opponent`), and Disarm (`!action dis opponent`).
+  - It does not need the chat-feed parser; it just sends the selected command every configured cooldown and reports send failures until the command path recovers.
+
+- **Auto Attack**
+  - Runs a cooldown loop that repeatedly sends `!action attack lead:opponent`.
+  - Before enabling it, set the lead role in game with `!role lead`; the repeated command expects that role to exist so `lead:opponent` resolves to the right target.
+  - This matches the old HGXLE `autoAttack.py` behavior and is useful for keeping an unfocused client attacking the lead opponent without foreground key presses.
+  - It does not parse combat chat; the only runtime setting is the repeat cooldown.
+
+- **Auto RSM**
+  - Watches your attack lines, reads the client RSM status byte from NWN memory, and sends `!action rsm self` when you attack while RSM is not active.
+  - Uses a configurable cooldown after each trigger so it does not spam the command. If the memory probe fails, it reports the probe error and waits for recovery rather than blindly sending RSM.
+  - Optional console echo can print the trigger result in game, but it is off by default to keep combat chat quieter.
 
 ## License
 
