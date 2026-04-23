@@ -21,6 +21,8 @@ DIVINE_BULLETS_SET_RE = re.compile(r"Divine Bullets set to (?P<word>[A-Za-z]+) d
 GI_BOLT_SET_RE = re.compile(r"You are now using (?P<word>[A-Za-z]+)!?", re.IGNORECASE)
 BREACH_LINE_RE = re.compile(r"^(?P<target>.+?)\s*:\s*Breach\s+(?P<effect>.+)$", re.IGNORECASE)
 TARGET_BLIND_RE = re.compile(r"\(Target Blind\)", re.IGNORECASE)
+EQUIPPED_ITEM_SWAPPED_RE = re.compile(r"^Equipped item swapped out\.\s*$", re.IGNORECASE)
+WEAPON_EQUIPPED_RE = re.compile(r"^Weapon equipped as .* weapon\.\s*$", re.IGNORECASE)
 
 COMBAT_LOG_DAMAGE_ALIASES = {
     "physical": (None, "Physical"),
@@ -252,3 +254,12 @@ def parse_breach_line(text: str) -> Optional[ParsedBreachLine]:
 def has_target_blind_marker(text: str) -> bool:
     normalized = normalize_chat_line(text)
     return TARGET_BLIND_RE.search(normalized) is not None
+
+
+def parse_weapon_swap_feedback(text: str) -> str:
+    normalized = normalize_chat_line(text)
+    if WEAPON_EQUIPPED_RE.search(normalized):
+        return "weapon_equipped"
+    if EQUIPPED_ITEM_SWAPPED_RE.search(normalized):
+        return "item_swapped"
+    return ""

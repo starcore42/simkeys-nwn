@@ -219,7 +219,7 @@ class ScriptCard:
 
         current_holder = ttk.Frame(weapon_top)
         current_holder.grid(row=0, column=0, sticky="nw", padx=(0, 12), pady=(0, 8))
-        ttk.Label(current_holder, text="Current Equipped").grid(row=0, column=0, sticky="w")
+        ttk.Label(current_holder, text="Initial State").grid(row=0, column=0, sticky="w")
         self.weapon_current_var = tk.StringVar(value=WEAPON_CURRENT_UNKNOWN)
         self.weapon_current_combo = ttk.Combobox(
             current_holder,
@@ -506,7 +506,7 @@ class ScriptCard:
             config["current_weapon"] = f"W{selected.index(current_choice) + 1}"
         elif current_choice != WEAPON_CURRENT_UNKNOWN and validate_for_start:
             if current_choice not in selected:
-                raise RuntimeError("Current Equipped must be one of the selected weapon quickbar buttons.")
+                raise RuntimeError("Initial State must be Unknown or one of the selected weapon quickbar buttons.")
         else:
             config["current_weapon"] = WEAPON_CURRENT_UNKNOWN
 
@@ -517,9 +517,6 @@ class ScriptCard:
                 raise RuntimeError("Select at least one weapon quickbar button for weapon mode.")
             if len(selected) > max_bindings:
                 raise RuntimeError(f"{mode} supports at most {max_bindings} weapon quickbar buttons.")
-            if config["current_weapon"] == WEAPON_CURRENT_UNKNOWN:
-                raise RuntimeError("Choose the currently equipped weapon before starting a weapon mode.")
-
         return config
 
     def refresh_state(self):
@@ -554,6 +551,23 @@ class ScriptCard:
             return
 
         lines = []
+        current_display = details.get("current_display") or details.get("current_weapon") or "Unknown"
+        pending_display = details.get("pending_display") or ""
+        state_line = f"Current state: {current_display}"
+        if pending_display:
+            state_line += f", pending {pending_display}"
+        unarmed_count = int(details.get("unarmed_observations") or 0)
+        if unarmed_count:
+            state_line += f", unarmed seen {unarmed_count}"
+        if details.get("pending_conceal_seen"):
+            state_line += ", round boundary seen"
+        ignored_damage = int(details.get("pending_ignored_damage") or 0)
+        if ignored_damage:
+            state_line += f", ignored pre-boundary {ignored_damage}"
+        lines.append(state_line)
+        last_swap_feedback = str(details.get("last_swap_feedback") or "").replace("_", " ")
+        if last_swap_feedback:
+            lines.append(f"Last swap feedback: {last_swap_feedback}")
         for weapon in weapons:
             marker = "* " if weapon.get("current") else ""
             if weapon.get("pending"):
@@ -605,7 +619,7 @@ class ScriptCard:
             max_bindings = _weapon_mode_limit(mode)
             self.mode_hint_var.set(
                 f"{mode} swaps weapons by quickbar and auto-detects each weapon family from combat log damage lines. "
-                f"Select up to {max_bindings} weapon buttons and choose the one currently equipped."
+                f"Select up to {max_bindings} weapon buttons. Initial State can stay Unknown; the script will probe from combat."
             )
             self.weapon_limit_var.set(
                 "Round delay: the swap lands at the start of the next combat round. "
@@ -676,7 +690,7 @@ class ScriptCard:
             else:
                 self.weapon_limit_var.set(
                     "Round delay: the swap lands at the start of the next combat round. "
-                    "The script learns DB/P1/XR automatically and will not re-press the current weapon."
+                    "From Unknown, the script probes a selected slot; physical-only damage is treated as Unarmed, then the slot is pressed again."
                 )
 
     def on_toggle(self):
