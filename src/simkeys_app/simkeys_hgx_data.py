@@ -223,6 +223,7 @@ class CreatureRecord:
     direct_immunity: Tuple[Optional[int], ...]
     direct_resistance: Tuple[Optional[int], ...]
     direct_healing: Tuple[Optional[int], ...]
+    kickback: str = ""
 
 
 @dataclass(frozen=True)
@@ -371,6 +372,33 @@ class HgxCharacterDatabase:
         )
         self._effective_cache[cache_key] = resolved
         return resolved
+
+    def kickback_mode(self, creature_name: str) -> str:
+        record = self.lookup(creature_name)
+        if record is None:
+            return ""
+        return self._resolve_kickback_mode(record, set())
+
+    def is_area_kickback(self, creature_name: str) -> bool:
+        return self.kickback_mode(creature_name).lower() == "area"
+
+    def _resolve_kickback_mode(self, record: CreatureRecord, stack: set) -> str:
+        cache_key = record.name.lower()
+        if cache_key in stack:
+            return ""
+
+        direct = str(record.kickback or "").strip()
+        if direct:
+            return direct
+
+        if not record.base_name:
+            return ""
+
+        stack.add(cache_key)
+        base_record = self.lookup(record.base_name)
+        mode = self._resolve_kickback_mode(base_record, stack) if base_record is not None else ""
+        stack.remove(cache_key)
+        return mode
 
     def recommend_arcane_archer_damage(self, creature_name: str, elemental_dice: int) -> Optional[DamageRecommendation]:
         if not creature_name:
@@ -728,8 +756,15 @@ def load_character_database(source_dir: Optional[str] = None) -> HgxCharacterDat
             if not name:
                 continue
 
+            existing_record = records.get(name)
             base_name = (creature_node.get("base") or "").strip()
             character_type = CHARACTER_TYPE_NAME_TO_VALUE.get((creature_node.get("type") or "Normal").strip().lower(), 0)
+            kickback = (creature_node.get("kickback") or "").strip()
+            existing_kickback = str(existing_record.kickback or "").strip() if existing_record is not None else ""
+            if existing_kickback.lower() == "area" or kickback.lower() == "area":
+                kickback = "Area"
+            elif not kickback and existing_kickback:
+                kickback = existing_kickback
 
             immunity = _make_empty_optional_stats()
             resistance = _make_empty_optional_stats()
@@ -754,6 +789,7 @@ def load_character_database(source_dir: Optional[str] = None) -> HgxCharacterDat
                 direct_immunity=tuple(immunity),
                 direct_resistance=tuple(resistance),
                 direct_healing=tuple(healing),
+                kickback=kickback,
             )
 
     return HgxCharacterDatabase(directory, records)

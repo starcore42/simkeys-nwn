@@ -442,6 +442,174 @@ class AutoDrinkScript(ClientScriptBase):
         threading.Thread(target=clear_after_delay, name=f"AutoDrinkCooldown-{self.client.pid}", daemon=True).start()
 
 
+class StopHittingScript(ClientScriptBase):
+    script_id = "stop_hitting"
+
+    def __init__(self, client, config: Dict[str, object], host):
+        super().__init__(client, config, host)
+        self.db = hgx_data.load_default_database()
+        self.enabled = False
+        self.interrupting = False
+        self.interrupt_generation = 0
+        self.identity_wait_logged = False
+        self.unknown_targets: Set[str] = set()
+        self.protected_hits = 0
+        self.last_target = ""
+        self.last_damage_summary = ""
+        self.last_ignored_actor = ""
+
+    def on_start(self):
+        super().on_start()
+        self.enabled = True
+        self.interrupting = False
+        self.interrupt_generation = 0
+        self.identity_wait_logged = False
+        self.unknown_targets = set()
+        self.protected_hits = 0
+        self.last_target = ""
+        self.last_damage_summary = ""
+        self.last_ignored_actor = ""
+        self.set_status("Armed")
+        self.host.emit("info", f"{self.client.display_name}: Stop Hitting started", script_id=self.script_id)
+
+    def on_stop(self):
+        super().on_stop()
+        self.enabled = False
+        self.interrupting = False
+        self.interrupt_generation += 1
+        self.host.emit("info", f"{self.client.display_name}: Stop Hitting stopped", script_id=self.script_id)
+
+    def on_chat_line(self, sequence: int, text: str):
+        if not self.should_process(sequence) or not self.enabled:
+            return
+        if " damages " not in str(text or "").lower():
+            return
+
+        damage_line = hgx_combat.parse_damage_line(text)
+        if damage_line is None:
+            return
+
+        character_name = self._character_name()
+        if not character_name:
+            self.set_status("Waiting for character name")
+            if not self.identity_wait_logged:
+                self.identity_wait_logged = True
+                self.host.emit(
+                    "info",
+                    f"{self.host.client.display_name}: Stop Hitting is waiting for character identity before parsing damage lines",
+                    script_id=self.script_id,
+                )
+            return
+
+        character_key = hgx_combat.normalize_actor_name(character_name).lower()
+        if not self._damage_attacker_matches_character(damage_line.attacker, character_key):
+            self.last_ignored_actor = damage_line.attacker
+            return
+
+        record = self.db.lookup(damage_line.defender)
+        if record is None:
+            defender_key = damage_line.defender.lower()
+            if defender_key not in self.unknown_targets:
+                self.unknown_targets.add(defender_key)
+                self.host.emit(
+                    "info",
+                    f"{self.host.client.display_name}: Stop Hitting has no characters.d entry for '{damage_line.defender}'",
+                    script_id=self.script_id,
+                )
+            return
+
+        if not self.db.is_area_kickback(record.name):
+            if not self.interrupting:
+                self.set_status("Armed")
+            return
+
+        self.protected_hits += 1
+        self.last_target = record.name
+        self.last_damage_summary = self._damage_summary(damage_line)
+
+        if self.interrupting:
+            self.set_status(f"{record.name}: interrupting")
+            self.host.notify_state_changed()
+            return
+
+        slot = int(self.config.get("slot", 2))
+        page = _parse_quickbar_bank_page(self.config.get("page", 0))
+        trigger_name = self.host.format_slot(page, slot)
+        result = self.host.trigger_slot(slot, page=page)
+        self._begin_interrupt_cooldown()
+
+        self.set_status(f"{record.name}: drinking {trigger_name}")
+        self.host.emit(
+            "info",
+            (
+                f"{self.client.display_name}: Stop Hitting triggered on area kickback target='{record.name}' "
+                f"damage={self.last_damage_summary} potion={trigger_name} "
+                f"success={result['success']} rc={result['rc']} aux={result['aux_rc']} "
+                f"path={result['path']} err={result['err']}"
+            ),
+            script_id=self.script_id,
+        )
+        if bool(self.config.get("echo_console", True)):
+            self.host.send_console(
+                f"SimKeys stop-hitting {record.name}: drank {trigger_name} after {self.last_damage_summary}"
+            )
+
+    def _character_name(self) -> str:
+        live_name = (self.host.client.character_name or "").strip()
+        if live_name:
+            return live_name
+        cached_name = (self.client.character_name or "").strip()
+        if cached_name:
+            return cached_name
+        return ""
+
+    def _damage_summary(self, damage_line) -> str:
+        parts = [f"{component.amount} {component.type_name}" for component in damage_line.components]
+        typed = ", ".join(parts) if parts else "no typed components"
+        return f"{damage_line.total} ({typed})"
+
+    def _damage_attacker_matches_character(self, attacker: str, character_key: str) -> bool:
+        attacker_key = hgx_combat.normalize_actor_name(attacker).lower()
+        if not attacker_key or not character_key:
+            return False
+        if attacker_key == character_key:
+            return True
+
+        # HGX damage lines can prefix the actor with sources such as
+        # "Sneak Attack: Character". Only the final actor segment should be
+        # compared against the current player.
+        parts = [
+            hgx_combat.normalize_actor_name(part).lower()
+            for part in str(attacker or "").split(":")
+            if hgx_combat.normalize_actor_name(part)
+        ]
+        return bool(parts and parts[-1] == character_key)
+
+    def _begin_interrupt_cooldown(self):
+        self.interrupting = True
+        self.interrupt_generation += 1
+        generation = self.interrupt_generation
+        delay = max(float(self.config.get("cooldown_seconds", 3.0)), 0.1)
+
+        def clear_after_delay():
+            time.sleep(delay)
+            if generation != self.interrupt_generation:
+                return
+            self.interrupting = False
+            self.set_status("Armed")
+
+        threading.Thread(target=clear_after_delay, name=f"StopHittingCooldown-{self.client.pid}", daemon=True).start()
+
+    def get_state_details(self) -> dict:
+        return {
+            "protected_hits": self.protected_hits,
+            "last_target": self.last_target,
+            "last_damage_summary": self.last_damage_summary,
+            "interrupting": self.interrupting,
+            "last_ignored_actor": self.last_ignored_actor,
+        }
+
+
 class AutoAAScript(ClientScriptBase):
     script_id = "auto_aa"
     MODE_ARCANE_ARCHER = "Arcane Archer"
@@ -2926,6 +3094,26 @@ class ScriptManager:
             factory=AutoDrinkScript,
         )
         self.registry[autodrink.script_id] = autodrink
+
+        stop_hitting = ScriptDefinition(
+            script_id="stop_hitting",
+            name="Stop Hitting",
+            description=(
+                "Watch your outgoing damage and drink a healing potion if you hit a characters.d target marked "
+                'kickback="Area", interrupting further attacks without resuming them.'
+            ),
+            fields=[
+                ScriptField("slot", "Slot", "int", 2, minimum=1, maximum=12, step=1, width=4),
+                ScriptField("page", "Bank", "choice", "None", choices=["None", "Shift", "Control"], width=8),
+                ScriptField("cooldown_seconds", "Drink Time", "float", 3.0, minimum=0.1, maximum=10.0, step=0.1, width=6),
+                ScriptField("poll_interval", "Poll", "float", 0.10, minimum=0.05, maximum=2.0, step=0.05, width=6),
+                ScriptField("max_lines", "Batch", "int", 60, minimum=1, maximum=200, step=1, width=5),
+                ScriptField("echo_console", "Echo", "bool", True),
+                ScriptField("include_backlog", "Backlog", "bool", False),
+            ],
+            factory=StopHittingScript,
+        )
+        self.registry[stop_hitting.script_id] = stop_hitting
 
         auto_aa = ScriptDefinition(
             script_id="auto_aa",

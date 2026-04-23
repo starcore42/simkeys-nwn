@@ -190,7 +190,7 @@
       <add name="Cast in Stone" />
     </spellImmunities>
   </creature>
-  <creature name="Arachill" timeStamp="2011-07-30T13:59:48.0000000Z" race="Animal" special="AvoidHit">
+  <creature name="Arachill" timeStamp="2011-07-30T13:59:48.0000000Z" race="Animal">
     <damageImmunities>
       <damage type="Bludgeoning" immunity="30" resistance="5" />
       <damage type="Piercing" immunity="60" resistance="15" />

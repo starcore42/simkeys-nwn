@@ -13,7 +13,7 @@ This public repository contains the SimKeys source, a bundled hook DLL, build fi
 - Triggers quickbar slots directly through game functions, including Base, Shift, and Control quickbar banks.
 - Sends chat through an unfocused client path.
 - Provides a desktop GUI for multi-client script control.
-- Includes automations for AutoDrink, Auto Damage, Auto Attack, Auto Action, and Auto RSM.
+- Includes automations for AutoDrink, Stop Hitting, Auto Damage, Auto Attack, Auto Action, and Auto RSM.
 
 ## Requirements
 
@@ -111,6 +111,12 @@ The build wrapper rebuilds the x86 Release DLL and copies it into `bin\SimKeysHo
 ## Data
 
 The repository includes `data\characters.d\` so Auto Damage works out of the box with the packaged dataset.
+
+## Automation Notes
+
+- Auto Damage uses `characters.d` resistances, immunities, healing, and weapon-learning data to choose safe damage.
+- Stop Hitting watches your outgoing damage and drinks the configured healing potion if you hit a `characters.d` creature marked `kickback="Area"`.
+- Stop Hitting intentionally does not resume attacking after drinking, so the potion acts as an interrupt rather than a heal-and-continue loop.
 
 ## License
 

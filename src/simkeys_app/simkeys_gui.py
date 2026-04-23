@@ -28,6 +28,13 @@ SCRIPT_CARD_LAYOUTS = {
         ],
         "advanced": ["poll_interval", "max_lines", "echo_console", "include_backlog"],
     },
+    "stop_hitting": {
+        "expanded": False,
+        "sections": [
+            ("Potion", ["page", "slot", "cooldown_seconds"]),
+        ],
+        "advanced": ["poll_interval", "max_lines", "echo_console", "include_backlog"],
+    },
     "auto_action": {
         "expanded": False,
         "sections": [
@@ -52,6 +59,7 @@ SCRIPT_CARD_LAYOUTS = {
 }
 SCRIPT_CARD_ACCENTS = {
     "autodrink": "#2c7be5",
+    "stop_hitting": "#e03131",
     "auto_aa": "#00a878",
     "auto_action": "#f59f00",
     "auto_attack": "#d9480f",
@@ -189,6 +197,8 @@ class ScriptCard:
         self._apply_expanded_state()
 
     def _toggle_button_text(self, running: bool) -> str:
+        if self.definition.script_id == "stop_hitting":
+            return "Stop Guard" if running else "Start Guard"
         action = "Stop" if running else "Start"
         return f"{action} {self.definition.name}"
 
@@ -392,7 +402,7 @@ class ScriptCard:
     def _load_standard_config(self, config):
         for field, var, _widget in self.vars.values():
             value = config.get(field.key, field.default)
-            if self.definition.script_id == "autodrink" and field.key == "page":
+            if self.definition.script_id in ("autodrink", "stop_hitting") and field.key == "page":
                 if isinstance(value, str) and value.strip() in BANK_PAGE_TO_VALUE:
                     var.set(value.strip())
                 else:
