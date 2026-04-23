@@ -104,9 +104,8 @@ class SlingerTargetState:
 
 
 @dataclass(frozen=True)
-class WeaponModeConfig:
-    mode_label: str
-    max_bindings: int
+class WeaponFamilyConfig:
+    family_key: str
     elemental_count: int
     elemental_dice: int
     exotic_count: int
@@ -129,6 +128,8 @@ class WeaponLearningProfile:
     last_seen_at: float = 0.0
     elemental_counts: Dict[int, int] = field(default_factory=dict)
     exotic_counts: Dict[int, int] = field(default_factory=dict)
+    elemental_max_amounts: Dict[int, int] = field(default_factory=dict)
+    exotic_max_amounts: Dict[int, int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -137,6 +138,7 @@ class WeaponRecommendation:
     expected_damage: int
     matched_name: str
     paragon_ranks: int
+    family_label: str
     learned_elemental: Tuple[int, ...]
     learned_exotic: Tuple[int, ...]
     healing_types: Tuple[int, ...]
@@ -409,13 +411,16 @@ class AutoAAScript(ClientScriptBase):
     MODE_ZEN_RANGER = "Zen Ranger"
     MODE_DIVINE_SLINGER = "Divine Slinger"
     MODE_GNOMISH_INVENTOR = "Gnomish Inventor"
-    MODE_WEAPON_DB = "Weapon DB"
-    MODE_WEAPON_P1 = "Weapon P1"
-    MODE_WEAPON_XR = "Weapon XR"
-    WEAPON_MODE_CONFIG = {
-        MODE_WEAPON_DB: WeaponModeConfig(MODE_WEAPON_DB, max_bindings=6, elemental_count=3, elemental_dice=5, exotic_count=3, exotic_dice=2),
-        MODE_WEAPON_P1: WeaponModeConfig(MODE_WEAPON_P1, max_bindings=3, elemental_count=1, elemental_dice=9, exotic_count=2, exotic_dice=6),
-        MODE_WEAPON_XR: WeaponModeConfig(MODE_WEAPON_XR, max_bindings=3, elemental_count=2, elemental_dice=11, exotic_count=1, exotic_dice=8),
+    MODE_WEAPON_SWAP = "Weapon Swap"
+    MAX_WEAPON_BINDINGS = len(WEAPON_BINDING_KEYS)
+    WEAPON_FAMILY_CONFIG = {
+        "DB": WeaponFamilyConfig("DB", elemental_count=3, elemental_dice=5, exotic_count=3, exotic_dice=2),
+        "P1": WeaponFamilyConfig("P1", elemental_count=1, elemental_dice=9, exotic_count=2, exotic_dice=6),
+        "XR": WeaponFamilyConfig("XR", elemental_count=2, elemental_dice=11, exotic_count=1, exotic_dice=8),
+    }
+    WEAPON_FAMILY_BY_SIGNATURE = {
+        (config.elemental_count, config.exotic_count): family_key
+        for family_key, config in WEAPON_FAMILY_CONFIG.items()
     }
     SLINGER_PENDING_SECONDS = 9.0
     SLINGER_STATE_TTL_SECONDS = 45.0
@@ -629,38 +634,29 @@ class AutoAAScript(ClientScriptBase):
             self.MODE_ZEN_RANGER,
             self.MODE_DIVINE_SLINGER,
             self.MODE_GNOMISH_INVENTOR,
-            self.MODE_WEAPON_DB,
-            self.MODE_WEAPON_P1,
-            self.MODE_WEAPON_XR,
+            self.MODE_WEAPON_SWAP,
         ):
             return mode
         return self.MODE_ARCANE_ARCHER
 
     def _is_weapon_mode(self) -> bool:
-        return self._mode_label() in self.WEAPON_MODE_CONFIG
-
-    def _weapon_mode_config(self) -> Optional[WeaponModeConfig]:
-        return self.WEAPON_MODE_CONFIG.get(self._mode_label())
+        return self._mode_label() == self.MODE_WEAPON_SWAP
 
     def _weapon_binding_keys(self) -> Tuple[str, ...]:
-        mode_config = self._weapon_mode_config()
-        if mode_config is None:
+        if not self._is_weapon_mode():
             return ()
-        return WEAPON_BINDING_KEYS[:mode_config.max_bindings]
+        return WEAPON_BINDING_KEYS[:self.MAX_WEAPON_BINDINGS]
 
     def _initialize_weapon_mode(self):
-        mode_config = self._weapon_mode_config()
-        if mode_config is None:
+        if not self._is_weapon_mode():
             return
 
         bindings: Dict[str, WeaponBinding] = {}
         used_choices: Dict[str, str] = {}
-        for index, binding_key in enumerate(WEAPON_BINDING_KEYS, start=1):
+        for index, binding_key in enumerate(self._weapon_binding_keys(), start=1):
             choice = str(self.config.get(f"weapon_slot_{index}", WEAPON_SLOT_NONE)).strip() or WEAPON_SLOT_NONE
             if choice == WEAPON_SLOT_NONE:
                 continue
-            if index > mode_config.max_bindings:
-                raise RuntimeError(f"{mode_config.mode_label} only uses W1-W{mode_config.max_bindings}; clear W{index}.")
 
             parsed = _parse_quickbar_slot_choice(choice)
             if parsed is None:
@@ -679,11 +675,11 @@ class AutoAAScript(ClientScriptBase):
             used_choices[choice] = binding_key
 
         if not bindings:
-            raise RuntimeError(f"{mode_config.mode_label} requires at least one weapon quickbar slot.")
+            raise RuntimeError(f"{self.MODE_WEAPON_SWAP} requires at least one weapon quickbar slot.")
 
         current_weapon_key = str(self.config.get("current_weapon", WEAPON_CURRENT_UNKNOWN)).strip() or WEAPON_CURRENT_UNKNOWN
         if current_weapon_key == WEAPON_CURRENT_UNKNOWN:
-            raise RuntimeError(f"{mode_config.mode_label} requires Cur to be set before starting.")
+            raise RuntimeError(f"{self.MODE_WEAPON_SWAP} requires Cur to be set before starting.")
         if current_weapon_key not in bindings:
             raise RuntimeError(f"Current weapon {current_weapon_key} is not assigned to a quickbar slot.")
 
@@ -694,12 +690,12 @@ class AutoAAScript(ClientScriptBase):
         }
         self.current_weapon_key = current_weapon_key
 
-        if len(bindings) < mode_config.max_bindings:
+        if len(bindings) < self.MAX_WEAPON_BINDINGS:
             self.host.emit(
                 "info",
                 (
-                    f"{self.host.client.display_name}: {mode_config.mode_label} is configured with "
-                    f"{len(bindings)}/{mode_config.max_bindings} weapon slots; missing slots will be skipped"
+                    f"{self.host.client.display_name}: {self.MODE_WEAPON_SWAP} is configured with "
+                    f"{len(bindings)}/{self.MAX_WEAPON_BINDINGS} weapon slots; missing slots will be skipped"
                 ),
                 script_id=self.script_id,
             )
@@ -710,6 +706,41 @@ class AutoAAScript(ClientScriptBase):
             return str(binding_key or WEAPON_CURRENT_UNKNOWN)
         return f"{binding.key}/{binding.label}"
 
+    def _family_amounts_compatible(self, profile: WeaponLearningProfile, family: WeaponFamilyConfig) -> bool:
+        elemental_max = 12 * int(family.elemental_dice)
+        exotic_max = 12 * int(family.exotic_dice)
+        if any(amount > elemental_max for amount in profile.elemental_max_amounts.values()):
+            return False
+        if any(amount > exotic_max for amount in profile.exotic_max_amounts.values()):
+            return False
+        return True
+
+    def _exact_weapon_family(self, profile: WeaponLearningProfile) -> Optional[WeaponFamilyConfig]:
+        family_key = self.WEAPON_FAMILY_BY_SIGNATURE.get((len(profile.elemental_counts), len(profile.exotic_counts)))
+        if not family_key:
+            return None
+        family = self.WEAPON_FAMILY_CONFIG[family_key]
+        if not self._family_amounts_compatible(profile, family):
+            return None
+        return family
+
+    def _compatible_weapon_families(self, profile: WeaponLearningProfile) -> Tuple[WeaponFamilyConfig, ...]:
+        exact_family = self._exact_weapon_family(profile)
+        if exact_family is not None:
+            return (exact_family,)
+
+        seen_elemental = len(profile.elemental_counts)
+        seen_exotic = len(profile.exotic_counts)
+        compatible = []
+        for family in self.WEAPON_FAMILY_CONFIG.values():
+            if seen_elemental > family.elemental_count or seen_exotic > family.exotic_count:
+                continue
+            if not self._family_amounts_compatible(profile, family):
+                continue
+            compatible.append(family)
+        compatible.sort(key=lambda family: family.family_key)
+        return tuple(compatible)
+
     def _top_damage_types(self, counts: Dict[int, int], limit: int) -> Tuple[int, ...]:
         if limit <= 0 or not counts:
             return ()
@@ -719,25 +750,75 @@ class AutoAAScript(ClientScriptBase):
         )
         return tuple(damage_type for damage_type, _count in ranked[:limit])
 
-    def _learned_weapon_types(self, profile: WeaponLearningProfile) -> Tuple[Tuple[int, ...], Tuple[int, ...], int, int]:
-        mode_config = self._weapon_mode_config()
-        if mode_config is None:
-            return (), (), 0, 0
+    def _weapon_profile_context(
+        self,
+        profile: WeaponLearningProfile,
+    ) -> Optional[Tuple[Dict[int, float], str, Tuple[int, ...], Tuple[int, ...], int, int]]:
+        exact_family = self._exact_weapon_family(profile)
+        if exact_family is not None:
+            learned_elemental = self._top_damage_types(profile.elemental_counts, exact_family.elemental_count)
+            learned_exotic = self._top_damage_types(profile.exotic_counts, exact_family.exotic_count)
+            missing_elemental = max(exact_family.elemental_count - len(learned_elemental), 0)
+            missing_exotic = max(exact_family.exotic_count - len(learned_exotic), 0)
+            elemental_dice = exact_family.elemental_dice
+            exotic_dice = exact_family.exotic_dice
+            family_label = exact_family.family_key
+        else:
+            compatible = self._compatible_weapon_families(profile)
+            if not compatible:
+                return None
 
-        learned_elemental = self._top_damage_types(profile.elemental_counts, mode_config.elemental_count)
-        learned_exotic = self._top_damage_types(profile.exotic_counts, mode_config.exotic_count)
-        missing_elemental = max(mode_config.elemental_count - len(learned_elemental), 0)
-        missing_exotic = max(mode_config.exotic_count - len(learned_exotic), 0)
-        return learned_elemental, learned_exotic, missing_elemental, missing_exotic
+            if len(compatible) == 1:
+                family = compatible[0]
+                learned_elemental = self._top_damage_types(profile.elemental_counts, family.elemental_count)
+                learned_exotic = self._top_damage_types(profile.exotic_counts, family.exotic_count)
+                missing_elemental = max(family.elemental_count - len(learned_elemental), 0)
+                missing_exotic = max(family.exotic_count - len(learned_exotic), 0)
+                elemental_dice = family.elemental_dice
+                exotic_dice = family.exotic_dice
+                family_label = f"{family.family_key}?"
+            else:
+                learned_elemental = self._top_damage_types(
+                    profile.elemental_counts,
+                    max(family.elemental_count for family in compatible),
+                )
+                learned_exotic = self._top_damage_types(
+                    profile.exotic_counts,
+                    max(family.exotic_count for family in compatible),
+                )
+                missing_elemental = min(
+                    max(family.elemental_count - len(learned_elemental), 0)
+                    for family in compatible
+                )
+                missing_exotic = min(
+                    max(family.exotic_count - len(learned_exotic), 0)
+                    for family in compatible
+                )
+                elemental_dice = min(family.elemental_dice for family in compatible)
+                exotic_dice = min(family.exotic_dice for family in compatible)
+                family_label = "/".join(family.family_key for family in compatible) + "?"
+
+        components: Dict[int, float] = {}
+        elemental_base_damage = 6.5 * float(elemental_dice)
+        exotic_base_damage = 6.5 * float(exotic_dice)
+        for damage_type in learned_elemental:
+            components[damage_type] = components.get(damage_type, 0.0) + elemental_base_damage
+        for damage_type in learned_exotic:
+            components[damage_type] = components.get(damage_type, 0.0) + exotic_base_damage
+
+        return components, family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic
 
     def _weapon_profile_summary(
         self,
+        family_label: str,
         learned_elemental: Tuple[int, ...],
         learned_exotic: Tuple[int, ...],
         missing_elemental: int,
         missing_exotic: int,
     ) -> str:
         parts = []
+        if family_label:
+            parts.append(family_label)
         if learned_elemental:
             parts.append("Elem " + "/".join(_format_damage_type_label(value) for value in learned_elemental))
         if learned_exotic:
@@ -745,23 +826,6 @@ class AutoAAScript(ClientScriptBase):
         if missing_elemental or missing_exotic:
             parts.append(f"Learn E{missing_elemental}/X{missing_exotic}")
         return ", ".join(parts) if parts else "Unlearned"
-
-    def _weapon_components(self, profile: WeaponLearningProfile):
-        mode_config = self._weapon_mode_config()
-        if mode_config is None:
-            return {}, (), (), 0, 0
-
-        learned_elemental, learned_exotic, missing_elemental, missing_exotic = self._learned_weapon_types(profile)
-        components: Dict[int, float] = {}
-        elemental_base_damage = 6.5 * float(mode_config.elemental_dice)
-        exotic_base_damage = 6.5 * float(mode_config.exotic_dice)
-
-        for damage_type in learned_elemental:
-            components[damage_type] = components.get(damage_type, 0.0) + elemental_base_damage
-        for damage_type in learned_exotic:
-            components[damage_type] = components.get(damage_type, 0.0) + exotic_base_damage
-
-        return components, learned_elemental, learned_exotic, missing_elemental, missing_exotic
 
     def _weapon_swap_cooldown_seconds(self) -> float:
         return max(float(self.config.get("swap_cooldown_seconds", 6.2)), 0.1)
@@ -797,31 +861,42 @@ class AutoAAScript(ClientScriptBase):
         if profile is None:
             return
 
+        before_context = self._weapon_profile_context(profile)
         observed_types: Set[int] = set()
         for component in damage_line.components:
-            if component.damage_type in WEAPON_ELEMENTAL_TYPES or component.damage_type in WEAPON_EXOTIC_TYPES:
+            if component.damage_type in WEAPON_ELEMENTAL_TYPES:
+                observed_types.add(component.damage_type)
+            elif component.damage_type in WEAPON_EXOTIC_TYPES:
                 observed_types.add(component.damage_type)
         if not observed_types:
             return
 
-        before = self._learned_weapon_types(profile)
         profile.observations += 1
         profile.last_seen_at = now
-        for damage_type in observed_types:
+        for component in damage_line.components:
+            damage_type = component.damage_type
             if damage_type in WEAPON_ELEMENTAL_TYPES:
                 profile.elemental_counts[damage_type] = profile.elemental_counts.get(damage_type, 0) + 1
+                profile.elemental_max_amounts[damage_type] = max(
+                    profile.elemental_max_amounts.get(damage_type, 0),
+                    int(component.amount),
+                )
             elif damage_type in WEAPON_EXOTIC_TYPES:
                 profile.exotic_counts[damage_type] = profile.exotic_counts.get(damage_type, 0) + 1
-        after = self._learned_weapon_types(profile)
+                profile.exotic_max_amounts[damage_type] = max(
+                    profile.exotic_max_amounts.get(damage_type, 0),
+                    int(component.amount),
+                )
 
-        if after != before:
-            learned_elemental, learned_exotic, missing_elemental, missing_exotic = after
+        after_context = self._weapon_profile_context(profile)
+        if after_context != before_context and after_context is not None:
+            _components, family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic = after_context
             self.host.emit(
                 "info",
                 (
                     f"{self.host.client.display_name}: {self._mode_label()} learned {self._binding_display(profile.binding.key)} "
                     f"from '{damage_line.defender}' -> "
-                    f"{self._weapon_profile_summary(learned_elemental, learned_exotic, missing_elemental, missing_exotic)}"
+                    f"{self._weapon_profile_summary(family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic)}"
                 ),
                 script_id=self.script_id,
             )
@@ -829,7 +904,11 @@ class AutoAAScript(ClientScriptBase):
     def _weapon_candidates_for_target(self, creature_name: str) -> List[WeaponRecommendation]:
         candidates: List[WeaponRecommendation] = []
         for profile in self.weapon_profiles.values():
-            components, learned_elemental, learned_exotic, missing_elemental, missing_exotic = self._weapon_components(profile)
+            context = self._weapon_profile_context(profile)
+            if context is None:
+                continue
+
+            components, family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic = context
             if not components:
                 continue
 
@@ -843,6 +922,7 @@ class AutoAAScript(ClientScriptBase):
                     expected_damage=estimate.expected_damage,
                     matched_name=estimate.matched_name,
                     paragon_ranks=estimate.paragon_ranks,
+                    family_label=family_label,
                     learned_elemental=learned_elemental,
                     learned_exotic=learned_exotic,
                     healing_types=estimate.healing_types,
@@ -860,6 +940,7 @@ class AutoAAScript(ClientScriptBase):
             candidates,
             key=lambda candidate: (
                 candidate.expected_damage,
+                0 if candidate.family_label.endswith("?") else 1,
                 1 if candidate.binding.key == self.current_weapon_key else 0,
                 -(candidate.missing_elemental + candidate.missing_exotic),
                 candidate.binding.key,
@@ -868,14 +949,21 @@ class AutoAAScript(ClientScriptBase):
 
     def _weapon_learning_status(self, target_name: str) -> str:
         learned_count = 0
+        resolved_count = 0
         for profile in self.weapon_profiles.values():
-            components, _learned_elemental, _learned_exotic, _missing_elemental, _missing_exotic = self._weapon_components(profile)
-            if components:
+            context = self._weapon_profile_context(profile)
+            if context is not None and context[0]:
                 learned_count += 1
-        return f"{target_name}: learning weapons ({learned_count}/{len(self.weapon_profiles)})"
+            if self._exact_weapon_family(profile) is not None:
+                resolved_count += 1
+        return (
+            f"{target_name}: learning weapons "
+            f"({resolved_count}/{len(self.weapon_profiles)} typed, {learned_count} seen)"
+        )
 
     def _weapon_recommendation_summary(self, recommendation: WeaponRecommendation) -> str:
         return self._weapon_profile_summary(
+            recommendation.family_label,
             recommendation.learned_elemental,
             recommendation.learned_exotic,
             recommendation.missing_elemental,
@@ -1752,7 +1840,7 @@ class ScriptManager:
         autodrink = ScriptDefinition(
             script_id="autodrink",
             name="AutoDrink",
-            description="GUI-controlled rewrite of HGX AutoDrink.py.old: when running, watch combat log lines, sample HP, and drink from the configured quickbar slot when HP falls to the chosen percentage.",
+            description="Watch combat activity, sample HP, and drink from the selected quickbar slot when health falls below the configured threshold.",
             fields=[
                 ScriptField("slot", "Slot", "int", 2, minimum=1, maximum=12, step=1, width=4),
                 ScriptField("page", "Bank", "int", 0, minimum=0, maximum=2, step=1, width=4),
@@ -1772,7 +1860,7 @@ class ScriptManager:
         auto_aa = ScriptDefinition(
             script_id="auto_aa",
             name="Auto Damage",
-            description="GUI-controlled rewrite of HGX auto_aa_2.4.py and auto_slinger.py.old, plus weapon-swap modes for DB/P1/XR builds: switch Arcane Archer, Zen Ranger, Divine Slinger, Gnomish Inventor, or learned weapon sets from combat log lines without relying on in-game toggles.",
+            description="Switch ranged damage modes or learned weapon sets from combat log lines, without relying on in-game toggles or focus.",
             fields=[
                 ScriptField(
                     "mode",
@@ -1784,9 +1872,7 @@ class ScriptManager:
                         AutoAAScript.MODE_ZEN_RANGER,
                         AutoAAScript.MODE_DIVINE_SLINGER,
                         AutoAAScript.MODE_GNOMISH_INVENTOR,
-                        AutoAAScript.MODE_WEAPON_DB,
-                        AutoAAScript.MODE_WEAPON_P1,
-                        AutoAAScript.MODE_WEAPON_XR,
+                        AutoAAScript.MODE_WEAPON_SWAP,
                     ],
                     width=16,
                 ),
@@ -1813,7 +1899,7 @@ class ScriptManager:
         auto_action = ScriptDefinition(
             script_id="auto_action",
             name="Auto Action",
-            description="GUI-controlled rewrite of HGX auto_action.py: repeatedly issue one selected combat action without requiring an in-game toggle.",
+            description="Repeatedly issue the selected combat action on its cooldown.",
             fields=[
                 ScriptField("mode", "Mode", "choice", "Called Shot", choices=["Called Shot", "Knockdown", "Disarm"], width=12),
                 ScriptField("cooldown_seconds", "Cooldown", "float", 6.2, minimum=0.1, maximum=30.0, step=0.1, width=6),
@@ -1825,7 +1911,7 @@ class ScriptManager:
         auto_rsm = ScriptDefinition(
             script_id="auto_rsm",
             name="Auto RSM",
-            description="GUI-controlled rewrite of HGX autoRSM.py: when you attack and the RSM status byte is not active, send '!action rsm self' through the unfocused chat path.",
+            description="Trigger `!action rsm self` automatically when you attack and the RSM status byte is not active.",
             fields=[
                 ScriptField("cooldown_seconds", "Cooldown", "float", 7.0, minimum=0.1, maximum=30.0, step=0.1, width=6),
                 ScriptField("poll_interval", "Poll", "float", 0.10, minimum=0.05, maximum=2.0, step=0.05, width=6),

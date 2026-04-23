@@ -8,7 +8,7 @@ from tkinter import messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
 
 import simkeys_runtime as runtime
-from simkeys_script_host import ScriptManager
+from simkeys_script_host import AutoAAScript, ScriptManager, WEAPON_CURRENT_UNKNOWN, WEAPON_SLOT_CHOICES, WEAPON_SLOT_NONE
 
 
 def _probe_error_is_busy(text):
@@ -18,82 +18,408 @@ def _probe_error_is_busy(text):
     return "err=231" in lowered or "all pipe instances are busy" in lowered or "pipe busy" in lowered
 
 
-class ScriptRow:
+SCRIPT_CARD_LAYOUTS = {
+    "autodrink": {
+        "expanded": False,
+        "sections": [
+            ("Quickbar", ["page", "slot"]),
+            ("Trigger", ["threshold_percent", "cooldown_seconds"]),
+            ("Behavior", ["lock_target", "resume_attack"]),
+        ],
+        "advanced": ["poll_interval", "max_lines", "echo_console", "include_backlog"],
+    },
+    "auto_action": {
+        "expanded": False,
+        "sections": [
+            ("Action", ["mode", "cooldown_seconds"]),
+        ],
+        "advanced": [],
+    },
+    "auto_rsm": {
+        "expanded": False,
+        "sections": [
+            ("Trigger", ["cooldown_seconds"]),
+        ],
+        "advanced": ["poll_interval", "max_lines", "echo_console", "include_backlog"],
+    },
+}
+WEAPON_SLOT_RENDER_ORDER = [choice for choice in WEAPON_SLOT_CHOICES if choice != WEAPON_SLOT_NONE]
+AUTO_DAMAGE_WEAPON_MODES = (AutoAAScript.MODE_WEAPON_SWAP,)
+
+
+def _weapon_choice_display(choice):
+    text = str(choice or "").strip().upper()
+    if text.startswith("S+F"):
+        return f"Shift+F{text[3:]}"
+    if text.startswith("C+F"):
+        return f"Ctrl+F{text[3:]}"
+    return text
+
+
+def _weapon_mode_limit(mode):
+    if str(mode or "").strip() != AutoAAScript.MODE_WEAPON_SWAP:
+        return 0
+    return int(AutoAAScript.MAX_WEAPON_BINDINGS)
+
+
+class ScrollableFrame(ttk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+
+        self.canvas = tk.Canvas(self, highlightthickness=0, borderwidth=0)
+        self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.interior = ttk.Frame(self.canvas)
+
+        self.window_id = self.canvas.create_window((0, 0), window=self.interior, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.canvas.grid(row=0, column=0, sticky="nsew")
+        self.scrollbar.grid(row=0, column=1, sticky="ns")
+
+        self.interior.bind("<Configure>", self._on_interior_configure)
+        self.canvas.bind("<Configure>", self._on_canvas_configure)
+        self.canvas.bind("<Enter>", self._bind_mousewheel)
+        self.canvas.bind("<Leave>", self._unbind_mousewheel)
+        self.interior.bind("<Enter>", self._bind_mousewheel)
+        self.interior.bind("<Leave>", self._unbind_mousewheel)
+
+    def _on_interior_configure(self, _event=None):
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def _on_canvas_configure(self, event):
+        self.canvas.itemconfigure(self.window_id, width=event.width)
+
+    def _bind_mousewheel(self, _event=None):
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+    def _unbind_mousewheel(self, _event=None):
+        self.canvas.unbind_all("<MouseWheel>")
+
+    def _on_mousewheel(self, event):
+        delta = int(-1 * (event.delta / 120))
+        if delta:
+            self.canvas.yview_scroll(delta, "units")
+
+
+class ScriptCard:
     def __init__(self, parent, definition, app):
         self.app = app
         self.definition = definition
+        self.fields_by_key = {field.key: field for field in definition.fields}
         self.vars = {}
+        self.widget_holders = {}
+        self.extra_controls = []
+        self.wrap_targets = []
+        self.expanded = bool(SCRIPT_CARD_LAYOUTS.get(definition.script_id, {}).get("expanded", False))
+        self.advanced_expanded = False
+        self.loaded_client_pid = None
 
-        self.frame = ttk.Frame(parent, padding=(0, 6))
-        self.frame.columnconfigure(1, weight=1)
+        self.frame = ttk.Frame(parent, padding=(0, 8))
+        self.frame.columnconfigure(0, weight=1)
 
-        self.name_label = ttk.Label(self.frame, text=definition.name, width=14)
-        self.name_label.grid(row=0, column=0, sticky="nw")
+        header = ttk.Frame(self.frame)
+        header.grid(row=0, column=0, sticky="ew")
+        header.columnconfigure(1, weight=1)
 
-        self.controls_frame = ttk.Frame(self.frame)
-        self.controls_frame.grid(row=0, column=1, sticky="w")
-
-        fields_per_row = 6 if len(definition.fields) > 6 else max(len(definition.fields), 1)
-        for index, field in enumerate(definition.fields):
-            row = index // fields_per_row
-            col = (index % fields_per_row) * 2
-
-            ttk.Label(self.controls_frame, text=field.label).grid(row=row, column=col, padx=(0, 4), pady=(0, 4), sticky="w")
-            col += 1
-            if field.kind == "bool":
-                var = tk.BooleanVar(value=bool(field.default))
-                widget = ttk.Checkbutton(self.controls_frame, variable=var)
-                widget.grid(row=row, column=col, padx=(0, 10), pady=(0, 4), sticky="w")
-            elif field.kind == "choice":
-                default_value = str(field.default)
-                var = tk.StringVar(value=default_value)
-                widget = ttk.Combobox(
-                    self.controls_frame,
-                    textvariable=var,
-                    values=list(field.choices or []),
-                    width=field.width,
-                    state="readonly",
-                )
-                widget.grid(row=row, column=col, padx=(0, 10), pady=(0, 4), sticky="w")
-            else:
-                var = tk.StringVar(value=str(field.default))
-                widget = ttk.Entry(self.controls_frame, textvariable=var, width=field.width)
-                widget.grid(row=row, column=col, padx=(0, 10), pady=(0, 4), sticky="w")
-            self.vars[field.key] = (field, var, widget)
+        self.name_label = ttk.Label(header, text=definition.name)
+        self.name_label.grid(row=0, column=0, sticky="w")
 
         self.status_var = tk.StringVar(value="Stopped")
-        self.status_label = ttk.Label(self.frame, textvariable=self.status_var, width=20)
-        self.status_label.grid(row=0, column=2, padx=(12, 8), sticky="nw")
+        self.status_label = ttk.Label(header, textvariable=self.status_var)
+        self.status_label.grid(row=0, column=1, padx=(12, 10), sticky="w")
 
-        self.toggle_button = ttk.Button(self.frame, text="Start", command=self.on_toggle, width=10)
-        self.toggle_button.grid(row=0, column=3, sticky="ne")
+        self.expand_button = ttk.Button(header, text="", command=self.on_expand_toggle, width=12)
+        self.expand_button.grid(row=0, column=2, padx=(0, 8), sticky="e")
+
+        self.toggle_button = ttk.Button(header, text="Start", command=self.on_toggle, width=10)
+        self.toggle_button.grid(row=0, column=3, sticky="e")
+
+        self.body = ttk.Frame(self.frame, padding=(16, 8, 0, 0))
+        self.body.columnconfigure(0, weight=1)
+
+        self.description_label = ttk.Label(
+            self.body,
+            text=definition.description,
+            justify="left",
+            wraplength=560,
+        )
+        self.description_label.grid(row=0, column=0, sticky="ew", pady=(0, 8))
+        self.wrap_targets.append((self.description_label, 36))
+
+        self.content = ttk.Frame(self.body)
+        self.content.grid(row=1, column=0, sticky="ew")
+        self.content.columnconfigure(0, weight=1)
+
+        if self.definition.script_id == "auto_aa":
+            self._build_auto_damage_content()
+        else:
+            self._build_generic_content()
+
+        self.separator = ttk.Separator(self.frame, orient="horizontal")
+        self.separator.grid(row=2, column=0, sticky="ew", pady=(8, 0))
+        self.frame.bind("<Configure>", self._on_card_resize)
+        self._apply_expanded_state()
+
+    def _build_generic_content(self):
+        layout = SCRIPT_CARD_LAYOUTS.get(self.definition.script_id, {"sections": [], "advanced": []})
+        row = 0
+        for title, field_keys in layout.get("sections", []):
+            section = ttk.LabelFrame(self.content, text=title, padding=8)
+            section.grid(row=row, column=0, sticky="ew", pady=(0, 8))
+            self._build_field_grid(section, field_keys, columns=min(max(len(field_keys), 1), 2))
+            row += 1
+
+        advanced_keys = layout.get("advanced", [])
+        if advanced_keys:
+            self.advanced_toggle_var = tk.StringVar(value="Show Advanced")
+            ttk.Button(
+                self.content,
+                textvariable=self.advanced_toggle_var,
+                command=self.on_advanced_toggle,
+                width=14,
+            ).grid(row=row, column=0, sticky="w")
+            row += 1
+
+            self.advanced_body = ttk.LabelFrame(self.content, text="Advanced", padding=8)
+            self.advanced_body.grid(row=row, column=0, sticky="ew", pady=(8, 0))
+            self._build_field_grid(self.advanced_body, advanced_keys, columns=min(max(len(advanced_keys), 1), 2))
+            if not self.advanced_expanded:
+                self.advanced_body.grid_remove()
+
+    def _build_auto_damage_content(self):
+        top = ttk.Frame(self.content)
+        top.grid(row=0, column=0, sticky="ew", pady=(0, 8))
+        self._create_field_holder(top, "mode", row=0, column=0)
+        self.vars["mode"][2].bind("<<ComboboxSelected>>", self.on_auto_damage_mode_changed)
+
+        self.mode_hint_var = tk.StringVar(value="")
+        self.mode_hint_label = ttk.Label(self.content, textvariable=self.mode_hint_var, justify="left", wraplength=520)
+        self.mode_hint_label.grid(
+            row=1,
+            column=0,
+            sticky="ew",
+            pady=(0, 8),
+        )
+        self.wrap_targets.append((self.mode_hint_label, 36))
+
+        self.command_section = ttk.LabelFrame(self.content, text="Command Switching", padding=8)
+        self.command_section.grid(row=2, column=0, sticky="ew", pady=(0, 8))
+        self._create_field_holder(self.command_section, "elemental_dice", row=0, column=0)
+        self._create_field_holder(self.command_section, "auto_canister", row=0, column=1)
+        self._create_field_holder(self.command_section, "canister_cooldown_seconds", row=1, column=0)
+
+        self.weapon_section = ttk.LabelFrame(self.content, text="Weapon Swapping", padding=8)
+        self.weapon_section.grid(row=3, column=0, sticky="ew", pady=(0, 8))
+        self.weapon_section.columnconfigure(0, weight=1)
+
+        weapon_top = ttk.Frame(self.weapon_section)
+        weapon_top.grid(row=0, column=0, sticky="ew")
+
+        current_holder = ttk.Frame(weapon_top)
+        current_holder.grid(row=0, column=0, sticky="nw", padx=(0, 12), pady=(0, 8))
+        ttk.Label(current_holder, text="Current Equipped").grid(row=0, column=0, sticky="w")
+        self.weapon_current_var = tk.StringVar(value=WEAPON_CURRENT_UNKNOWN)
+        self.weapon_current_combo = ttk.Combobox(
+            current_holder,
+            textvariable=self.weapon_current_var,
+            values=[WEAPON_CURRENT_UNKNOWN],
+            width=16,
+            state="readonly",
+        )
+        self.weapon_current_combo.grid(row=1, column=0, sticky="w")
+        self.extra_controls.append(("choice", self.weapon_current_combo))
+
+        self._create_field_holder(weapon_top, "swap_cooldown_seconds", row=0, column=1)
+
+        self.weapon_limit_var = tk.StringVar(value="")
+        self.weapon_limit_label = ttk.Label(self.weapon_section, textvariable=self.weapon_limit_var, justify="left", wraplength=520)
+        self.weapon_limit_label.grid(
+            row=1,
+            column=0,
+            sticky="ew",
+            pady=(0, 8),
+        )
+        self.wrap_targets.append((self.weapon_limit_label, 48))
+
+        self.weapon_summary_var = tk.StringVar(value="Selected: none")
+        self.weapon_summary_label = ttk.Label(self.weapon_section, textvariable=self.weapon_summary_var, justify="left", wraplength=520)
+        self.weapon_summary_label.grid(
+            row=2,
+            column=0,
+            sticky="ew",
+            pady=(0, 8),
+        )
+        self.wrap_targets.append((self.weapon_summary_label, 48))
+
+        grid = ttk.Frame(self.weapon_section)
+        grid.grid(row=3, column=0, sticky="w")
+        ttk.Label(grid, text="").grid(row=0, column=0, padx=(0, 8))
+        for slot in range(1, 13):
+            ttk.Label(grid, text=str(slot), width=4, anchor="center").grid(row=0, column=slot, padx=1, pady=(0, 2))
+
+        self.weapon_slot_vars = {}
+        for bank_row, bank_name in enumerate(("Base", "Shift", "Ctrl"), start=1):
+            ttk.Label(grid, text=bank_name, width=7).grid(row=bank_row, column=0, padx=(0, 8), sticky="w")
+            for slot in range(1, 13):
+                if bank_name == "Base":
+                    choice = f"F{slot}"
+                elif bank_name == "Shift":
+                    choice = f"S+F{slot}"
+                else:
+                    choice = f"C+F{slot}"
+                var = tk.BooleanVar(value=False)
+                widget = ttk.Checkbutton(grid, variable=var, command=self.on_weapon_slots_changed)
+                widget.grid(row=bank_row, column=slot, padx=1, pady=1, sticky="w")
+                self.weapon_slot_vars[choice] = (var, widget)
+                self.extra_controls.append(("bool", widget))
+
+        self.advanced_toggle_var = tk.StringVar(value="Show Advanced")
+        ttk.Button(
+            self.content,
+            textvariable=self.advanced_toggle_var,
+            command=self.on_advanced_toggle,
+            width=14,
+        ).grid(row=4, column=0, sticky="w")
+
+        self.advanced_body = ttk.LabelFrame(self.content, text="Advanced", padding=8)
+        self.advanced_body.grid(row=5, column=0, sticky="ew", pady=(8, 0))
+        self._build_field_grid(self.advanced_body, ["poll_interval", "max_lines", "echo_console", "include_backlog"], columns=2)
+        if not self.advanced_expanded:
+            self.advanced_body.grid_remove()
+
+        self.on_auto_damage_mode_changed()
+
+    def _build_field_grid(self, parent, field_keys, columns=3):
+        for index, field_key in enumerate(field_keys):
+            if field_key not in self.fields_by_key:
+                continue
+            row = index // max(columns, 1)
+            column = index % max(columns, 1)
+            self._create_field_holder(parent, field_key, row=row, column=column)
+
+    def _create_field_holder(self, parent, field_key, row, column):
+        field = self.fields_by_key[field_key]
+        holder = ttk.Frame(parent)
+        holder.grid(row=row, column=column, sticky="nw", padx=(0, 14), pady=(0, 8))
+        ttk.Label(holder, text=field.label).grid(row=0, column=0, sticky="w")
+
+        if field.kind == "bool":
+            var = tk.BooleanVar(value=bool(field.default))
+            widget = ttk.Checkbutton(holder, variable=var)
+        elif field.kind == "choice":
+            var = tk.StringVar(value=str(field.default))
+            widget = ttk.Combobox(
+                holder,
+                textvariable=var,
+                values=list(field.choices or []),
+                width=field.width,
+                state="readonly",
+            )
+        else:
+            var = tk.StringVar(value=str(field.default))
+            widget = ttk.Entry(holder, textvariable=var, width=field.width)
+
+        widget.grid(row=1, column=0, sticky="w")
+        self.vars[field.key] = (field, var, widget)
+        self.widget_holders[field.key] = holder
+        return holder
+
+    def _on_card_resize(self, event):
+        width = max(int(event.width) - 40, 260)
+        for widget, padding in self.wrap_targets:
+            widget.configure(wraplength=max(width - padding, 220))
 
     def grid(self, **kwargs):
         self.frame.grid(**kwargs)
 
     def load_for_client(self, client_pid):
+        self.loaded_client_pid = client_pid
         config = self.app.get_script_config(client_pid, self.definition.script_id)
+        if self.definition.script_id == "auto_aa":
+            self._load_auto_damage_config(config)
+        else:
+            self._load_standard_config(config)
+        self.refresh_state()
+
+    def try_persist_for_client(self, client_pid):
+        if client_pid is None or self.loaded_client_pid != client_pid:
+            return False
+        try:
+            config = self.parse_config(validate_for_start=False)
+        except Exception:
+            return False
+        self.app.set_script_config(client_pid, self.definition.script_id, config)
+        return True
+
+    def _load_standard_config(self, config):
         for field, var, _widget in self.vars.values():
             value = config.get(field.key, field.default)
             if field.kind == "bool":
                 var.set(bool(value))
             else:
                 var.set(str(value))
-        self.refresh_state()
+
+    def _load_auto_damage_config(self, config):
+        for key in (
+            "mode",
+            "elemental_dice",
+            "auto_canister",
+            "canister_cooldown_seconds",
+            "swap_cooldown_seconds",
+            "poll_interval",
+            "max_lines",
+            "echo_console",
+            "include_backlog",
+        ):
+            field, var, _widget = self.vars[key]
+            value = config.get(field.key, field.default)
+            if field.kind == "bool":
+                var.set(bool(value))
+            else:
+                var.set(str(value))
+
+        for var, _widget in self.weapon_slot_vars.values():
+            var.set(False)
+
+        selected_choices = []
+        for index in range(1, 7):
+            choice = str(config.get(f"weapon_slot_{index}", WEAPON_SLOT_NONE)).strip() or WEAPON_SLOT_NONE
+            if choice != WEAPON_SLOT_NONE and choice in self.weapon_slot_vars:
+                selected_choices.append(choice)
+                self.weapon_slot_vars[choice][0].set(True)
+
+        current_value = str(config.get("current_weapon", WEAPON_CURRENT_UNKNOWN)).strip() or WEAPON_CURRENT_UNKNOWN
+        current_choice = WEAPON_CURRENT_UNKNOWN
+        if current_value.startswith("W") and current_value[1:].isdigit():
+            index = int(current_value[1:]) - 1
+            if 0 <= index < len(selected_choices):
+                current_choice = selected_choices[index]
+        self.weapon_current_var.set(current_choice)
+        self.on_auto_damage_mode_changed()
 
     def set_enabled(self, enabled):
         button_state = "normal" if enabled else "disabled"
         for field, _var, widget in self.vars.values():
-            if field.kind == "choice":
-                state = "readonly" if enabled else "disabled"
-            else:
-                state = "normal" if enabled else "disabled"
-            widget.configure(state=state)
+            self._set_widget_state(widget, field.kind, enabled)
+        for control_kind, widget in self.extra_controls:
+            self._set_widget_state(widget, control_kind, enabled)
         self.toggle_button.configure(state=button_state)
         if not enabled:
             self.status_var.set("Unavailable")
 
-    def parse_config(self):
+    def _set_widget_state(self, widget, kind, enabled):
+        if kind == "choice":
+            state = "readonly" if enabled else "disabled"
+        else:
+            state = "normal" if enabled else "disabled"
+        widget.configure(state=state)
+
+    def parse_config(self, validate_for_start=True):
+        if self.definition.script_id == "auto_aa":
+            return self._parse_auto_damage_config(validate_for_start=validate_for_start)
+
         config = {}
         for field, var, _widget in self.vars.values():
             value = var.get()
@@ -122,6 +448,70 @@ class ScriptRow:
                 config[field.key] = str(value)
         return config
 
+    def _parse_auto_damage_config(self, validate_for_start=True):
+        config = {}
+        for key in (
+            "mode",
+            "elemental_dice",
+            "auto_canister",
+            "canister_cooldown_seconds",
+            "swap_cooldown_seconds",
+            "poll_interval",
+            "max_lines",
+            "echo_console",
+            "include_backlog",
+        ):
+            field, var, _widget = self.vars[key]
+            value = var.get()
+            if field.kind == "bool":
+                config[field.key] = bool(value)
+            elif field.kind == "choice":
+                text_value = str(value).strip()
+                if field.choices and text_value not in field.choices:
+                    raise RuntimeError(f"{field.label} must be one of: {', '.join(field.choices)}.")
+                config[field.key] = text_value
+            elif field.kind == "int":
+                parsed = int(value)
+                if field.minimum is not None and parsed < field.minimum:
+                    raise RuntimeError(f"{field.label} must be at least {int(field.minimum)}.")
+                if field.maximum is not None and parsed > field.maximum:
+                    raise RuntimeError(f"{field.label} must be at most {int(field.maximum)}.")
+                config[field.key] = parsed
+            elif field.kind == "float":
+                parsed = float(value)
+                if field.minimum is not None and parsed < field.minimum:
+                    raise RuntimeError(f"{field.label} must be at least {field.minimum}.")
+                if field.maximum is not None and parsed > field.maximum:
+                    raise RuntimeError(f"{field.label} must be at most {field.maximum}.")
+                config[field.key] = parsed
+            else:
+                config[field.key] = str(value)
+
+        selected = self._selected_weapon_choices()
+        for index in range(1, 7):
+            config[f"weapon_slot_{index}"] = selected[index - 1] if index <= len(selected) else WEAPON_SLOT_NONE
+
+        current_choice = str(self.weapon_current_var.get()).strip() or WEAPON_CURRENT_UNKNOWN
+        if current_choice != WEAPON_CURRENT_UNKNOWN and current_choice in selected:
+            config["current_weapon"] = f"W{selected.index(current_choice) + 1}"
+        elif current_choice != WEAPON_CURRENT_UNKNOWN and validate_for_start:
+            if current_choice not in selected:
+                raise RuntimeError("Current Equipped must be one of the selected weapon quickbar buttons.")
+        else:
+            config["current_weapon"] = WEAPON_CURRENT_UNKNOWN
+
+        mode = str(config.get("mode", "")).strip()
+        if validate_for_start and mode in AUTO_DAMAGE_WEAPON_MODES:
+            max_bindings = _weapon_mode_limit(mode)
+            if not selected:
+                raise RuntimeError("Select at least one weapon quickbar button for weapon mode.")
+            if len(selected) > max_bindings:
+                raise RuntimeError(f"{mode} supports at most {max_bindings} weapon quickbar buttons.")
+            if config["current_weapon"] == WEAPON_CURRENT_UNKNOWN:
+                raise RuntimeError("Choose the currently equipped weapon before starting a weapon mode.")
+
+        return config
+
     def refresh_state(self):
         client = self.app.selected_client()
         if client is None or not client.injected:
@@ -133,6 +523,110 @@ class ScriptRow:
         self.status_var.set(state["status"])
         self.toggle_button.configure(text="Stop" if state["running"] else "Start")
 
+    def on_expand_toggle(self):
+        self.expanded = not self.expanded
+        self._apply_expanded_state()
+
+    def _apply_expanded_state(self):
+        if self.expanded:
+            self.body.grid(row=1, column=0, sticky="ew")
+            self.expand_button.configure(text="Hide Settings")
+        else:
+            self.body.grid_remove()
+            self.expand_button.configure(text="Show Settings")
+
+    def on_advanced_toggle(self):
+        self.advanced_expanded = not self.advanced_expanded
+        if self.advanced_expanded:
+            self.advanced_body.grid()
+            self.advanced_toggle_var.set("Hide Advanced")
+        else:
+            self.advanced_body.grid_remove()
+            self.advanced_toggle_var.set("Show Advanced")
+
+    def on_auto_damage_mode_changed(self, _event=None):
+        mode = str(self.vars["mode"][1].get()).strip()
+        is_weapon = mode in AUTO_DAMAGE_WEAPON_MODES
+        is_gi = mode == AutoAAScript.MODE_GNOMISH_INVENTOR
+
+        if is_weapon:
+            max_bindings = _weapon_mode_limit(mode)
+            self.mode_hint_var.set(
+                f"{mode} swaps weapons by quickbar and auto-detects each weapon family from combat log damage lines. "
+                f"Select up to {max_bindings} weapon buttons and choose the one currently equipped."
+            )
+            self.weapon_limit_var.set(
+                "Round delay: the swap lands at the start of the next combat round. "
+                "The script learns DB/P1/XR automatically and will not re-press the current weapon."
+            )
+            self.command_section.grid_remove()
+            self.weapon_section.grid()
+        else:
+            self.weapon_section.grid_remove()
+            self.command_section.grid()
+            if is_gi:
+                self.mode_hint_var.set(
+                    "Gnomish Inventor switches bolt type by chat command. The canister loop can be enabled or disabled here."
+                )
+            else:
+                self.mode_hint_var.set(
+                    "This mode switches damage by unfocused chat command. Weapon quickbar selection stays hidden."
+                )
+
+        self._set_holder_visible("auto_canister", is_gi)
+        self._set_holder_visible("canister_cooldown_seconds", is_gi)
+        self._update_weapon_selector_ui()
+
+    def _set_holder_visible(self, field_key, visible):
+        holder = self.widget_holders.get(field_key)
+        if holder is None:
+            return
+        if visible:
+            holder.grid()
+        else:
+            holder.grid_remove()
+
+    def on_weapon_slots_changed(self):
+        self._update_weapon_selector_ui()
+
+    def _selected_weapon_choices(self):
+        selected = []
+        for choice in WEAPON_SLOT_RENDER_ORDER:
+            var, _widget = self.weapon_slot_vars[choice]
+            if var.get():
+                selected.append(choice)
+        return selected
+
+    def _update_weapon_selector_ui(self):
+        if self.definition.script_id != "auto_aa":
+            return
+
+        selected = self._selected_weapon_choices()
+        values = [WEAPON_CURRENT_UNKNOWN, *selected]
+        current_choice = str(self.weapon_current_var.get()).strip() or WEAPON_CURRENT_UNKNOWN
+        self.weapon_current_combo.configure(values=values)
+        if current_choice not in values:
+            self.weapon_current_var.set(WEAPON_CURRENT_UNKNOWN)
+
+        if selected:
+            rendered = ", ".join(_weapon_choice_display(choice) for choice in selected)
+            self.weapon_summary_var.set(f"Selected: {rendered}")
+        else:
+            self.weapon_summary_var.set("Selected: none")
+
+        mode = str(self.vars["mode"][1].get()).strip()
+        if mode in AUTO_DAMAGE_WEAPON_MODES:
+            max_bindings = _weapon_mode_limit(mode)
+            if len(selected) > max_bindings:
+                self.weapon_limit_var.set(
+                    f"Selected {len(selected)} weapon buttons, but {mode} only supports {max_bindings}. Trim the selection before starting."
+                )
+            else:
+                self.weapon_limit_var.set(
+                    "Round delay: the swap lands at the start of the next combat round. "
+                    "The script learns DB/P1/XR automatically and will not re-press the current weapon."
+                )
+
     def on_toggle(self):
         self.app.toggle_script(self.definition.script_id, self.parse_config())
 
@@ -142,8 +636,8 @@ class SimKeysDesktopApp:
         self.root = root
         self.args = args
         self.root.title("SimKeys Control Center")
-        self.root.geometry("1440x900")
-        self.root.minsize(1180, 760)
+        self.root.geometry("1500x930")
+        self.root.minsize(1240, 780)
 
         self.event_queue = queue.Queue()
         self.script_manager = ScriptManager(self.enqueue_event)
@@ -158,6 +652,8 @@ class SimKeysDesktopApp:
         self.selected_details_var = tk.StringVar(value="Select an NWN client to see details.")
         self.chat_entry_var = tk.StringVar()
         self.auto_refresh_var = tk.BooleanVar(value=True)
+        self.manual_controls_expanded = False
+        self.manual_controls_toggle_var = tk.StringVar(value="Show Test Controls")
 
         self._configure_style()
         self._build_ui()
@@ -228,19 +724,44 @@ class SimKeysDesktopApp:
 
         right = ttk.Frame(paned)
         right.columnconfigure(0, weight=1)
+        right.rowconfigure(2, weight=2)
         right.rowconfigure(3, weight=1)
         paned.add(right, weight=5)
 
         details = ttk.LabelFrame(right, text="Client Details", padding=10)
         details.grid(row=0, column=0, sticky="ew", pady=(0, 10))
         details.columnconfigure(0, weight=1)
-        ttk.Label(details, textvariable=self.selected_details_var, justify="left").grid(row=0, column=0, sticky="w")
+        self.details_label = ttk.Label(details, textvariable=self.selected_details_var, justify="left", wraplength=520)
+        self.details_label.grid(row=0, column=0, sticky="ew")
+        details.bind("<Configure>", self._on_details_resize)
 
-        actions = ttk.LabelFrame(right, text="Selected Client Actions", padding=10)
+        actions = ttk.LabelFrame(right, text="Manual Test Controls", padding=10)
         actions.grid(row=1, column=0, sticky="ew", pady=(0, 10))
         actions.columnconfigure(0, weight=1)
 
-        quickbar = ttk.LabelFrame(actions, text="Quickbar Banks", padding=8)
+        actions_header = ttk.Frame(actions)
+        actions_header.grid(row=0, column=0, sticky="ew", pady=(0, 6))
+        actions_header.columnconfigure(0, weight=1)
+        self.manual_intro_label = ttk.Label(
+            actions_header,
+            text="Quickbar button presses and raw chat sends live here for manual testing and reverse engineering.",
+            justify="left",
+            wraplength=420,
+        )
+        self.manual_intro_label.grid(row=0, column=0, sticky="ew")
+        actions.bind("<Configure>", self._on_manual_controls_resize)
+        ttk.Button(
+            actions_header,
+            textvariable=self.manual_controls_toggle_var,
+            command=self.toggle_manual_controls,
+            width=18,
+        ).grid(row=0, column=1, padx=(12, 0), sticky="e")
+
+        self.manual_controls_body = ttk.Frame(actions)
+        self.manual_controls_body.grid(row=1, column=0, sticky="ew")
+        self.manual_controls_body.columnconfigure(0, weight=1)
+
+        quickbar = ttk.LabelFrame(self.manual_controls_body, text="Quickbar Banks", padding=8)
         quickbar.grid(row=0, column=0, sticky="ew", pady=(0, 8))
         quickbar.columnconfigure(1, weight=1)
         ttk.Label(
@@ -266,19 +787,25 @@ class SimKeysDesktopApp:
                     sticky="ew",
                 )
 
-        chat_row = ttk.Frame(actions)
+        chat_row = ttk.Frame(self.manual_controls_body)
         chat_row.grid(row=1, column=0, sticky="ew")
         chat_row.columnconfigure(1, weight=1)
         ttk.Label(chat_row, text="Chat").grid(row=0, column=0, padx=(0, 8))
         ttk.Entry(chat_row, textvariable=self.chat_entry_var).grid(row=0, column=1, sticky="ew")
         ttk.Button(chat_row, text="Send", command=self.send_chat_async).grid(row=0, column=2, padx=(8, 0))
 
-        scripts = ttk.LabelFrame(right, text="Scripts", padding=10)
-        scripts.grid(row=2, column=0, sticky="ew", pady=(0, 10))
+        self._apply_manual_controls_state()
+
+        scripts = ttk.LabelFrame(right, text="Automation", padding=10)
+        scripts.grid(row=2, column=0, sticky="nsew", pady=(0, 10))
         scripts.columnconfigure(0, weight=1)
+        scripts.rowconfigure(0, weight=1)
+        self.script_scroller = ScrollableFrame(scripts)
+        self.script_scroller.grid(row=0, column=0, sticky="nsew")
+        self.script_scroller.interior.columnconfigure(0, weight=1)
         self.script_rows = {}
         for row_index, definition in enumerate(self.script_manager.definitions()):
-            row = ScriptRow(scripts, definition, self)
+            row = ScriptCard(self.script_scroller.interior, definition, self)
             row.grid(row=row_index, column=0, sticky="ew", pady=(0, 4))
             self.script_rows[definition.script_id] = row
 
@@ -292,6 +819,24 @@ class SimKeysDesktopApp:
 
         status_bar = ttk.Label(outer, textvariable=self.status_var, anchor="w")
         status_bar.grid(row=2, column=0, sticky="ew", pady=(10, 0))
+
+    def toggle_manual_controls(self):
+        self.manual_controls_expanded = not self.manual_controls_expanded
+        self._apply_manual_controls_state()
+
+    def _apply_manual_controls_state(self):
+        if self.manual_controls_expanded:
+            self.manual_controls_body.grid()
+            self.manual_controls_toggle_var.set("Hide Test Controls")
+        else:
+            self.manual_controls_body.grid_remove()
+            self.manual_controls_toggle_var.set("Show Test Controls")
+
+    def _on_details_resize(self, event):
+        self.details_label.configure(wraplength=max(int(event.width) - 24, 240))
+
+    def _on_manual_controls_resize(self, event):
+        self.manual_intro_label.configure(wraplength=max(int(event.width) - 210, 220))
 
     def enqueue_event(self, event):
         self.event_queue.put(event)
@@ -317,6 +862,7 @@ class SimKeysDesktopApp:
             self.refresh_in_progress = False
             return
         if event_type == "script-state":
+            self.persist_loaded_configs(self.selected_pid)
             self.refresh_selected_client_ui()
             self.refresh_client_tree_rows()
             return
@@ -367,7 +913,14 @@ class SimKeysDesktopApp:
 
         threading.Thread(target=worker, name="SimKeysRefresh", daemon=True).start()
 
+    def persist_loaded_configs(self, client_pid):
+        if client_pid is None:
+            return
+        for row in self.script_rows.values():
+            row.try_persist_for_client(client_pid)
+
     def apply_client_records(self, records):
+        self.persist_loaded_configs(self.selected_pid)
         previous_records = dict(self.clients_by_pid)
         old_selected = self.selected_pid
         for record in records:
@@ -438,6 +991,8 @@ class SimKeysDesktopApp:
                 self.client_tree.set(str(record.pid), "scripts", self.script_manager.running_script_count(record.pid))
 
     def on_client_selected(self, _event=None):
+        old_selected = self.selected_pid
+        self.persist_loaded_configs(old_selected)
         selection = self.client_tree.selection()
         if not selection:
             self.selected_pid = None

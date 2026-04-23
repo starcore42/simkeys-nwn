@@ -73,13 +73,13 @@
 - Those breakdowns are useful even when a component is fully resisted because zero-value components still appear, for example:
   - `0 Electrical`
   - `0 Fire`
-- The SimKeys weapon modes therefore learn weapon typing from raw `damages` lines instead of HGX feedback text.
-- Current supported weapon families are modeled with fixed non-physical payloads:
-  - `Weapon DB`: 3 elemental types at `5d12` each and 3 exotic types at `2d12` each
-  - `Weapon P1`: 1 elemental type at `9d12` and 2 exotic types at `6d12` each
-  - `Weapon XR`: 2 elemental types at `11d12` each and 1 exotic type at `8d12`
+- The SimKeys `Weapon Swap` mode therefore learns weapon typing from raw `damages` lines instead of HGX feedback text.
+- Each configured weapon is auto-classified against the supported payload families:
+  - `DB`: 3 elemental types at `5d12` each and 3 exotic types at `2d12` each
+  - `P1`: 1 elemental type at `9d12` and 2 exotic types at `6d12` each
+  - `XR`: 2 elemental types at `11d12` each and 1 exotic type at `8d12`
 - Physical damage is intentionally treated as a shared baseline and is not used to rank weapons yet.
-- Because triggering the same quickbar weapon twice will unequip it, the SimKeys weapon modes keep explicit state for:
+- Because triggering the same quickbar weapon twice will unequip it, the SimKeys weapon mode keeps explicit state for:
   - the currently equipped configured weapon
   - a pending swap that should not be retriggered until the next combat round window has elapsed
-- The GUI exposes that current-weapon selector directly, and the script refuses to arm weapon-swap modes until it has a known starting weapon.
+- The GUI exposes that current-weapon selector directly, and the script refuses to arm `Weapon Swap` until it has a known starting weapon.

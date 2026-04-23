@@ -30,7 +30,15 @@ if (-not $outDir.EndsWith("\")) {
   $outDir += "\"
 }
 $outDirForMsbuild = $outDir -replace '\\', '/'
+$intDir = Join-Path $PSScriptRoot ".int\$Configuration"
+if (-not (Test-Path $intDir)) {
+  New-Item -ItemType Directory -Path $intDir | Out-Null
+}
+if (-not $intDir.EndsWith("\")) {
+  $intDir += "\"
+}
+$intDirForMsbuild = $intDir -replace '\\', '/'
 
 Write-Host "Building SimKeysHook2 ($Configuration|x86) with $msbuild"
-& $msbuild $project /t:Rebuild "/p:Configuration=$Configuration;Platform=x86;OutDir=$outDirForMsbuild" /m /verbosity:minimal
+& $msbuild $project /t:Rebuild "/p:Configuration=$Configuration;Platform=x86;OutDir=$outDirForMsbuild;IntDir=$intDirForMsbuild;WholeProgramOptimization=false;UseMultiToolTask=false" /m:1 /nodeReuse:false /verbosity:minimal
 exit $LASTEXITCODE

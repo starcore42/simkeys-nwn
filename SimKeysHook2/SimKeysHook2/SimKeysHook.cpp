@@ -438,62 +438,82 @@ BOOL DiscoverQuickbarPanelByScan(const char* reason) {
   uint32_t found_panel = 0;
   LONG found_page = -1;
 
-  uintptr_t cursor = reinterpret_cast<uintptr_t>(system_info.lpMinimumApplicationAddress);
-  const uintptr_t maximum = reinterpret_cast<uintptr_t>(system_info.lpMaximumApplicationAddress);
-  while (cursor < maximum) {
-    MEMORY_BASIC_INFORMATION mbi = {};
-    if (VirtualQuery(reinterpret_cast<LPCVOID>(cursor), &mbi, sizeof(mbi)) != sizeof(mbi)) {
-      break;
-    }
+  LogMessage(
+      kLogDebug,
+      "quickbar scan starting attempt=%ld reason=%s min=0x%08X max=0x%08X",
+      attempt,
+      reason != nullptr ? reason : "scan",
+      static_cast<unsigned int>(reinterpret_cast<uintptr_t>(system_info.lpMinimumApplicationAddress)),
+      static_cast<unsigned int>(reinterpret_cast<uintptr_t>(system_info.lpMaximumApplicationAddress)));
 
-    const uintptr_t region_base = reinterpret_cast<uintptr_t>(mbi.BaseAddress);
-    const uintptr_t region_end = region_base + mbi.RegionSize;
-    if (region_end < region_base) {
-      break;
-    }
+  __try {
+    uintptr_t cursor = reinterpret_cast<uintptr_t>(system_info.lpMinimumApplicationAddress);
+    const uintptr_t maximum = reinterpret_cast<uintptr_t>(system_info.lpMaximumApplicationAddress);
+    while (cursor < maximum) {
+      MEMORY_BASIC_INFORMATION mbi = {};
+      if (VirtualQuery(reinterpret_cast<LPCVOID>(cursor), &mbi, sizeof(mbi)) != sizeof(mbi)) {
+        break;
+      }
 
-    if (mbi.State == MEM_COMMIT &&
-        (mbi.Protect & (PAGE_GUARD | PAGE_NOACCESS)) == 0 &&
-        IsReadableWritableProtection(mbi.Protect) &&
-        region_end > region_base + kQuickbarCurrentPageOffset + sizeof(uint32_t)) {
-      const uintptr_t limit = region_end - (kQuickbarCurrentPageOffset + sizeof(uint32_t));
-      for (uintptr_t candidate = region_base; candidate <= limit; candidate += sizeof(uint32_t)) {
-        if (*reinterpret_cast<const uint32_t*>(candidate) != expected_vtable) {
-          continue;
-        }
+      const uintptr_t region_base = reinterpret_cast<uintptr_t>(mbi.BaseAddress);
+      const uintptr_t region_end = region_base + mbi.RegionSize;
+      if (region_end < region_base) {
+        break;
+      }
 
-        const uint32_t current_page_base =
-            *reinterpret_cast<const uint32_t*>(candidate + kQuickbarCurrentPageOffset);
-        if (SafeReadPointer32(static_cast<uintptr_t>(current_page_base) + 0x2Cu) != expected_slot_dispatch) {
-          continue;
-        }
+      if (mbi.State == MEM_COMMIT &&
+          (mbi.Protect & (PAGE_GUARD | PAGE_NOACCESS)) == 0 &&
+          IsReadableWritableProtection(mbi.Protect) &&
+          region_end > region_base + kQuickbarCurrentPageOffset + sizeof(uint32_t)) {
+        const uintptr_t limit = region_end - (kQuickbarCurrentPageOffset + sizeof(uint32_t));
+        for (uintptr_t candidate = region_base; candidate <= limit; candidate += sizeof(uint32_t)) {
+          const uint32_t candidate_vtable = SafeReadPointer32(candidate);
+          if (candidate_vtable != expected_vtable) {
+            continue;
+          }
 
-        LONG page_match = -1;
-        for (LONG page = 0; page < kQuickbarPageCount; ++page) {
-          const uint32_t expected_page_base =
-              static_cast<uint32_t>(candidate) + kQuickbarPanelSlotsOffset + static_cast<uint32_t>(page) * kQuickbarPageStride;
-          if (current_page_base == expected_page_base) {
-            page_match = page;
+          const uint32_t current_page_base = SafeReadPointer32(candidate + kQuickbarCurrentPageOffset);
+          if (current_page_base == 0) {
+            continue;
+          }
+          if (SafeReadPointer32(static_cast<uintptr_t>(current_page_base) + 0x2Cu) != expected_slot_dispatch) {
+            continue;
+          }
+
+          LONG page_match = -1;
+          for (LONG page = 0; page < kQuickbarPageCount; ++page) {
+            const uint32_t expected_page_base =
+                static_cast<uint32_t>(candidate) + kQuickbarPanelSlotsOffset + static_cast<uint32_t>(page) * kQuickbarPageStride;
+            if (current_page_base == expected_page_base) {
+              page_match = page;
+              break;
+            }
+          }
+          if (page_match < 0) {
+            continue;
+          }
+
+          found_panel = static_cast<uint32_t>(candidate);
+          found_page = page_match;
+          ++matches;
+          if (matches > 1) {
             break;
           }
         }
-        if (page_match < 0) {
-          continue;
-        }
-
-        found_panel = static_cast<uint32_t>(candidate);
-        found_page = page_match;
-        ++matches;
-        if (matches > 1) {
-          break;
-        }
       }
-    }
 
-    if (matches > 1) {
-      break;
+      if (matches > 1) {
+        break;
+      }
+      cursor = region_end;
     }
-    cursor = region_end;
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
+    LogMessage(
+        kLogError,
+        "quickbar scan raised SEH exception attempt=%ld reason=%s",
+        attempt,
+        reason != nullptr ? reason : "scan");
+    return FALSE;
   }
 
   if (matches == 1 && TryAdoptQuickbarPanel(found_panel, -1, found_page, "memory-scan")) {
