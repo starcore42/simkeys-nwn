@@ -81,7 +81,8 @@ def cmd_query(args):
         print(
             f"quickbar: this=0x{result['quickbar_this']:08X} page={result['quickbar_page']} "
             f"slot={result['quickbar_slot']} type={result['quickbar_slot_type']} "
-            f"calls={result['quickbar_calls']}"
+            f"calls={result['quickbar_calls']} "
+            f"equipped={simkeys.format_quickbar_slots(result.get('quickbar_equipped_mask', 0)) or '-'}"
         )
         print(
             f"last: vk=0x{result['last_vk']:08X} rc={result['last_rc']} err={result['last_error']} "

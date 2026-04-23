@@ -63,6 +63,37 @@ Addresses worth checking:
 - `0x0051F6D0`
 - `0x0051FD10`
 
+## Equipped item border / `qbEquip`
+
+The blue border on a quickbar item is driven by the UI state/resource name `"qbEquip"`.
+
+Confirmed chain:
+
+1. `sub_51BAF0` at `0x0051BAF0` is the item quickbar slot setup/update routine.
+2. Item quickbar slots use raw slot type `1` at `[slot + 0x84]`.
+3. The primary item object id is stored at `[slot + 0x50]`.
+4. A paired/secondary item object id, when present, is stored at `[slot + 0x54]`.
+5. The routine resolves the item id through `sub_4078C0`, then checks the item equipped-owner path through `sub_4E9B50`.
+6. `sub_4E9B50(item)` resolves `[item + 0x174]` to an owner/equipped object; the code compares `[owner + 4]` with the current player object id from `sub_407870`.
+7. If the primary item is equipped by the current player, and the secondary item is either absent or also equipped by the current player, the slot calls `sub_5E7DA0(slot, "qbEquip")`.
+8. Otherwise the same UI call receives `0`, clearing the blue-border state.
+
+The important addresses:
+
+- `0x0051BAF0` - item slot setup/update and first `qbEquip` reference
+- `0x00520570` - `sub_520570`, walks all 36 quickbar slots and reapplies/clears `qbEquip`
+- `0x004C7A50` - creature equip-to-hand path; after an equip change for the current player it calls `sub_520570`
+- `0x004078C0` - object-id resolver used to resolve the quickbar item id
+- `0x00407870` - current player object id accessor
+- `0x004E9B50` - item equipped-owner resolver
+
+SimKeys now mirrors this condition in the hook query response as quickbar item/equipped bitmasks.
+Bit index is `page * 12 + slotIndex`, where `slotIndex` is zero-based:
+
+- bits `0..11` = Base quickbar
+- bits `12..23` = Shift quickbar
+- bits `24..35` = Ctrl quickbar
+
 The current hook uses that layout in two ways:
 
 - trace hooks capture `quickbar_this`, current page, slot pointer, and slot type from real in-game executions

@@ -564,7 +564,13 @@ class ScriptCard:
         ignored_damage = int(details.get("pending_ignored_damage") or 0)
         if ignored_damage:
             state_line += f", ignored pre-boundary {ignored_damage}"
+        equipped_display = str(details.get("equipped_display") or "").strip()
+        if equipped_display:
+            state_line += f", hook equipped {equipped_display}"
         lines.append(state_line)
+        equipped_error = str(details.get("equipped_probe_error") or "").strip()
+        if equipped_error:
+            lines.append(f"Equipped probe error: {equipped_error}")
         last_swap_feedback = str(details.get("last_swap_feedback") or "").replace("_", " ")
         if last_swap_feedback:
             lines.append(f"Last swap feedback: {last_swap_feedback}")
@@ -726,6 +732,8 @@ class SimKeysDesktopApp:
         self.auto_refresh_var = tk.BooleanVar(value=True)
         self.manual_controls_expanded = False
         self.manual_controls_toggle_var = tk.StringVar(value="Show Test Controls")
+        self.target_analysis_text = None
+        self.analysis_paned = None
 
         self._configure_style()
         self._build_ui()
@@ -763,11 +771,12 @@ class SimKeysDesktopApp:
 
         paned = ttk.Panedwindow(outer, orient="horizontal")
         paned.grid(row=1, column=0, sticky="nsew")
+        self.main_paned = paned
 
         left = ttk.Frame(paned, padding=(0, 0, 10, 0))
         left.columnconfigure(0, weight=1)
         left.rowconfigure(1, weight=1)
-        paned.add(left, weight=3)
+        paned.add(left, weight=1)
 
         ttk.Label(left, text="Discovered Clients").grid(row=0, column=0, sticky="w", pady=(0, 6))
         self.client_tree = ttk.Treeview(
@@ -775,7 +784,7 @@ class SimKeysDesktopApp:
             columns=("ord", "pid", "injected", "name", "window", "started", "scripts"),
             show="headings",
             selectmode="browse",
-            height=18,
+            height=10,
         )
         for col, title, width, anchor in (
             ("ord", "#", 45, "center"),
@@ -787,18 +796,20 @@ class SimKeysDesktopApp:
             ("scripts", "Scripts", 70, "center"),
         ):
             self.client_tree.heading(col, text=title)
-            self.client_tree.column(col, width=width, anchor=anchor, stretch=(col in ("name", "window")))
+            self.client_tree.column(col, width=width, anchor=anchor, stretch=False)
         self.client_tree.grid(row=1, column=0, sticky="nsew")
         client_scroll = ttk.Scrollbar(left, orient="vertical", command=self.client_tree.yview)
         client_scroll.grid(row=1, column=1, sticky="ns")
-        self.client_tree.configure(yscrollcommand=client_scroll.set)
+        client_xscroll = ttk.Scrollbar(left, orient="horizontal", command=self.client_tree.xview)
+        client_xscroll.grid(row=2, column=0, sticky="ew")
+        self.client_tree.configure(yscrollcommand=client_scroll.set, xscrollcommand=client_xscroll.set)
         self.client_tree.bind("<<TreeviewSelect>>", self.on_client_selected)
 
         right = ttk.Frame(paned)
         right.columnconfigure(0, weight=1)
-        right.rowconfigure(2, weight=2)
-        right.rowconfigure(3, weight=1)
+        right.rowconfigure(2, weight=1)
         paned.add(right, weight=5)
+        self.root.after(250, self._set_initial_pane_sizes)
 
         details = ttk.LabelFrame(right, text="Client Details", padding=10)
         details.grid(row=0, column=0, sticky="ew", pady=(0, 10))
@@ -868,8 +879,20 @@ class SimKeysDesktopApp:
 
         self._apply_manual_controls_state()
 
-        scripts = ttk.LabelFrame(right, text="Automation", padding=10)
-        scripts.grid(row=2, column=0, sticky="nsew", pady=(0, 10))
+        analysis_paned = ttk.Panedwindow(right, orient="vertical")
+        analysis_paned.grid(row=2, column=0, sticky="nsew")
+        self.analysis_paned = analysis_paned
+
+        target = ttk.LabelFrame(analysis_paned, text="Target Analysis", padding=10)
+        target.columnconfigure(0, weight=1)
+        target.rowconfigure(0, weight=1)
+        self.target_analysis_text = ScrolledText(target, wrap="word", height=14, font=("Consolas", 9))
+        self.target_analysis_text.grid(row=0, column=0, sticky="nsew")
+        self.target_analysis_text.configure(state="disabled")
+        self._set_target_analysis_text("Start Auto Damage in Weapon Swap mode to see target resistances and weapon estimates.")
+        analysis_paned.add(target, weight=2)
+
+        scripts = ttk.LabelFrame(analysis_paned, text="Automation", padding=10)
         scripts.columnconfigure(0, weight=1)
         scripts.rowconfigure(0, weight=1)
         self.script_scroller = ScrollableFrame(scripts)
@@ -880,14 +903,15 @@ class SimKeysDesktopApp:
             row = ScriptCard(self.script_scroller.interior, definition, self)
             row.grid(row=row_index, column=0, sticky="ew", pady=(0, 4))
             self.script_rows[definition.script_id] = row
+        analysis_paned.add(scripts, weight=3)
 
-        logs = ttk.LabelFrame(right, text="Activity Log", padding=10)
-        logs.grid(row=3, column=0, sticky="nsew")
+        logs = ttk.LabelFrame(analysis_paned, text="Activity Log", padding=10)
         logs.columnconfigure(0, weight=1)
         logs.rowconfigure(0, weight=1)
         self.log_text = ScrolledText(logs, wrap="word", height=18, font=("Consolas", 10))
         self.log_text.grid(row=0, column=0, sticky="nsew")
         self.log_text.configure(state="disabled")
+        analysis_paned.add(logs, weight=2)
 
         status_bar = ttk.Label(outer, textvariable=self.status_var, anchor="w")
         status_bar.grid(row=2, column=0, sticky="ew", pady=(10, 0))
@@ -903,6 +927,22 @@ class SimKeysDesktopApp:
         else:
             self.manual_controls_body.grid_remove()
             self.manual_controls_toggle_var.set("Show Test Controls")
+
+    def _set_initial_pane_sizes(self):
+        try:
+            if self.main_paned.winfo_width() > 0:
+                self.main_paned.sashpos(0, 430)
+        except tk.TclError:
+            pass
+        try:
+            if self.analysis_paned is not None and self.analysis_paned.winfo_height() > 0:
+                height = self.analysis_paned.winfo_height()
+                target_height = max(240, min(380, height // 3))
+                automation_height = max(260, min(520, height // 2))
+                self.analysis_paned.sashpos(0, target_height)
+                self.analysis_paned.sashpos(1, min(target_height + automation_height, max(height - 180, target_height + 120)))
+        except tk.TclError:
+            pass
 
     def _on_details_resize(self, event):
         self.details_label.configure(wraplength=max(int(event.width) - 24, 240))
@@ -955,6 +995,94 @@ class SimKeysDesktopApp:
         self.log_text.insert("end", f"[{level.upper()}] {message}\n")
         self.log_text.see("end")
         self.log_text.configure(state="disabled")
+
+    def _set_target_analysis_text(self, text):
+        if self.target_analysis_text is None:
+            return
+        self.target_analysis_text.configure(state="normal")
+        self.target_analysis_text.delete("1.0", "end")
+        self.target_analysis_text.insert("1.0", text)
+        self.target_analysis_text.configure(state="disabled")
+
+    def _format_target_stat_entries(self, entries, value_suffix=""):
+        entries = list(entries or [])
+        if not entries:
+            return "-"
+        parts = []
+        for entry in entries:
+            label = str(entry.get("label") or entry.get("type") or "?")
+            if "value" in entry:
+                parts.append(f"{label} {entry.get('value')}{value_suffix}")
+            else:
+                parts.append(label)
+        return ", ".join(parts)
+
+    def _render_target_analysis(self, details):
+        analysis = dict(details.get("target_analysis", {}))
+        target = str(analysis.get("target") or "").strip()
+        if not target:
+            return "Waiting for Auto Damage to observe your next attack target."
+
+        lines = []
+        if not analysis.get("available"):
+            message = str(analysis.get("message") or f"No data for '{target}'.")
+            return f"Target: {target}\n{message}"
+
+        matched = str(analysis.get("matched_name") or target)
+        paragon = int(analysis.get("paragon_ranks") or 0)
+        lines.append(f"Target: {target}    Matched: {matched}    Paragon: {paragon}")
+        lines.append(f"Immunity:   {self._format_target_stat_entries(analysis.get('immunity'), '%')}")
+        lines.append(f"Resistance: {self._format_target_stat_entries(analysis.get('resistance'))}")
+        lines.append(f"Healing:    {self._format_target_stat_entries(analysis.get('healing'))}")
+        lines.append("")
+        lines.append("Weapon estimates:")
+
+        weapons = list(analysis.get("weapons") or [])
+        if not weapons:
+            lines.append("  No learned weapon profiles yet.")
+            return "\n".join(lines)
+
+        for weapon in weapons:
+            markers = ""
+            if weapon.get("current"):
+                markers += "*"
+            if weapon.get("pending"):
+                markers += ">"
+            if weapon.get("recommended"):
+                markers += "!"
+            marker_text = f"{markers:3}" if markers else "   "
+            label = f"{weapon.get('key', '?')}/{weapon.get('label', '?')}"
+            expected = weapon.get("expected_damage")
+            if expected is None:
+                expected_text = "unlearned"
+            else:
+                expected_text = f"{int(expected):4d}"
+            healing_types = list(weapon.get("healing_types") or [])
+            healing_text = f" HEALS {'/'.join(healing_types)}" if healing_types else ""
+            summary = str(weapon.get("summary") or "Unknown")
+            lines.append(f"{marker_text} {label:<8} expected={expected_text}{healing_text}  {summary}")
+
+        lines.append("")
+        lines.append("* current   > pending   ! recommended")
+        return "\n".join(lines)
+
+    def refresh_target_analysis_panel(self):
+        client = self.selected_client()
+        if client is None:
+            self._set_target_analysis_text("Select an NWN client to see target analysis.")
+            return
+
+        state = self.script_manager.get_state(client.pid, "auto_aa")
+        if not state.get("running"):
+            self._set_target_analysis_text("Start Auto Damage in Weapon Swap mode to see target resistances and weapon estimates.")
+            return
+
+        details = dict(state.get("details", {}))
+        if not details.get("weapon_mode"):
+            self._set_target_analysis_text("Target analysis is currently focused on Weapon Swap mode.")
+            return
+
+        self._set_target_analysis_text(self._render_target_analysis(details))
 
     def auto_refresh_tick(self):
         if self.auto_refresh_var.get():
@@ -1087,6 +1215,7 @@ class SimKeysDesktopApp:
         if client is None:
             self.selected_name_var.set("No client selected")
             self.selected_details_var.set("Select an NWN client to see details.")
+            self.refresh_target_analysis_panel()
             for row in self.script_rows.values():
                 row.set_enabled(False)
             return
@@ -1113,6 +1242,7 @@ class SimKeysDesktopApp:
 
         for row in self.script_rows.values():
             row.load_for_client(client.pid)
+        self.refresh_target_analysis_panel()
 
     def get_script_config(self, client_pid, script_id):
         key = (client_pid, script_id)

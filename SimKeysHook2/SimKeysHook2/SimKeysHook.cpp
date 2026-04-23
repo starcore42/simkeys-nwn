@@ -47,6 +47,8 @@ constexpr UINT kExpectedQuickbarExec = 0x0051FAA0;
 constexpr UINT kExpectedQuickbarPageSelect = 0x0051FD10;
 constexpr UINT kExpectedQuickbarSlotDispatch = 0x005164A0;
 constexpr UINT kExpectedQuickbarVtable = 0x008AB6D0;
+constexpr UINT kExpectedObjectByIdResolver = 0x004078C0;
+constexpr UINT kExpectedItemEquippedOwnerResolver = 0x004E9B50;
 constexpr UINT kExpectedChatSend = 0x0057C9F0;
 constexpr UINT kExpectedChatWindowLog = 0x00493BD0;
 constexpr UINT kExpectedAppObjectResolver = 0x00405160;
@@ -57,6 +59,11 @@ constexpr uint32_t kQuickbarPanelSlotsOffset = 0x68u;
 constexpr uint32_t kQuickbarCurrentPageOffset = 0x2BB8u;
 constexpr uint32_t kQuickbarPageStride = 0xE70u;
 constexpr uint32_t kQuickbarSlotStride = 0x134u;
+constexpr uint32_t kQuickbarSlotPrimaryItemOffset = 0x50u;
+constexpr uint32_t kQuickbarSlotSecondaryItemOffset = 0x54u;
+constexpr uint32_t kQuickbarSlotTypeOffset = 0x84u;
+constexpr uint32_t kInvalidObjectId = 0x7F000000u;
+constexpr BYTE kQuickbarItemSlotType = 1;
 constexpr int kQuickbarPageCount = 3;
 constexpr int kQuickbarSlotCount = 12;
 constexpr int kPendingChatCapacity = 1024;
@@ -113,6 +120,10 @@ struct QueryResponse {
   uint32_t player_object;
   int32_t identity_refresh_count;
   int32_t identity_error;
+  uint32_t quickbar_item_mask_low;
+  uint32_t quickbar_item_mask_high;
+  uint32_t quickbar_equipped_mask_low;
+  uint32_t quickbar_equipped_mask_high;
   char character_name[kCharacterNameCapacity];
 };
 
@@ -224,6 +235,10 @@ struct SimKeysState {
   volatile LONG quickbar_calls;
   volatile LONG quickbar_scan_attempts;
   volatile LONG quickbar_scan_hits;
+  volatile LONG quickbar_item_mask_low;
+  volatile LONG quickbar_item_mask_high;
+  volatile LONG quickbar_equipped_mask_low;
+  volatile LONG quickbar_equipped_mask_high;
   volatile LONG log_level;
   volatile LONG player_object;
   volatile LONG identity_refresh_count;
@@ -253,6 +268,7 @@ void* MakeJmpGateway(BYTE* target, size_t stolen);
 BOOL DiscoverQuickbarPanelByScan(const char* reason);
 BOOL InstallChatWindowLogHook();
 BOOL RefreshCharacterIdentity(DWORD* out_error);
+void UpdateQuickbarItemMasksOnWindowThread();
 
 uintptr_t GetProcessImageBase() {
   return reinterpret_cast<uintptr_t>(GetModuleHandleA(nullptr));
@@ -302,6 +318,129 @@ uint32_t ReadAppObjectPointer() {
 uint32_t ReadAppInnerPointer() {
   const uint32_t app_object = ReadAppObjectPointer();
   return app_object != 0 ? SafeReadPointer32(static_cast<uintptr_t>(app_object) + 4) : 0;
+}
+
+uint32_t ReadCurrentPlayerObjectId() {
+  const uint32_t app_inner = ReadAppInnerPointer();
+  return app_inner != 0 ? SafeReadPointer32(static_cast<uintptr_t>(app_inner) + 0x20u) : 0;
+}
+
+bool IsValidObjectId(uint32_t object_id) {
+  return object_id != 0 && object_id != kInvalidObjectId;
+}
+
+void SetQuickbarMaskBit(uint32_t* low, uint32_t* high, int bit_index) {
+  if (low == nullptr || high == nullptr || bit_index < 0) {
+    return;
+  }
+
+  if (bit_index < 32) {
+    *low |= (1u << bit_index);
+  } else if (bit_index < kQuickbarPageCount * kQuickbarSlotCount) {
+    *high |= (1u << (bit_index - 32));
+  }
+}
+
+void StoreQuickbarItemMasks(uint32_t item_low, uint32_t item_high, uint32_t equipped_low, uint32_t equipped_high) {
+  InterlockedExchange(&g_state.quickbar_item_mask_low, static_cast<LONG>(item_low));
+  InterlockedExchange(&g_state.quickbar_item_mask_high, static_cast<LONG>(item_high));
+  InterlockedExchange(&g_state.quickbar_equipped_mask_low, static_cast<LONG>(equipped_low));
+  InterlockedExchange(&g_state.quickbar_equipped_mask_high, static_cast<LONG>(equipped_high));
+}
+
+void UpdateQuickbarItemMasksOnWindowThread() {
+  typedef void* (__thiscall* ResolveObjectByIdFn)(void* app_object, uint32_t object_id);
+  typedef void* (__thiscall* ItemEquippedOwnerFn)(void* item_object);
+
+  uint32_t item_low = 0;
+  uint32_t item_high = 0;
+  uint32_t equipped_low = 0;
+  uint32_t equipped_high = 0;
+
+  __try {
+    const uint32_t panel = static_cast<uint32_t>(InterlockedCompareExchange(&g_state.quickbar_this, 0, 0));
+    if (panel == 0 || SafeReadPointer32(panel) != RebaseAddress(kExpectedQuickbarVtable)) {
+      StoreQuickbarItemMasks(0, 0, 0, 0);
+      return;
+    }
+
+    const uint32_t app_object = ReadAppObjectPointer();
+    const uint32_t current_player_object_id = ReadCurrentPlayerObjectId();
+    if (app_object == 0 || current_player_object_id == 0) {
+      StoreQuickbarItemMasks(0, 0, 0, 0);
+      return;
+    }
+
+    const ResolveObjectByIdFn resolve_object =
+        reinterpret_cast<ResolveObjectByIdFn>(RebaseAddress(kExpectedObjectByIdResolver));
+    const ItemEquippedOwnerFn item_equipped_owner =
+        reinterpret_cast<ItemEquippedOwnerFn>(RebaseAddress(kExpectedItemEquippedOwnerResolver));
+
+    for (int page = 0; page < kQuickbarPageCount; ++page) {
+      for (int slot = 0; slot < kQuickbarSlotCount; ++slot) {
+        const int bit_index = page * kQuickbarSlotCount + slot;
+        const uint32_t slot_ptr = panel +
+            kQuickbarPanelSlotsOffset +
+            static_cast<uint32_t>(page) * kQuickbarPageStride +
+            static_cast<uint32_t>(slot) * kQuickbarSlotStride;
+
+        BYTE slot_type = 0;
+        if (!SafeReadValue(static_cast<uintptr_t>(slot_ptr) + kQuickbarSlotTypeOffset, &slot_type) ||
+            slot_type != kQuickbarItemSlotType) {
+          continue;
+        }
+
+        const uint32_t primary_item_id = SafeReadPointer32(static_cast<uintptr_t>(slot_ptr) + kQuickbarSlotPrimaryItemOffset);
+        if (!IsValidObjectId(primary_item_id)) {
+          continue;
+        }
+
+        void* primary_item = resolve_object(reinterpret_cast<void*>(app_object), primary_item_id);
+        if (primary_item == nullptr) {
+          continue;
+        }
+
+        SetQuickbarMaskBit(&item_low, &item_high, bit_index);
+
+        void* primary_owner = item_equipped_owner(primary_item);
+        if (primary_owner == nullptr ||
+            SafeReadPointer32(reinterpret_cast<uintptr_t>(primary_owner) + 4u) != current_player_object_id) {
+          continue;
+        }
+
+        const uint32_t secondary_item_id = SafeReadPointer32(static_cast<uintptr_t>(slot_ptr) + kQuickbarSlotSecondaryItemOffset);
+        if (IsValidObjectId(secondary_item_id)) {
+          void* secondary_item = resolve_object(reinterpret_cast<void*>(app_object), secondary_item_id);
+          if (secondary_item == nullptr) {
+            continue;
+          }
+          void* secondary_owner = item_equipped_owner(secondary_item);
+          if (secondary_owner == nullptr ||
+              SafeReadPointer32(reinterpret_cast<uintptr_t>(secondary_owner) + 4u) != current_player_object_id) {
+            continue;
+          }
+        }
+
+        SetQuickbarMaskBit(&equipped_low, &equipped_high, bit_index);
+      }
+    }
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
+    StoreQuickbarItemMasks(0, 0, 0, 0);
+    LogMessage(
+        kLogError,
+        "quickbar item mask refresh raised exception code=0x%08lX",
+        static_cast<unsigned long>(GetExceptionCode()));
+    return;
+  }
+
+  StoreQuickbarItemMasks(item_low, item_high, equipped_low, equipped_high);
+  LogMessage(
+      kLogDebug,
+      "quickbar item masks refreshed item=0x%08X%08X equipped=0x%08X%08X",
+      item_high,
+      item_low,
+      equipped_high,
+      equipped_low);
 }
 
 void CopyStoredCharacterName(char* out, size_t capacity) {
@@ -1124,6 +1263,8 @@ void BuildSnapshotText(const char* reason, char* out, size_t capacity) {
   const uint32_t runtime_quickbar_page_select = RebaseAddress(kExpectedQuickbarPageSelect);
   const uint32_t runtime_quickbar_slot_dispatch = RebaseAddress(kExpectedQuickbarSlotDispatch);
   const uint32_t runtime_quickbar_vtable = RebaseAddress(kExpectedQuickbarVtable);
+  const uint32_t runtime_object_by_id_resolver = RebaseAddress(kExpectedObjectByIdResolver);
+  const uint32_t runtime_item_equipped_owner_resolver = RebaseAddress(kExpectedItemEquippedOwnerResolver);
   const uint32_t runtime_chat_send = RebaseAddress(kExpectedChatSend);
   const uint32_t runtime_chat_window_log = RebaseAddress(kExpectedChatWindowLog);
   const uint32_t runtime_app_object_resolver = RebaseAddress(kExpectedAppObjectResolver);
@@ -1134,6 +1275,14 @@ void BuildSnapshotText(const char* reason, char* out, size_t capacity) {
   CopyStoredCharacterName(character_name, ARRAYSIZE(character_name));
   const LONG quickbar_slot_type = InterlockedCompareExchange(&g_state.quickbar_slot_type, 0, 0);
   const LONG quickbar_slot_case = QuickbarSlotTypeToCaseIndex(quickbar_slot_type);
+  const uint32_t quickbar_item_mask_low =
+      static_cast<uint32_t>(InterlockedCompareExchange(&g_state.quickbar_item_mask_low, 0, 0));
+  const uint32_t quickbar_item_mask_high =
+      static_cast<uint32_t>(InterlockedCompareExchange(&g_state.quickbar_item_mask_high, 0, 0));
+  const uint32_t quickbar_equipped_mask_low =
+      static_cast<uint32_t>(InterlockedCompareExchange(&g_state.quickbar_equipped_mask_low, 0, 0));
+  const uint32_t quickbar_equipped_mask_high =
+      static_cast<uint32_t>(InterlockedCompareExchange(&g_state.quickbar_equipped_mask_high, 0, 0));
 
   const HWND hwnd = g_state.hwnd;
   const uint32_t current_wndproc = (hwnd != nullptr && IsWindow(hwnd))
@@ -1207,11 +1356,13 @@ void BuildSnapshotText(const char* reason, char* out, size_t capacity) {
       gate_90,
       gate_94,
       gate_98);
-  AppendFormat(out, capacity, &offset, "quickbar: exec=0x%08X pageSelect=0x%08X slotDispatch=0x%08X panelVtable=0x%08X execTrace=%ld slotTrace=%ld capturedThis=0x%08X page=%ld capturedSlot=%ld slotPtr=0x%08X slotType=%ld slotCase=%ld calls=%ld scanAttempts=%ld scanHits=%ld\r\n",
+  AppendFormat(out, capacity, &offset, "quickbar: exec=0x%08X pageSelect=0x%08X slotDispatch=0x%08X panelVtable=0x%08X objectById=0x%08X equipOwner=0x%08X execTrace=%ld slotTrace=%ld capturedThis=0x%08X page=%ld capturedSlot=%ld slotPtr=0x%08X slotType=%ld slotCase=%ld calls=%ld scanAttempts=%ld scanHits=%ld itemMask=0x%08X%08X equippedMask=0x%08X%08X\r\n",
       runtime_quickbar_exec,
       runtime_quickbar_page_select,
       runtime_quickbar_slot_dispatch,
       runtime_quickbar_vtable,
+      runtime_object_by_id_resolver,
+      runtime_item_equipped_owner_resolver,
       InterlockedCompareExchange(&g_state.quickbar_trace_installed, 0, 0),
       InterlockedCompareExchange(&g_state.quickbar_slot_trace_installed, 0, 0),
       InterlockedCompareExchange(&g_state.quickbar_this, 0, 0),
@@ -1222,7 +1373,11 @@ void BuildSnapshotText(const char* reason, char* out, size_t capacity) {
       quickbar_slot_case,
       InterlockedCompareExchange(&g_state.quickbar_calls, 0, 0),
       InterlockedCompareExchange(&g_state.quickbar_scan_attempts, 0, 0),
-      InterlockedCompareExchange(&g_state.quickbar_scan_hits, 0, 0));
+      InterlockedCompareExchange(&g_state.quickbar_scan_hits, 0, 0),
+      quickbar_item_mask_high,
+      quickbar_item_mask_low,
+      quickbar_equipped_mask_high,
+      quickbar_equipped_mask_low);
   AppendFormat(out, capacity, &offset, "chat: send=0x%08X windowLog=0x%08X trace=%ld queued=%ld nextWrite=%ld latestSeq=%ld lastMode=%ld lastRc=%ld lastErr=%ld\r\n",
       runtime_chat_send,
       runtime_chat_window_log,
@@ -1378,6 +1533,7 @@ BOOL ResolveCurrentCharacterIdentityOnWindowThread(DWORD* out_error) {
   InterlockedExchange(&g_state.player_object, static_cast<LONG>(reinterpret_cast<uintptr_t>(player_object)));
   InterlockedExchange(&g_state.identity_error, static_cast<LONG>(last_error));
   InterlockedIncrement(&g_state.identity_refresh_count);
+  UpdateQuickbarItemMasksOnWindowThread();
 
   if (last_error == ERROR_SUCCESS) {
     LogMessage(
@@ -2251,6 +2407,14 @@ BOOL HandlePipeClient(HANDLE pipe) {
         response.player_object = static_cast<uint32_t>(InterlockedCompareExchange(&g_state.player_object, 0, 0));
         response.identity_refresh_count = InterlockedCompareExchange(&g_state.identity_refresh_count, 0, 0);
         response.identity_error = InterlockedCompareExchange(&g_state.identity_error, 0, 0);
+        response.quickbar_item_mask_low =
+            static_cast<uint32_t>(InterlockedCompareExchange(&g_state.quickbar_item_mask_low, 0, 0));
+        response.quickbar_item_mask_high =
+            static_cast<uint32_t>(InterlockedCompareExchange(&g_state.quickbar_item_mask_high, 0, 0));
+        response.quickbar_equipped_mask_low =
+            static_cast<uint32_t>(InterlockedCompareExchange(&g_state.quickbar_equipped_mask_low, 0, 0));
+        response.quickbar_equipped_mask_high =
+            static_cast<uint32_t>(InterlockedCompareExchange(&g_state.quickbar_equipped_mask_high, 0, 0));
         CopyStoredCharacterName(response.character_name, ARRAYSIZE(response.character_name));
 
         if (!WriteResponse(pipe, kOpQuery, &response, sizeof(response))) {

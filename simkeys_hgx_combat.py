@@ -143,19 +143,31 @@ def normalize_actor_name(text: str) -> str:
 
 def parse_attack_line(text: str) -> Optional[ParsedAttackLine]:
     normalized = normalize_chat_line(text)
-    if " attacks " not in normalized.lower():
+    lowered = normalized.lower()
+    marker = " attacks "
+    marker_at = lowered.find(marker)
+    if marker_at < 0:
         return None
 
-    match = ATTACK_LINE_RE.search(normalized)
-    if match is None:
+    left = normalized[:marker_at].strip()
+    right = normalized[marker_at + len(marker):].strip()
+    if not left or not right:
         return None
 
-    attacker = normalize_actor_name(match.group("attacker"))
-    defender = normalize_actor_name(match.group("defender"))
+    defender = normalize_actor_name(right.split(":", 1)[0])
+    left_parts = [
+        normalize_actor_name(part)
+        for part in left.split(":")
+        if normalize_actor_name(part)
+    ]
+    if not left_parts:
+        return None
+
+    attacker = left_parts[-1]
+    attack_mode = " : ".join(left_parts[:-1])
     if not attacker or not defender:
         return None
 
-    attack_mode = (match.group("attack_mode") or "").strip()
     return ParsedAttackLine(
         raw_text=str(text or ""),
         normalized_text=normalized,

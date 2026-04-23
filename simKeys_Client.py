@@ -83,7 +83,7 @@ class Pipe:
             pass
 
 OP_QUERY=3000; OP_SLOT=3001; OP_VK=3002; OP_SETLOG=3003; OP_REPLAY=3004; OP_SNAPSHOT=3005; OP_CHAT_SEND=3006; OP_CHAT_POLL=3007; OP_SLOT_PAGE=3008
-QUERY_STRUCT = struct.Struct("<" + ("I" * 24) + ("i" * 10) + "I" + ("i" * 2) + f"{CHAR_NAME_CAPACITY}s")
+QUERY_STRUCT = struct.Struct("<" + ("I" * 24) + ("i" * 10) + "I" + ("i" * 2) + ("I" * 4) + f"{CHAR_NAME_CAPACITY}s")
 
 def phex(x): return f"0x{x:08X}"
 def as_int(x): 
@@ -92,6 +92,25 @@ def as_int(x):
 
 def decode_cstring(b):
     return b.split(b"\x00", 1)[0].decode("utf-8", errors="replace")
+
+def quickbar_bit(page, slot):
+    return int(page) * 12 + (int(slot) - 1)
+
+def quickbar_mask_has(mask, page, slot):
+    bit = quickbar_bit(page, slot)
+    return bit >= 0 and (int(mask) & (1 << bit)) != 0
+
+def quickbar_mask_slots(mask):
+    slots = []
+    for page in range(3):
+        for slot in range(1, 13):
+            if quickbar_mask_has(mask, page, slot):
+                slots.append((page, slot))
+    return slots
+
+def format_quickbar_slots(mask):
+    labels = {0: "Base", 1: "Shift", 2: "Ctrl"}
+    return ", ".join(f"{labels.get(page, page)}-{slot}" for page, slot in quickbar_mask_slots(mask))
 
 def query_state(p):
     _, data = p.xfer(OP_QUERY)
@@ -105,7 +124,10 @@ def query_state(p):
      quickbar_exec, quickbar_slot_dispatch, quickbar_panel_vtable, quickbar_slot_ptr, quickbar_this,
      quickbar_page, quickbar_slot, quickbar_slot_type, quickbar_calls, quickbar_scan_attempts, quickbar_scan_hits,
      last_vk, last_rc, last_error, log_level, player_object, identity_refresh_count, identity_error,
+     quickbar_item_mask_low, quickbar_item_mask_high, quickbar_equipped_mask_low, quickbar_equipped_mask_high,
      character_name_raw) = unpacked
+    quickbar_item_mask = (int(quickbar_item_mask_high) << 32) | int(quickbar_item_mask_low)
+    quickbar_equipped_mask = (int(quickbar_equipped_mask_high) << 32) | int(quickbar_equipped_mask_low)
     return {
         "module_base": module_base,
         "hook_proc": hook_proc,
@@ -138,6 +160,13 @@ def query_state(p):
         "quickbar_calls": quickbar_calls,
         "quickbar_scan_attempts": quickbar_scan_attempts,
         "quickbar_scan_hits": quickbar_scan_hits,
+        "quickbar_item_mask": quickbar_item_mask,
+        "quickbar_item_mask_low": quickbar_item_mask_low,
+        "quickbar_item_mask_high": quickbar_item_mask_high,
+        "quickbar_equipped_mask": quickbar_equipped_mask,
+        "quickbar_equipped_mask_low": quickbar_equipped_mask_low,
+        "quickbar_equipped_mask_high": quickbar_equipped_mask_high,
+        "quickbar_equipped_slots": quickbar_mask_slots(quickbar_equipped_mask),
         "last_vk": last_vk,
         "last_rc": last_rc,
         "last_error": last_error,
@@ -153,7 +182,8 @@ def cmd_query(p):
     print(f"wndproc: current={phex(result['current_proc'])} hook={phex(result['hook_proc'])} original={phex(result['original_proc'])} expected_nwn={phex(result['expected_wndproc'])}")
     print(f"path: preDispatch={phex(result['expected_pre_dispatch'])} dispatcherThunk={phex(result['expected_dispatch_thunk'])} dispatcherSlot0={phex(result['expected_dispatch_slot0'])}")
     print(f"engine: appGlobalSlot={phex(result['app_global_slot'])} appHolder={phex(result['app_holder'])} appObject={phex(result['app_object'])} appInner={phex(result['app_inner'])} dispatcher={phex(result['dispatcher_ptr'])} gate90={phex(result['gate90'])} gate94={phex(result['gate94'])} gate98={phex(result['gate98'])}")
-    print(f"quickbar: exec={phex(result['quickbar_exec'])} slotDispatch={phex(result['quickbar_slot_dispatch'])} panelVtable={phex(result['quickbar_panel_vtable'])} capturedThis={phex(result['quickbar_this'])} page={result['quickbar_page']} slot={result['quickbar_slot']} slotPtr={phex(result['quickbar_slot_ptr'])} slotType={result['quickbar_slot_type']} calls={result['quickbar_calls']} scanAttempts={result['quickbar_scan_attempts']} scanHits={result['quickbar_scan_hits']}")
+    equipped_slots = format_quickbar_slots(result["quickbar_equipped_mask"]) or "-"
+    print(f"quickbar: exec={phex(result['quickbar_exec'])} slotDispatch={phex(result['quickbar_slot_dispatch'])} panelVtable={phex(result['quickbar_panel_vtable'])} capturedThis={phex(result['quickbar_this'])} page={result['quickbar_page']} slot={result['quickbar_slot']} slotPtr={phex(result['quickbar_slot_ptr'])} slotType={result['quickbar_slot_type']} calls={result['quickbar_calls']} scanAttempts={result['quickbar_scan_attempts']} scanHits={result['quickbar_scan_hits']} itemMask=0x{result['quickbar_item_mask']:09X} equippedMask=0x{result['quickbar_equipped_mask']:09X} equipped={equipped_slots}")
     print(f"identity: player={phex(result['player_object'])} name={result['character_name'] or '<unknown>'} refreshes={result['identity_refresh_count']} err={result['identity_error']}")
     print(f"last: vk={phex(result['last_vk'])} rc={result['last_rc']} err={result['last_error']}")
     print()
