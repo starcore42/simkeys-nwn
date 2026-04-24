@@ -289,6 +289,7 @@ class AutoDrinkScript(ClientScriptBase):
         self.max_hp_observed = 0
         self.drink_generation = 0
         self.drinking = False
+        self.lock_saved_for_recovery = False
         self.monitor_stop = threading.Event()
         self.monitor_thread = None
         self.last_poll_error = ""
@@ -302,6 +303,7 @@ class AutoDrinkScript(ClientScriptBase):
         self.max_hp_observed = 0
         self.drink_generation = 0
         self.drinking = False
+        self.lock_saved_for_recovery = False
         self.last_poll_error = ""
         self.monitor_stop = threading.Event()
         try:
@@ -322,6 +324,7 @@ class AutoDrinkScript(ClientScriptBase):
         self.enabled = False
         self.drinking = False
         self.drink_generation += 1
+        self.lock_saved_for_recovery = False
         self.monitor_stop.set()
         self._close_process_handle()
         self.host.emit("info", f"{self.client.display_name}: AutoDrink stopped", script_id=self.script_id)
@@ -407,15 +410,18 @@ class AutoDrinkScript(ClientScriptBase):
         threshold_percent = float(self.config.get("threshold_percent", 80.0))
         self.set_status(f"HP {current_hp}/{max_hp} ({percent:.1f}%) [{source}]")
         if percent > threshold_percent:
+            self.lock_saved_for_recovery = False
             return
 
         slot = int(self.config.get("slot", 2))
         page = _parse_quickbar_bank_page(self.config.get("page", 0))
         trigger_name = self.host.format_slot(page, slot)
-        if bool(self.config.get("lock_target", True)):
+        if bool(self.config.get("lock_target", True)) and not self.lock_saved_for_recovery:
+            self.lock_saved_for_recovery = True
             try:
                 self.host.send_chat("!lock opponent", 2)
             except Exception as exc:
+                self.lock_saved_for_recovery = False
                 self.host.emit("error", f"{self.client.display_name}: !lock opponent failed: {exc}", script_id=self.script_id)
 
         result = self.host.trigger_slot(slot, page=page)
@@ -1518,6 +1524,25 @@ class AutoAAScript(ClientScriptBase):
         if not self._profile_requires_p2_verification(profile):
             return True
         return len(getattr(profile, "p2_verification_targets", set()) or set()) >= 2
+
+    def _profile_can_advance_learning_on_target(
+        self,
+        profile: Optional[WeaponLearningProfile],
+        creature_name: str,
+    ) -> bool:
+        if profile is None or self._profile_learning_complete(profile):
+            return False
+        if not self._profile_requires_p2_verification(profile):
+            return True
+
+        target_key = self._profile_target_key(creature_name)
+        if not target_key or target_key in profile.p2_verification_targets:
+            return False
+
+        generic_signature = self._generic_p2_signature_for_target(creature_name)
+        if not generic_signature:
+            return False
+        return tuple(generic_signature) != tuple(profile.stable_signature)
 
     def _record_p2_verification_target(
         self,
@@ -2744,14 +2769,15 @@ class AutoAAScript(ClientScriptBase):
     def _weapon_runtime_summary(self, profile: WeaponLearningProfile) -> str:
         return self._weapon_profile_summary(profile)
 
-    def _next_weapon_to_learn(self) -> Optional[WeaponLearningProfile]:
-        if not self.weapon_profiles:
+    def _next_weapon_to_learn(self, target_name: str) -> Optional[WeaponLearningProfile]:
+        if not self.weapon_profiles or not target_name:
             return None
 
         current_profile = self.weapon_profiles.get(self.current_weapon_key)
         if (
             current_profile is not None
             and not self._profile_learning_complete(current_profile)
+            and self._profile_can_advance_learning_on_target(current_profile, target_name)
             and current_profile.attack_attempts < self.WEAPON_LEARNING_ATTACKS_BEFORE_ROTATE
         ):
             return current_profile
@@ -2759,7 +2785,11 @@ class AutoAAScript(ClientScriptBase):
         candidates = [
             profile
             for profile in self.weapon_profiles.values()
-            if profile.binding.key != self.current_weapon_key and not self._profile_learning_complete(profile)
+            if (
+                profile.binding.key != self.current_weapon_key
+                and not self._profile_learning_complete(profile)
+                and self._profile_can_advance_learning_on_target(profile, target_name)
+            )
         ]
         if not candidates:
             return None
@@ -3064,11 +3094,15 @@ class AutoAAScript(ClientScriptBase):
         self._reconcile_current_weapon_from_equipped_mask()
 
         current_profile = self.weapon_profiles.get(self.current_weapon_key)
-        if current_profile is not None and not self._profile_learning_complete(current_profile):
+        if (
+            current_profile is not None
+            and not self._profile_learning_complete(current_profile)
+            and self._profile_can_advance_learning_on_target(current_profile, attack.defender)
+        ):
             current_profile.attack_attempts += 1
             current_profile.last_attack_at = now
 
-        learning_profile = self._next_weapon_to_learn()
+        learning_profile = self._next_weapon_to_learn(attack.defender)
         if learning_profile is not None:
             if learning_profile.binding.key == self.current_weapon_key:
                 mask_confirms_current = self._equipped_mask_confirms_binding(learning_profile.binding.key)
