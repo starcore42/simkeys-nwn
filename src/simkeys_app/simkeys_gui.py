@@ -1233,12 +1233,12 @@ class SimKeysDesktopApp:
             "Divine": "Div",
             "Electrical": "Elec",
             "Fire": "Fire",
-            "Magical": "Magic",
+            "Magical": "Mag",
             "Negative": "Neg",
-            "Piercing": "Pierce",
+            "Piercing": "Pier",
             "Positive": "Pos",
-            "Slashing": "Slash",
-            "Sonic": "Sonic",
+            "Slashing": "Slsh",
+            "Sonic": "Soni",
         }
         return compact.get(label, label)
 
@@ -1313,16 +1313,13 @@ class SimKeysDesktopApp:
         return ", ".join(flags)
 
     def _compact_weapon_damage_text(self, weapon):
-        selection = weapon.get("selection_damage")
         expected = weapon.get("expected_damage")
         actual = weapon.get("actual_damage")
         actual_obs = int(weapon.get("actual_observations") or 0)
-        if selection is None and expected is None:
+        if expected is None and (actual is None or actual_obs <= 0):
             return "unlearned"
 
         parts = []
-        if selection is not None:
-            parts.append(f"s{int(selection)}")
         if expected is not None:
             parts.append(f"e{int(expected)}")
         if actual is not None and actual_obs > 0:
@@ -1391,12 +1388,12 @@ class SimKeysDesktopApp:
             damage_text = self._compact_weapon_damage_text(weapon)
             type_text = self._compact_weapon_type_text(weapon)
             state_text = self._compact_weapon_state_text(weapon)
-            lines.append(
+        lines.append(
                 f"{marker_text} {name_text:<18} {damage_text:<20} {type_text:<22} {state_text}"
             )
 
         lines.append("")
-        lines.append("s score   e expected   a actual/obs")
+        lines.append("e expected   a actual/obs   MW Mammon's Wrath")
         lines.append("* current   > pending   ! recommended")
         return "\n".join(lines)
 
