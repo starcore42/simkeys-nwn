@@ -162,6 +162,14 @@ class WeaponDamageEstimate:
 
 
 @dataclass
+class WeaponObservedDamage:
+    average_total: float = 0.0
+    observations: int = 0
+    last_total: int = 0
+    max_total: int = 0
+
+
+@dataclass
 class WeaponLearningProfile:
     binding: WeaponBinding
     observations: int = 0
@@ -183,12 +191,16 @@ class WeaponLearningProfile:
     type_counts: Dict[int, int] = field(default_factory=dict)
     type_estimates: Dict[int, WeaponDamageEstimate] = field(default_factory=dict)
     target_type_estimates: Dict[str, Dict[int, WeaponDamageEstimate]] = field(default_factory=dict)
+    target_damage_observations: Dict[str, Dict[Tuple[int, ...], WeaponObservedDamage]] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
 class WeaponRecommendation:
     binding: WeaponBinding
     expected_damage: int
+    selection_damage: int
+    actual_damage: Optional[int]
+    actual_observations: int
     matched_name: str
     paragon_ranks: int
     learned_types: Tuple[int, ...]
@@ -1305,6 +1317,7 @@ class AutoAAScript(ClientScriptBase):
         profile.type_counts.clear()
         profile.type_estimates.clear()
         profile.target_type_estimates.clear()
+        profile.target_damage_observations.clear()
 
     def _profile_signature_types(self, profile: Optional[WeaponLearningProfile]) -> Set[int]:
         if profile is None:
@@ -1361,6 +1374,80 @@ class AutoAAScript(ClientScriptBase):
         if signature:
             return tuple(signature)
         return ()
+
+    def _apply_observed_damage_map(
+        self,
+        observed_map: Dict[Tuple[int, ...], WeaponObservedDamage],
+        signature: Tuple[int, ...],
+        actual_total: int,
+    ):
+        observed = observed_map.get(signature)
+        if observed is None:
+            observed = WeaponObservedDamage()
+            observed_map[signature] = observed
+
+        prior_weight = min(int(observed.observations), 8)
+        if observed.observations <= 0:
+            observed.average_total = float(actual_total)
+        else:
+            observed.average_total = ((observed.average_total * float(prior_weight)) + float(actual_total)) / float(prior_weight + 1)
+        observed.observations += 1
+        observed.last_total = int(actual_total)
+        observed.max_total = max(int(observed.max_total), int(actual_total))
+
+    def _profile_target_actual_damage(
+        self,
+        profile: Optional[WeaponLearningProfile],
+        creature_name: str,
+        signature: Tuple[int, ...],
+    ) -> Tuple[Optional[int], int]:
+        if profile is None or not signature:
+            return None, 0
+
+        target_key = self._profile_target_key(creature_name)
+        if not target_key:
+            return None, 0
+
+        observed_map = profile.target_damage_observations.get(target_key) or {}
+        observed = observed_map.get(tuple(signature))
+        if observed is None or observed.observations <= 0:
+            return None, 0
+        return int(round(observed.average_total)), int(observed.observations)
+
+    def _record_profile_target_actual_damage(
+        self,
+        profile: WeaponLearningProfile,
+        target_key: str,
+        signature: Tuple[int, ...],
+        damage_line,
+    ):
+        if not target_key or not signature:
+            return
+
+        ignored_types = set(self._weapon_ignored_damage_types(profile))
+        relevant_types = set(signature) | set(WEAPON_PHYSICAL_TYPES)
+        actual_total = 0
+        saw_relevant = False
+        for component in damage_line.components:
+            damage_type = getattr(component, "damage_type", None)
+            if damage_type in ignored_types:
+                continue
+            if damage_type in relevant_types:
+                actual_total += int(component.amount)
+                saw_relevant = True
+
+        if not saw_relevant:
+            return
+
+        observed_map = profile.target_damage_observations.setdefault(target_key, {})
+        self._apply_observed_damage_map(observed_map, tuple(signature), actual_total)
+
+    def _selection_damage_score(self, expected_damage: int, actual_damage: Optional[int], actual_observations: int) -> int:
+        if actual_damage is None or actual_observations <= 0:
+            return int(expected_damage)
+        actual_weight = min(max(int(actual_observations), 0) + 1, 4)
+        blended = ((float(expected_damage) * 1.0) + (float(actual_damage) * float(actual_weight))) / float(1 + actual_weight)
+        return int(round(blended))
 
     def _profile_component_estimates(self, profile: Optional[WeaponLearningProfile]) -> Dict[int, float]:
         if profile is None:
@@ -2051,6 +2138,8 @@ class AutoAAScript(ClientScriptBase):
             if target_key:
                 target_estimates = profile.target_type_estimates.setdefault(target_key, {})
                 self._apply_component_estimate_map(target_estimates, damage_type, int(component.amount), sample)
+        if target_key:
+            self._record_profile_target_actual_damage(profile, target_key, self._damage_signature(observed_types), damage_line)
 
         after_known_types = set(self._profile_known_damage_types(profile))
         after_estimated_types = set(profile.type_estimates.keys())
@@ -2253,10 +2342,14 @@ class AutoAAScript(ClientScriptBase):
                 raw_components = predicted_components
 
         effective_components, ignored_types = self._effective_weapon_components(profile, raw_components)
+        actual_damage, actual_observations = self._profile_target_actual_damage(profile, creature_name, target_signature)
         if healing_types:
             return WeaponRecommendation(
                 binding=profile.binding,
                 expected_damage=0,
+                selection_damage=self._selection_damage_score(0, actual_damage, actual_observations),
+                actual_damage=actual_damage,
+                actual_observations=actual_observations,
                 matched_name=combat_profile.matched_name,
                 paragon_ranks=combat_profile.paragon_ranks,
                 learned_types=tuple(sorted(target_signature)),
@@ -2283,6 +2376,9 @@ class AutoAAScript(ClientScriptBase):
         return WeaponRecommendation(
             binding=profile.binding,
             expected_damage=estimate.expected_damage,
+            selection_damage=self._selection_damage_score(estimate.expected_damage, actual_damage, actual_observations),
+            actual_damage=actual_damage,
+            actual_observations=actual_observations,
             matched_name=estimate.matched_name,
             paragon_ranks=estimate.paragon_ranks,
             learned_types=tuple(sorted(target_signature)),
@@ -2318,11 +2414,18 @@ class AutoAAScript(ClientScriptBase):
             estimate = self.db.estimate_custom_damage(creature_name, effective_components)
             if estimate is None:
                 continue
+            candidate_signature = self._profile_signature_for_target(profile, creature_name)
+            if not candidate_signature:
+                candidate_signature = tuple(sorted(self._profile_signature_types(profile)))
+            actual_damage, actual_observations = self._profile_target_actual_damage(profile, creature_name, candidate_signature)
 
             candidates.append(
                 WeaponRecommendation(
                     binding=profile.binding,
                     expected_damage=estimate.expected_damage,
+                    selection_damage=self._selection_damage_score(estimate.expected_damage, actual_damage, actual_observations),
+                    actual_damage=actual_damage,
+                    actual_observations=actual_observations,
                     matched_name=estimate.matched_name,
                     paragon_ranks=estimate.paragon_ranks,
                     learned_types=tuple(sorted(self._profile_known_damage_types(profile))),
@@ -2351,6 +2454,9 @@ class AutoAAScript(ClientScriptBase):
         return max(
             candidates,
             key=lambda candidate: (
+                candidate.selection_damage,
+                candidate.actual_damage is not None,
+                candidate.actual_observations,
                 candidate.expected_damage,
                 1 if candidate.binding.key == self.current_weapon_key else 0,
                 candidate.signature_observations,
@@ -2550,6 +2656,10 @@ class AutoAAScript(ClientScriptBase):
         parts = []
         if recommendation.special_name:
             parts.append(recommendation.special_name)
+        parts.append(f"Score {recommendation.selection_damage}")
+        parts.append(f"Expected {recommendation.expected_damage}")
+        if recommendation.actual_damage is not None and recommendation.actual_observations > 0:
+            parts.append(f"Actual {recommendation.actual_damage} ({recommendation.actual_observations})")
         if recommendation.learned_types:
             parts.append("Types " + self._format_weapon_type_set(set(recommendation.learned_types)))
         if recommendation.estimated_components:
@@ -2647,7 +2757,10 @@ class AutoAAScript(ClientScriptBase):
                 "pending": binding.key == self.pending_weapon_key,
                 "recommended": binding.key == analysis["recommended_weapon"],
                 "summary": self._weapon_runtime_summary(weapon_profile),
+                "selection_damage": None,
                 "expected_damage": None,
+                "actual_damage": None,
+                "actual_observations": 0,
                 "matched_name": "",
                 "paragon_ranks": 0,
                 "healing_types": [],
@@ -2656,7 +2769,10 @@ class AutoAAScript(ClientScriptBase):
             }
             if estimate is not None:
                 weapon.update({
+                    "selection_damage": estimate.selection_damage,
                     "expected_damage": estimate.expected_damage,
+                    "actual_damage": estimate.actual_damage,
+                    "actual_observations": estimate.actual_observations,
                     "matched_name": estimate.matched_name,
                     "paragon_ranks": estimate.paragon_ranks,
                     "healing_types": [
@@ -2781,7 +2897,9 @@ class AutoAAScript(ClientScriptBase):
             (
                 f"{self.host.client.display_name}: {self._mode_label()} target='{attack.defender}' "
                 f"weapon={self._binding_display(recommendation.binding.key)} "
-                f"expected={recommendation.expected_damage} paragon={recommendation.paragon_ranks} "
+                f"score={recommendation.selection_damage} expected={recommendation.expected_damage} "
+                f"actual={recommendation.actual_damage if recommendation.actual_damage is not None else 'n/a'} "
+                f"obs={recommendation.actual_observations} paragon={recommendation.paragon_ranks} "
                 f"profile={selection_summary}"
             ),
             script_id=self.script_id,

@@ -1165,17 +1165,27 @@ class SimKeysDesktopApp:
                 markers += "!"
             marker_text = f"{markers:3}" if markers else "   "
             label = f"{weapon.get('key', '?')}/{weapon.get('label', '?')}"
+            selection = weapon.get("selection_damage")
             expected = weapon.get("expected_damage")
-            if expected is None:
-                expected_text = "unlearned"
+            actual = weapon.get("actual_damage")
+            actual_obs = int(weapon.get("actual_observations") or 0)
+            if selection is None and expected is None:
+                damage_text = "unlearned"
             else:
-                expected_text = f"{int(expected):4d}"
+                parts = []
+                if selection is not None:
+                    parts.append(f"score={int(selection):4d}")
+                if expected is not None:
+                    parts.append(f"exp={int(expected):4d}")
+                if actual is not None and actual_obs > 0:
+                    parts.append(f"act={int(actual):4d}/{actual_obs}")
+                damage_text = " ".join(parts)
             healing_types = list(weapon.get("healing_types") or [])
             healing_text = f" HEALS {'/'.join(healing_types)}" if healing_types else ""
             ignored_types = list(weapon.get("ignored_types") or [])
             ignored_text = f" IGNORE {'/'.join(ignored_types)}" if ignored_types else ""
             summary = str(weapon.get("summary") or "Unknown")
-            lines.append(f"{marker_text} {label:<8} expected={expected_text}{healing_text}{ignored_text}  {summary}")
+            lines.append(f"{marker_text} {label:<8} {damage_text}{healing_text}{ignored_text}  {summary}")
 
         lines.append("")
         lines.append("* current   > pending   ! recommended")
