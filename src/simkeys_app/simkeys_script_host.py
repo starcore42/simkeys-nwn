@@ -783,6 +783,7 @@ class AutoAAScript(ClientScriptBase):
     WEAPON_LEARNING_ATTACKS_BEFORE_ROTATE = 3
     WEAPON_REDISCOVERY_MISMATCH_THRESHOLD = 8
     WEAPON_ACTUAL_DAMAGE_WINDOW = 9
+    WEAPON_PENDING_MAX_RETRIES = 2
     WEAPON_EQUIPPED_PROBE_INTERVAL_SECONDS = 0.50
     SLINGER_PENDING_SECONDS = 9.0
     SLINGER_STATE_TTL_SECONDS = 45.0
@@ -827,6 +828,7 @@ class AutoAAScript(ClientScriptBase):
         self.pending_weapon_conceal_seen = False
         self.pending_weapon_conceal_sequence = 0
         self.pending_weapon_ignored_damage_count = 0
+        self.pending_weapon_retry_count = 0
         self.weapon_last_swap_feedback = ""
         self.weapon_external_unknown = False
         self.weapon_external_unknown_feedback = ""
@@ -873,6 +875,7 @@ class AutoAAScript(ClientScriptBase):
         self.pending_weapon_conceal_seen = False
         self.pending_weapon_conceal_sequence = 0
         self.pending_weapon_ignored_damage_count = 0
+        self.pending_weapon_retry_count = 0
         self.weapon_last_swap_feedback = ""
         self.weapon_external_unknown = False
         self.weapon_external_unknown_feedback = ""
@@ -942,6 +945,7 @@ class AutoAAScript(ClientScriptBase):
         self.pending_weapon_conceal_seen = False
         self.pending_weapon_conceal_sequence = 0
         self.pending_weapon_ignored_damage_count = 0
+        self.pending_weapon_retry_count = 0
         self.weapon_last_swap_feedback = ""
         self.weapon_external_unknown = False
         self.weapon_external_unknown_feedback = ""
@@ -1171,6 +1175,7 @@ class AutoAAScript(ClientScriptBase):
         self.pending_weapon_conceal_seen = False
         self.pending_weapon_conceal_sequence = 0
         self.pending_weapon_ignored_damage_count = 0
+        self.pending_weapon_retry_count = 0
 
     def _mark_external_weapon_unknown(self, feedback: str):
         self._clear_pending_weapon_state()
@@ -1410,6 +1415,12 @@ class AutoAAScript(ClientScriptBase):
     def _profile_known_damage_types(self, profile: Optional[WeaponLearningProfile]) -> Set[int]:
         if profile is None:
             return set()
+        if not self._profile_is_p2(profile):
+            if profile.stable_signature:
+                return set(profile.stable_signature)
+            if profile.candidate_signature:
+                return set(profile.candidate_signature)
+            return set(profile.current_signature)
         known_types = set(profile.stable_signature) | set(profile.current_signature)
         for signature in profile.signature_counts.keys():
             known_types.update(signature)
@@ -1473,6 +1484,13 @@ class AutoAAScript(ClientScriptBase):
             if estimate.observations <= 0:
                 continue
             components[damage_type] = float(estimate.base_estimate)
+        if not self._profile_is_p2(profile):
+            committed_types = self._profile_known_damage_types(profile)
+            components = {
+                damage_type: base_damage
+                for damage_type, base_damage in components.items()
+                if damage_type in committed_types
+            }
         return self._expanded_p2_component_estimates(profile, components)
 
     def _profile_signature_for_target(
@@ -1482,6 +1500,12 @@ class AutoAAScript(ClientScriptBase):
     ) -> Tuple[int, ...]:
         if profile is None:
             return ()
+        if not self._profile_is_p2(profile):
+            if profile.stable_signature:
+                return tuple(profile.stable_signature)
+            if profile.candidate_signature:
+                return tuple(profile.candidate_signature)
+            return tuple(profile.current_signature)
         target_key = self._profile_target_key(creature_name)
         if not target_key:
             return ()
@@ -1684,6 +1708,13 @@ class AutoAAScript(ClientScriptBase):
             if estimate.observations <= 0 or estimate.base_estimate <= 0.0:
                 continue
             components[damage_type] = float(estimate.base_estimate)
+        if not self._profile_is_p2(profile):
+            committed_types = self._profile_known_damage_types(profile)
+            components = {
+                damage_type: base_damage
+                for damage_type, base_damage in components.items()
+                if damage_type in committed_types
+            }
         return self._expanded_p2_component_estimates(profile, components)
 
     def _is_mammons_tear_target_name(self, creature_name: str) -> bool:
@@ -1865,6 +1896,68 @@ class AutoAAScript(ClientScriptBase):
 
     def _weapon_swap_cooldown_seconds(self) -> float:
         return max(float(self.config.get("swap_cooldown_seconds", 6.2)), 0.1)
+
+    def _pending_weapon_retry_seconds(self) -> float:
+        return max(self._weapon_swap_cooldown_seconds() * 2.0, 12.0)
+
+    def _retry_pending_weapon(self, target_name: str, reason: str) -> bool:
+        if not self.pending_weapon_key:
+            return False
+        if self.pending_weapon_retry_count >= self.WEAPON_PENDING_MAX_RETRIES:
+            return False
+
+        binding = self.weapon_bindings.get(self.pending_weapon_key)
+        if binding is None:
+            return False
+
+        try:
+            result = self.host.trigger_slot(binding.slot, page=binding.page)
+        except Exception as exc:
+            self.host.emit(
+                "error",
+                (
+                    f"{self.host.client.display_name}: {self._mode_label()} retry failed for "
+                    f"{self._binding_display(binding.key)}: {exc}"
+                ),
+                script_id=self.script_id,
+            )
+            return False
+
+        self.pending_weapon_retry_count += 1
+        if result["success"]:
+            now = time.monotonic()
+            self.pending_weapon_ready_at = now + self._weapon_swap_cooldown_seconds()
+            self.pending_weapon_requested_at = now
+            self.pending_weapon_request_sequence = self.current_chat_sequence
+            self.pending_weapon_feedback_seen = False
+            self.pending_weapon_equipped_feedback_seen = False
+            self.pending_weapon_feedback_sequence = 0
+            self.pending_weapon_conceal_seen = False
+            self.pending_weapon_conceal_sequence = 0
+            self.pending_weapon_ignored_damage_count = 0
+            self.weapon_equipped_key = ""
+            self.weapon_equipped_keys = ()
+            self.weapon_equipped_probe_at = 0.0
+            self.set_status(
+                f"{target_name}: retry {self._pending_weapon_display()} "
+                f"({self.pending_weapon_retry_count}/{self.WEAPON_PENDING_MAX_RETRIES})"
+            )
+        else:
+            self.set_status(f"{target_name}: retry failed {self._pending_weapon_display()}")
+
+        self.host.emit(
+            "info",
+            (
+                f"{self.host.client.display_name}: {self._mode_label()} retried pending "
+                f"{self._binding_display(binding.key)} on '{target_name}' reason={reason} "
+                f"attempt={self.pending_weapon_retry_count}/{self.WEAPON_PENDING_MAX_RETRIES} "
+                f"success={result['success']} rc={result['rc']} aux={result['aux_rc']} "
+                f"path={result['path']} err={result['err']}"
+            ),
+            script_id=self.script_id,
+        )
+        self.host.notify_state_changed()
+        return bool(result["success"])
 
     def _confirm_pending_weapon(self, reason: str) -> bool:
         if not self.pending_weapon_key:
@@ -2126,6 +2219,20 @@ class AutoAAScript(ClientScriptBase):
             return pending_profile
 
         if current_types and self._observed_types_fit_profile(current_profile, observed_types):
+            retry_due = (
+                self.pending_weapon_requested_at > 0.0
+                and now >= (self.pending_weapon_requested_at + self._pending_weapon_retry_seconds())
+            )
+            retry_safe = (
+                not equipped_key
+                or equipped_key == self.current_weapon_key
+                or equipped_key == current_profile.binding.key
+            )
+            if retry_due and retry_safe:
+                self._retry_pending_weapon(
+                    defender_name,
+                    f"stalled pending swap; still seeing {self._binding_display(current_profile.binding.key)} damage",
+                )
             self.set_status(f"{defender_name}: awaiting {self._pending_weapon_display()} damage")
             return current_profile
 
@@ -2263,12 +2370,12 @@ class AutoAAScript(ClientScriptBase):
     def _update_profile_dynamic_kind(self, profile: WeaponLearningProfile) -> bool:
         if self._profile_is_p2(profile):
             return False
-        confirmed_signatures = [
+        distinct_p2_signatures = [
             signature
-            for signature, count in profile.signature_counts.items()
-            if count >= self.WEAPON_SIGNATURE_CONFIRM_THRESHOLD and self._is_p2_signature(signature)
+            for signature in profile.signature_counts.keys()
+            if self._is_p2_signature(signature)
         ]
-        if len(confirmed_signatures) < 2:
+        if len(distinct_p2_signatures) < 2:
             return False
         profile.dynamic_kind = P2_SPECIAL_NAME
         profile.p2_verification_targets.clear()
@@ -2287,19 +2394,31 @@ class AutoAAScript(ClientScriptBase):
         if not signature:
             return False
 
-        profile.current_signature = signature
         profile.signature_counts[signature] = profile.signature_counts.get(signature, 0) + 1
-        if target_key:
-            profile.target_signatures[target_key] = signature
 
         if self._profile_is_p2(profile):
+            profile.current_signature = signature
+            if target_key:
+                profile.target_signatures[target_key] = signature
             profile.candidate_signature = ()
             profile.candidate_signature_streak = 0
             profile.mismatch_streak = 0
             return profile.signature_counts[signature] == 1
 
+        if self._update_profile_dynamic_kind(profile):
+            profile.current_signature = signature
+            if target_key:
+                profile.target_signatures[target_key] = signature
+            profile.candidate_signature = ()
+            profile.candidate_signature_streak = 0
+            profile.mismatch_streak = 0
+            return True
+
         if profile.stable_signature:
             if tuple(profile.stable_signature) == signature:
+                profile.current_signature = signature
+                if target_key:
+                    profile.target_signatures[target_key] = signature
                 profile.stable_signature_observations += 1
                 profile.candidate_signature = ()
                 profile.candidate_signature_streak = 0
@@ -2313,6 +2432,9 @@ class AutoAAScript(ClientScriptBase):
                 return self._update_profile_dynamic_kind(profile)
             return False
 
+        profile.current_signature = signature
+        if target_key:
+            profile.target_signatures[target_key] = signature
         if tuple(profile.candidate_signature) != signature:
             profile.candidate_signature = signature
             profile.candidate_signature_streak = 1
@@ -2383,10 +2505,12 @@ class AutoAAScript(ClientScriptBase):
         before_known_types = set(self._profile_known_damage_types(profile))
         before_estimated_types = set(profile.type_estimates.keys())
         target_key = self._profile_target_key(damage_line.defender)
+        variation_candidate = False
 
         if profile.stable_signature and observed_types != set(profile.stable_signature):
             if self._profile_accepts_signature_variation(profile, observed_types):
                 profile.mismatch_streak = 0
+                variation_candidate = True
             elif not self._record_profile_signature_mismatch(profile, observed_types, damage_line.defender, now):
                 return False, False, set(), set()
         else:
@@ -2395,28 +2519,30 @@ class AutoAAScript(ClientScriptBase):
         profile.observations += 1
         profile.last_seen_at = now
         signature_changed = self._observe_profile_signature(profile, observed_types, target_key)
+        commit_components = not variation_candidate or self._profile_is_p2(profile)
         combat_profile = self.db._resolve_combat_profile(damage_line.defender)
-        for component in damage_line.components:
-            damage_type = component.damage_type
-            if not isinstance(damage_type, int) or damage_type not in WEAPON_ESTIMATE_TYPES:
-                continue
-            profile.type_counts[damage_type] = profile.type_counts.get(damage_type, 0) + 1
-            sample = self._estimate_component_base_damage(combat_profile, component)
-            if sample is None:
-                continue
-            self._apply_component_estimate(profile, damage_type, int(component.amount), sample)
+        if commit_components:
+            for component in damage_line.components:
+                damage_type = component.damage_type
+                if not isinstance(damage_type, int) or damage_type not in WEAPON_ESTIMATE_TYPES:
+                    continue
+                profile.type_counts[damage_type] = profile.type_counts.get(damage_type, 0) + 1
+                sample = self._estimate_component_base_damage(combat_profile, component)
+                if sample is None:
+                    continue
+                self._apply_component_estimate(profile, damage_type, int(component.amount), sample)
+                if target_key:
+                    target_estimates = profile.target_type_estimates.setdefault(target_key, {})
+                    self._apply_component_estimate_map(target_estimates, damage_type, int(component.amount), sample)
+            self._record_p2_verification_target(profile, damage_line.defender, self._damage_signature(observed_types))
             if target_key:
-                target_estimates = profile.target_type_estimates.setdefault(target_key, {})
-                self._apply_component_estimate_map(target_estimates, damage_type, int(component.amount), sample)
-        self._record_p2_verification_target(profile, damage_line.defender, self._damage_signature(observed_types))
-        if target_key:
-            self._record_profile_target_actual_damage(
-                profile,
-                target_key,
-                self._damage_signature(observed_types),
-                damage_line,
-                is_critical=is_critical,
-            )
+                self._record_profile_target_actual_damage(
+                    profile,
+                    target_key,
+                    self._damage_signature(observed_types),
+                    damage_line,
+                    is_critical=is_critical,
+                )
 
         after_known_types = set(self._profile_known_damage_types(profile))
         after_estimated_types = set(profile.type_estimates.keys())
@@ -2840,6 +2966,7 @@ class AutoAAScript(ClientScriptBase):
             self.pending_weapon_unarm = False
             self.pending_weapon_ready_at = now + self._weapon_swap_cooldown_seconds()
             self.pending_weapon_requested_at = now
+            self.pending_weapon_retry_count = 0
             self.pending_weapon_request_sequence = self.current_chat_sequence
             self.pending_weapon_feedback_seen = False
             self.pending_weapon_equipped_feedback_seen = False
@@ -2913,6 +3040,7 @@ class AutoAAScript(ClientScriptBase):
             self.pending_weapon_unarm = True
             self.pending_weapon_ready_at = now + self._weapon_swap_cooldown_seconds()
             self.pending_weapon_requested_at = now
+            self.pending_weapon_retry_count = 0
             self.pending_weapon_request_sequence = self.current_chat_sequence
             self.pending_weapon_feedback_seen = False
             self.pending_weapon_equipped_feedback_seen = False
@@ -3088,6 +3216,20 @@ class AutoAAScript(ClientScriptBase):
             return
 
         if self.pending_weapon_key:
+            retry_due = (
+                not self.pending_weapon_unarm
+                and self.pending_weapon_requested_at > 0.0
+                and now >= (self.pending_weapon_requested_at + self._pending_weapon_retry_seconds())
+            )
+            if retry_due:
+                equipped_keys = self._query_equipped_binding_keys(force=True)
+                equipped_key = equipped_keys[0] if len(equipped_keys) == 1 else ""
+                retry_safe = not equipped_key or equipped_key == self.current_weapon_key
+                if retry_safe and self._retry_pending_weapon(
+                    attack.defender,
+                    "attack loop observed stale pending swap with no confirming damage",
+                ):
+                    return
             self.set_status(f"{attack.defender}: awaiting {self._pending_weapon_display()} damage")
             return
 
