@@ -174,6 +174,19 @@ class WeaponObservedDamage:
     observations: int = 0
     last_total: int = 0
     max_total: int = 0
+    normal_average_total: float = 0.0
+    normal_observations: int = 0
+    critical_average_total: float = 0.0
+    critical_observations: int = 0
+    normal_recent_totals: List[int] = field(default_factory=list)
+    critical_recent_totals: List[int] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class PendingWeaponAttackResult:
+    sequence: int
+    defender: str
+    is_critical: bool
 
 
 @dataclass
@@ -763,6 +776,7 @@ class AutoAAScript(ClientScriptBase):
     WEAPON_SIGNATURE_CONFIRM_THRESHOLD = 2
     WEAPON_LEARNING_ATTACKS_BEFORE_ROTATE = 3
     WEAPON_REDISCOVERY_MISMATCH_THRESHOLD = 8
+    WEAPON_ACTUAL_DAMAGE_WINDOW = 9
     WEAPON_EQUIPPED_PROBE_INTERVAL_SECONDS = 0.50
     SLINGER_PENDING_SECONDS = 9.0
     SLINGER_STATE_TTL_SECONDS = 45.0
@@ -825,6 +839,7 @@ class AutoAAScript(ClientScriptBase):
         self.weapon_damage_parse_miss_count = 0
         self.weapon_last_ignored_attack_actor = ""
         self.weapon_last_ignored_damage_actor = ""
+        self.weapon_pending_attack_results: List[PendingWeaponAttackResult] = []
         self.db = hgx_data.load_default_database()
 
     def on_start(self):
@@ -869,6 +884,7 @@ class AutoAAScript(ClientScriptBase):
         self.weapon_damage_parse_miss_count = 0
         self.weapon_last_ignored_attack_actor = ""
         self.weapon_last_ignored_damage_actor = ""
+        self.weapon_pending_attack_results = []
 
         if self._is_weapon_mode():
             self._initialize_weapon_mode()
@@ -930,6 +946,7 @@ class AutoAAScript(ClientScriptBase):
         self.weapon_equipped_probe_error = ""
         self.weapon_equipped_probe_error_logged = False
         self.weapon_unarmed_observations = 0
+        self.weapon_pending_attack_results = []
         self.canister_stop.set()
         self.host.emit("info", f"{self.host.client.display_name}: {self._mode_label()} stopped", script_id=self.script_id)
 
@@ -982,6 +999,7 @@ class AutoAAScript(ClientScriptBase):
 
         if self._is_weapon_mode():
             self.weapon_attack_matched_count += 1
+            self._observe_weapon_attack_result(attack)
             self._observe_pending_conceal_attack(attack)
 
         if self._mode_label() == self.MODE_GNOMISH_INVENTOR:
@@ -1395,6 +1413,40 @@ class AutoAAScript(ClientScriptBase):
         known_types.update(profile.type_estimates.keys())
         return known_types
 
+    def _expanded_p2_component_estimates(self, profile: Optional[WeaponLearningProfile], components: Dict[int, float]) -> Dict[int, float]:
+        expanded = dict(components)
+        if profile is None or not self._profile_is_p2(profile):
+            return expanded
+
+        elemental_values = [
+            float(expanded[damage_type])
+            for damage_type in sorted(WEAPON_ELEMENTAL_TYPES)
+            if damage_type in expanded and float(expanded[damage_type]) > 0.0
+        ]
+        exotic_values = [
+            float(expanded[damage_type])
+            for damage_type in sorted(WEAPON_EXOTIC_TYPES)
+            if damage_type in expanded and float(expanded[damage_type]) > 0.0
+        ]
+
+        if elemental_values:
+            elemental_average = sum(elemental_values) / float(len(elemental_values))
+            for damage_type in sorted(WEAPON_ELEMENTAL_TYPES):
+                expanded.setdefault(damage_type, elemental_average)
+
+        if exotic_values:
+            exotic_average = sum(exotic_values) / float(len(exotic_values))
+            for damage_type in sorted(WEAPON_EXOTIC_TYPES):
+                expanded.setdefault(damage_type, exotic_average)
+
+        return expanded
+
+    def _profile_predicted_damage_types(self, profile: Optional[WeaponLearningProfile]) -> Set[int]:
+        predicted_types = set(self._profile_known_damage_types(profile))
+        if profile is not None and self._profile_is_p2(profile):
+            predicted_types.update(WEAPON_SIGNATURE_TYPES)
+        return predicted_types
+
     def _profile_target_component_estimates(
         self,
         profile: Optional[WeaponLearningProfile],
@@ -1415,7 +1467,7 @@ class AutoAAScript(ClientScriptBase):
             if estimate.observations <= 0:
                 continue
             components[damage_type] = float(estimate.base_estimate)
-        return components
+        return self._expanded_p2_component_estimates(profile, components)
 
     def _profile_signature_for_target(
         self,
@@ -1489,20 +1541,55 @@ class AutoAAScript(ClientScriptBase):
         observed_map: Dict[Tuple[int, ...], WeaponObservedDamage],
         signature: Tuple[int, ...],
         actual_total: int,
+        is_critical: bool,
     ):
         observed = observed_map.get(signature)
         if observed is None:
             observed = WeaponObservedDamage()
             observed_map[signature] = observed
 
-        prior_weight = min(int(observed.observations), 8)
-        if observed.observations <= 0:
-            observed.average_total = float(actual_total)
+        if is_critical:
+            observed.critical_average_total = self._update_observed_damage_bucket(
+                observed.critical_recent_totals,
+                int(actual_total),
+            )
+            observed.critical_observations += 1
         else:
-            observed.average_total = ((observed.average_total * float(prior_weight)) + float(actual_total)) / float(prior_weight + 1)
+            observed.normal_average_total = self._update_observed_damage_bucket(
+                observed.normal_recent_totals,
+                int(actual_total),
+            )
+            observed.normal_observations += 1
+
         observed.observations += 1
         observed.last_total = int(actual_total)
         observed.max_total = max(int(observed.max_total), int(actual_total))
+        observed.average_total = self._combined_observed_damage_average(observed)
+
+    def _update_observed_damage_bucket(self, totals: List[int], actual_total: int) -> float:
+        totals.append(max(int(actual_total), 0))
+        max_window = max(int(self.WEAPON_ACTUAL_DAMAGE_WINDOW), 3)
+        if len(totals) > max_window:
+            del totals[:-max_window]
+        values = [max(int(total), 0) for total in totals]
+        if not values:
+            return 0.0
+        return float(sum(values)) / float(len(values))
+
+    def _combined_observed_damage_average(self, observed: WeaponObservedDamage) -> float:
+        if observed.observations <= 0:
+            return 0.0
+        if observed.normal_observations <= 0:
+            return float(observed.critical_average_total)
+        if observed.critical_observations <= 0:
+            return float(observed.normal_average_total)
+
+        crit_rate = float(observed.critical_observations) / float(max(int(observed.observations), 6))
+        crit_rate = min(max(crit_rate, 0.0), 1.0)
+        return (
+            (float(observed.normal_average_total) * (1.0 - crit_rate))
+            + (float(observed.critical_average_total) * crit_rate)
+        )
 
     def _profile_target_actual_damage(
         self,
@@ -1529,6 +1616,7 @@ class AutoAAScript(ClientScriptBase):
         target_key: str,
         signature: Tuple[int, ...],
         damage_line,
+        is_critical: bool = False,
     ):
         if not target_key or not signature:
             return
@@ -1549,12 +1637,14 @@ class AutoAAScript(ClientScriptBase):
             return
 
         observed_map = profile.target_damage_observations.setdefault(target_key, {})
-        self._apply_observed_damage_map(observed_map, tuple(signature), actual_total)
+        self._apply_observed_damage_map(observed_map, tuple(signature), actual_total, bool(is_critical))
 
     def _selection_damage_score(self, expected_damage: int, actual_damage: Optional[int], actual_observations: int) -> int:
         if actual_damage is None or actual_observations <= 0:
             return int(expected_damage)
-        actual_weight = min(max(int(actual_observations), 0) + 1, 4)
+        actual_weight = min(max(float(actual_observations), 0.0) / 3.0, 2.0)
+        if actual_weight <= 0.0:
+            return int(expected_damage)
         blended = ((float(expected_damage) * 1.0) + (float(actual_damage) * float(actual_weight))) / float(1 + actual_weight)
         return int(round(blended))
 
@@ -1569,7 +1659,7 @@ class AutoAAScript(ClientScriptBase):
             if estimate.observations <= 0 or estimate.base_estimate <= 0.0:
                 continue
             components[damage_type] = float(estimate.base_estimate)
-        return components
+        return self._expanded_p2_component_estimates(profile, components)
 
     def _is_mammons_tear_target_name(self, creature_name: str) -> bool:
         return _normalize_creature_name_key(creature_name) in MAMMONS_TEAR_TARGETS
@@ -1701,6 +1791,9 @@ class AutoAAScript(ClientScriptBase):
                 parts.append("Current " + self._format_weapon_type_set(set(profile.current_signature)))
             else:
                 parts.append("Adaptive")
+            predicted_types = self._profile_predicted_damage_types(profile)
+            if predicted_types:
+                parts.append("Predicted " + self._format_weapon_type_set(predicted_types))
             distinct_signatures = [
                 signature
                 for signature in profile.signature_counts.keys()
@@ -1866,6 +1959,38 @@ class AutoAAScript(ClientScriptBase):
         self.pending_weapon_conceal_sequence = self.current_chat_sequence
         self.set_status(f"{attack.defender}: round boundary for {self._pending_weapon_display()}")
         self.host.notify_state_changed()
+
+    def _prune_pending_weapon_attack_results(self):
+        minimum_sequence = max(int(self.current_chat_sequence) - 40, 0)
+        self.weapon_pending_attack_results = [
+            result
+            for result in self.weapon_pending_attack_results
+            if int(result.sequence) >= minimum_sequence
+        ][-24:]
+
+    def _observe_weapon_attack_result(self, attack):
+        if not getattr(attack, "is_hit", False):
+            return
+        self._prune_pending_weapon_attack_results()
+        self.weapon_pending_attack_results.append(
+            PendingWeaponAttackResult(
+                sequence=int(self.current_chat_sequence),
+                defender=str(attack.defender or ""),
+                is_critical=bool(getattr(attack, "is_critical", False)),
+            )
+        )
+
+    def _consume_pending_weapon_attack_result(self, defender_name: str) -> Optional[PendingWeaponAttackResult]:
+        self._prune_pending_weapon_attack_results()
+        defender_key = hgx_combat.normalize_actor_name(defender_name).lower()
+        if not defender_key:
+            return None
+
+        for index, result in enumerate(self.weapon_pending_attack_results):
+            if hgx_combat.normalize_actor_name(result.defender).lower() != defender_key:
+                continue
+            return self.weapon_pending_attack_results.pop(index)
+        return None
 
     def _damage_line_is_physical_only(self, damage_line) -> bool:
         has_physical = False
@@ -2228,6 +2353,7 @@ class AutoAAScript(ClientScriptBase):
         damage_line,
         observed_types: Set[int],
         now: float,
+        is_critical: bool = False,
     ) -> Tuple[bool, bool, Set[int], Set[int]]:
         before_known_types = set(self._profile_known_damage_types(profile))
         before_estimated_types = set(profile.type_estimates.keys())
@@ -2259,7 +2385,13 @@ class AutoAAScript(ClientScriptBase):
                 self._apply_component_estimate_map(target_estimates, damage_type, int(component.amount), sample)
         self._record_p2_verification_target(profile, damage_line.defender, self._damage_signature(observed_types))
         if target_key:
-            self._record_profile_target_actual_damage(profile, target_key, self._damage_signature(observed_types), damage_line)
+            self._record_profile_target_actual_damage(
+                profile,
+                target_key,
+                self._damage_signature(observed_types),
+                damage_line,
+                is_critical=is_critical,
+            )
 
         after_known_types = set(self._profile_known_damage_types(profile))
         after_estimated_types = set(profile.type_estimates.keys())
@@ -2287,6 +2419,7 @@ class AutoAAScript(ClientScriptBase):
             self.host.notify_state_changed()
             return
         self.weapon_damage_matched_count += 1
+        attack_result = self._consume_pending_weapon_attack_result(damage_line.defender)
 
         now = time.monotonic()
         if self.weapon_external_unknown and not self.pending_weapon_key:
@@ -2314,6 +2447,7 @@ class AutoAAScript(ClientScriptBase):
             damage_line,
             observed_types,
             now,
+            is_critical=bool(attack_result.is_critical) if attack_result is not None else False,
         )
         if not applied:
             return
@@ -2476,7 +2610,7 @@ class AutoAAScript(ClientScriptBase):
                 actual_observations=actual_observations,
                 matched_name=combat_profile.matched_name,
                 paragon_ranks=combat_profile.paragon_ranks,
-                learned_types=tuple(sorted(target_signature)),
+                learned_types=tuple(sorted(self._profile_predicted_damage_types(profile))),
                 estimated_components=tuple(
                     sorted(
                         (damage_type, int(round(base_damage)))
@@ -2505,7 +2639,7 @@ class AutoAAScript(ClientScriptBase):
             actual_observations=actual_observations,
             matched_name=estimate.matched_name,
             paragon_ranks=estimate.paragon_ranks,
-            learned_types=tuple(sorted(target_signature)),
+            learned_types=tuple(sorted(self._profile_predicted_damage_types(profile))),
             estimated_components=tuple(
                 sorted(
                     (damage_type, int(round(base_damage)))

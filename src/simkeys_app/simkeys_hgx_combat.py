@@ -83,6 +83,9 @@ class ParsedAttackLine:
     attack_mode: str
     attacker: str
     defender: str
+    result_text: str
+    is_hit: bool
+    is_critical: bool
 
 
 @dataclass(frozen=True)
@@ -155,6 +158,11 @@ def parse_attack_line(text: str) -> Optional[ParsedAttackLine]:
         return None
 
     defender = normalize_actor_name(right.split(":", 1)[0])
+    result_text = ""
+    if ":" in right:
+        remainder = right.split(":", 1)[1].strip()
+        if remainder.startswith("*") and "*" in remainder[1:]:
+            result_text = remainder[1:].split("*", 1)[0].strip()
     left_parts = [
         normalize_actor_name(part)
         for part in left.split(":")
@@ -174,6 +182,9 @@ def parse_attack_line(text: str) -> Optional[ParsedAttackLine]:
         attack_mode=attack_mode,
         attacker=attacker,
         defender=defender,
+        result_text=result_text,
+        is_hit=result_text.lower() in {"hit", "critical hit"},
+        is_critical=result_text.lower() == "critical hit",
     )
 
 
