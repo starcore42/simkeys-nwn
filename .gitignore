@@ -31,6 +31,7 @@ bin/logs/
 src/native/SimKeysHook2/Release/
 src/native/SimKeysHook2/x64/
 src/native/SimKeysHook2/logs/
+data/character_defaults.user.json
 
 # Large reverse-engineering reference dumps stay local only.
 docs/reverse-engineering/decompiles/

@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import queue
 import sys
@@ -77,6 +78,9 @@ BANK_PAGE_TO_VALUE = {"None": 0, "Shift": 1, "Control": 2}
 BANK_VALUE_TO_PAGE = {value: label for label, value in BANK_PAGE_TO_VALUE.items()}
 WEAPON_SLOT_RENDER_ORDER = [choice for choice in WEAPON_SLOT_CHOICES if choice != WEAPON_SLOT_NONE]
 AUTO_DAMAGE_WEAPON_MODES = (AutoAAScript.MODE_WEAPON_SWAP,)
+SCRIPT_CONFIG_SOURCE_DEFAULT = "default"
+SCRIPT_CONFIG_SOURCE_CHARACTER = "character"
+SCRIPT_CONFIG_SOURCE_MANUAL = "manual"
 
 
 def _weapon_choice_display(choice):
@@ -404,6 +408,9 @@ class ScriptCard:
         try:
             config = self.parse_config(validate_for_start=False)
         except Exception:
+            return False
+        current = self.app.get_script_config(client_pid, self.definition.script_id)
+        if config == current:
             return False
         self.app.set_script_config(client_pid, self.definition.script_id, config)
         return True
@@ -762,6 +769,10 @@ class SimKeysDesktopApp:
         self.refresh_in_progress = False
         self.script_configs = {}
         self.script_toggles_in_progress = {}
+        self.character_script_configs = {}
+        self.character_display_names = {}
+        self.auto_loaded_character_keys = {}
+        self.character_defaults_path = os.path.join(runtime.root_dir(), "data", "character_defaults.user.json")
 
         self.status_var = tk.StringVar(value="Ready")
         self.selected_name_var = tk.StringVar(value="No client selected")
@@ -784,10 +795,107 @@ class SimKeysDesktopApp:
 
         self._configure_style()
         self._build_ui()
+        self._load_character_defaults_store()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         self.root.after(100, self.process_events)
         self.root.after(150, self.refresh_clients_async)
         self.root.after(self.args.refresh_ms, self.auto_refresh_tick)
+
+    def _normalize_character_key(self, name):
+        return str(name or "").strip().casefold()
+
+    def _load_character_defaults_store(self):
+        self.character_script_configs = {}
+        self.character_display_names = {}
+        path = self.character_defaults_path
+        if not os.path.isfile(path):
+            return
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                payload = json.load(handle)
+        except Exception as exc:
+            self.log(f"Character defaults load failed: {exc}", "error")
+            return
+
+        characters = payload.get("characters", {}) if isinstance(payload, dict) else {}
+        if not isinstance(characters, dict):
+            return
+
+        for key, entry in characters.items():
+            normalized = self._normalize_character_key(key)
+            if not normalized or not isinstance(entry, dict):
+                continue
+            name = str(entry.get("name") or key).strip()
+            scripts = entry.get("scripts", {})
+            if not isinstance(scripts, dict):
+                continue
+            cleaned = {}
+            for script_id, config in scripts.items():
+                if script_id not in self.script_manager.registry or not isinstance(config, dict):
+                    continue
+                cleaned[script_id] = dict(config)
+            if not cleaned:
+                continue
+            self.character_script_configs[normalized] = cleaned
+            self.character_display_names[normalized] = name
+
+    def _save_character_defaults_store(self):
+        payload = {"version": 1, "characters": {}}
+        for key in sorted(self.character_script_configs.keys()):
+            scripts = self.character_script_configs.get(key) or {}
+            if not scripts:
+                continue
+            payload["characters"][key] = {
+                "name": self.character_display_names.get(key, key),
+                "scripts": scripts,
+            }
+
+        os.makedirs(os.path.dirname(self.character_defaults_path), exist_ok=True)
+        with open(self.character_defaults_path, "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2, sort_keys=True)
+
+    def _save_character_defaults_for_client(self, client_pid):
+        client = self.clients_by_pid.get(client_pid)
+        if client is None or not client.character_name:
+            return False
+
+        character_key = self._normalize_character_key(client.character_name)
+        if not character_key:
+            return False
+
+        scripts = {}
+        for script_id in self.script_manager.registry.keys():
+            scripts[script_id] = self.get_script_config(client_pid, script_id)
+
+        if self.character_script_configs.get(character_key) == scripts:
+            return False
+
+        self.character_script_configs[character_key] = scripts
+        self.character_display_names[character_key] = client.character_name
+        self._save_character_defaults_store()
+        return True
+
+    def _auto_load_character_defaults(self, record):
+        if record is None or not record.character_name:
+            return False
+
+        character_key = self._normalize_character_key(record.character_name)
+        if not character_key:
+            return False
+
+        if self.auto_loaded_character_keys.get(record.pid) == character_key:
+            return False
+
+        scripts = self.character_script_configs.get(character_key)
+        self.auto_loaded_character_keys[record.pid] = character_key
+        if not scripts:
+            return False
+
+        for script_id, config in scripts.items():
+            self.script_configs[(record.pid, script_id)] = dict(config)
+
+        self.log(f"{record.display_name}: loaded saved character defaults", "info")
+        return True
 
     def _configure_style(self):
         style = ttk.Style()
@@ -1458,8 +1566,12 @@ class SimKeysDesktopApp:
     def persist_loaded_configs(self, client_pid):
         if client_pid is None:
             return
+        changed = False
         for row in self.script_rows.values():
-            row.try_persist_for_client(client_pid)
+            if row.try_persist_for_client(client_pid):
+                changed = True
+        if changed:
+            self._save_character_defaults_for_client(client_pid)
 
     def apply_client_records(self, records):
         self.persist_loaded_configs(self.selected_pid)
@@ -1490,10 +1602,17 @@ class SimKeysDesktopApp:
 
         self.clients = records
         self.clients_by_pid = {record.pid: record for record in records}
+        live_pids = set(self.clients_by_pid.keys())
+        self.auto_loaded_character_keys = {
+            pid: key
+            for pid, key in self.auto_loaded_character_keys.items()
+            if pid in live_pids
+        }
+        for record in records:
+            self._auto_load_character_defaults(record)
         for record in records:
             self.script_manager.sync_client(record)
 
-        live_pids = set(self.clients_by_pid.keys())
         for pid in list(self.script_manager.hosts.keys()):
             if pid not in live_pids:
                 self.script_manager.stop_all_for_client(pid)
@@ -1589,6 +1708,7 @@ class SimKeysDesktopApp:
 
     def set_script_config(self, client_pid, script_id, config):
         self.script_configs[(client_pid, script_id)] = dict(config)
+        self._save_character_defaults_for_client(client_pid)
 
     def inject_next_async(self):
         def action():
@@ -1710,6 +1830,7 @@ class SimKeysDesktopApp:
 
     def on_close(self):
         try:
+            self.persist_loaded_configs(self.selected_pid)
             self.script_manager.stop_all()
         finally:
             self.root.destroy()
