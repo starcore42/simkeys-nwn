@@ -1289,14 +1289,16 @@ class SimKeysDesktopApp:
             return "unknown"
         return "learn"
 
-    def _compact_weapon_flags_text(self, weapon):
-        flags = []
+    def _compact_weapon_special_tag_text(self, weapon):
         special_name = str(weapon.get("special_name") or "").strip()
         if special_name == "Mammon's Wrath":
-            flags.append("MW")
-        elif special_name == "P2":
-            flags.append("P2")
+            return "MW"
+        if special_name == "P2":
+            return "P2"
+        return ""
 
+    def _compact_weapon_notes_text(self, weapon):
+        flags = []
         healing_types = [
             self._compact_damage_label(value)
             for value in list(weapon.get("healing_types") or [])
@@ -1316,15 +1318,12 @@ class SimKeysDesktopApp:
         expected = weapon.get("expected_damage")
         actual = weapon.get("actual_damage")
         actual_obs = int(weapon.get("actual_observations") or 0)
-        if expected is None and (actual is None or actual_obs <= 0):
-            return "unlearned"
-
-        parts = []
-        if expected is not None:
-            parts.append(f"e{int(expected)}")
+        expected_text = f"e{int(expected)}" if expected is not None else "e-"
         if actual is not None and actual_obs > 0:
-            parts.append(f"a{int(actual)}/{actual_obs}")
-        return " ".join(parts)
+            actual_text = f"a{int(actual)}"
+        else:
+            actual_text = "a-"
+        return f"{expected_text:<6}{actual_text:<8}".rstrip()
 
     def _render_target_analysis(self, details):
         analysis = dict(details.get("target_analysis", {}))
@@ -1380,20 +1379,19 @@ class SimKeysDesktopApp:
 
             key = str(weapon.get("key") or "?")
             label = str(weapon.get("label") or "?")
-            name_text = f"{key}/{label}"
-            flags_text = self._compact_weapon_flags_text(weapon)
-            if flags_text:
-                name_text = f"{name_text} {flags_text}"
-
+            slot_text = f"{key}/{label}"
+            special_tag = self._compact_weapon_special_tag_text(weapon)
+            notes_text = self._compact_weapon_notes_text(weapon)
             damage_text = self._compact_weapon_damage_text(weapon)
             type_text = self._compact_weapon_type_text(weapon)
             state_text = self._compact_weapon_state_text(weapon)
-        lines.append(
-                f"{marker_text} {name_text:<18} {damage_text:<20} {type_text:<22} {state_text}"
-            )
+            row = f"{marker_text} {slot_text:<12} {special_tag:<4}{damage_text:<14} {type_text:<18} {state_text}"
+            if notes_text:
+                row = f"{row} {notes_text}"
+            lines.append(row)
 
         lines.append("")
-        lines.append("e expected   a actual/obs   MW Mammon's Wrath")
+        lines.append("e expected   a actual   MW Mammon's Wrath   P2 Adaptive")
         lines.append("* current   > pending   ! recommended")
         return "\n".join(lines)
 
