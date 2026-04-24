@@ -324,8 +324,22 @@ class ScriptCard:
         )
         self.wrap_targets.append((self.weapon_learning_label, 48))
 
+        self.weapon_slot_hint_label = ttk.Label(
+            self.weapon_section,
+            text="Tick the slots that contain weapons you want Auto Damage to use.",
+            justify="left",
+            wraplength=520,
+        )
+        self.weapon_slot_hint_label.grid(
+            row=4,
+            column=0,
+            sticky="ew",
+            pady=(0, 4),
+        )
+        self.wrap_targets.append((self.weapon_slot_hint_label, 48))
+
         grid = ttk.Frame(self.weapon_section)
-        grid.grid(row=4, column=0, sticky="w")
+        grid.grid(row=5, column=0, sticky="w")
         ttk.Label(grid, text="").grid(row=0, column=0, padx=(0, 8))
         for slot in range(1, 13):
             ttk.Label(grid, text=str(slot), width=4, anchor="center").grid(row=0, column=slot, padx=1, pady=(0, 2))
