@@ -1549,12 +1549,34 @@ class AutoAAScript(ClientScriptBase):
             return True
         return len(getattr(profile, "p2_verification_targets", set()) or set()) >= 2
 
+    def _profile_has_target_sample(
+        self,
+        profile: Optional[WeaponLearningProfile],
+        creature_name: str,
+    ) -> bool:
+        if profile is None:
+            return False
+        target_key = self._profile_target_key(creature_name)
+        if not target_key:
+            return False
+        if target_key in profile.target_signatures:
+            return True
+        if target_key in profile.target_type_estimates:
+            return True
+        observed_map = profile.target_damage_observations.get(target_key) or {}
+        return any(
+            observed is not None and int(getattr(observed, "observations", 0)) > 0
+            for observed in observed_map.values()
+        )
+
     def _profile_can_advance_learning_on_target(
         self,
         profile: Optional[WeaponLearningProfile],
         creature_name: str,
     ) -> bool:
         if profile is None or self._profile_learning_complete(profile):
+            return False
+        if self._profile_has_target_sample(profile, creature_name):
             return False
         if not self._profile_requires_p2_verification(profile):
             return True
@@ -1878,8 +1900,10 @@ class AutoAAScript(ClientScriptBase):
         ignored_types = self._weapon_ignored_damage_types(profile, components)
         if ignored_types:
             parts.append(f"Ignore {self._format_ignored_damage_types(profile, ignored_types)} rider")
-        if self._profile_requires_p2_verification(profile):
-            verified = len(profile.p2_verification_targets)
+        if self._profile_learning_complete(profile):
+            parts.append("Learning Complete")
+        elif self._profile_requires_p2_verification(profile):
+            verified = min(len(profile.p2_verification_targets), 2)
             parts.append(f"P2 check {verified}/2")
 
         suffix = f"obs {profile.observations}, attacks {profile.attack_attempts}"
