@@ -6,9 +6,10 @@ import struct
 import subprocess
 import shutil
 import sys
+import threading
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from . import inject_simkeys
 from . import simKeys_Client as simkeys
@@ -21,6 +22,42 @@ INVALID_HANDLE_VALUE = C.c_void_p(-1).value
 
 k32 = C.WinDLL("kernel32", use_last_error=True)
 u32 = C.WinDLL("user32", use_last_error=True)
+_PIPE_LOCKS: Dict[int, threading.RLock] = {}
+_PIPE_LOCKS_GUARD = threading.Lock()
+
+
+class _LockedPipe:
+    def __init__(self, pipe, lock):
+        self._pipe = pipe
+        self._lock = lock
+        self._closed = False
+
+    def __getattr__(self, name):
+        return getattr(self._pipe, name)
+
+    def close(self):
+        if self._closed:
+            return
+        try:
+            self._pipe.close()
+        finally:
+            self._closed = True
+            self._lock.release()
+
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:
+            pass
+
+
+def _get_pipe_lock(pid: int):
+    with _PIPE_LOCKS_GUARD:
+        lock = _PIPE_LOCKS.get(pid)
+        if lock is None:
+            lock = threading.RLock()
+            _PIPE_LOCKS[pid] = lock
+        return lock
 
 
 class FILETIME(C.Structure):
@@ -339,7 +376,7 @@ def probe_client(pid: int, pipe_timeout_ms: int = 125) -> ClientRecord:
     probe_error = ""
 
     try:
-        pipe = simkeys.Pipe(pid, timeout_ms=pipe_timeout_ms)
+        pipe = open_pipe(pid, timeout_ms=pipe_timeout_ms)
         try:
             query = simkeys.query_state(pipe)
             injected = True
@@ -451,7 +488,14 @@ def resolve_client_selector(records: List[ClientRecord], selector: Optional[str]
 
 def open_pipe(record_or_pid, timeout_ms: int = 2000):
     pid = record_or_pid.pid if isinstance(record_or_pid, ClientRecord) else int(record_or_pid)
-    return simkeys.Pipe(pid, timeout_ms=timeout_ms)
+    lock = _get_pipe_lock(pid)
+    lock.acquire()
+    try:
+        pipe = simkeys.Pipe(pid, timeout_ms=timeout_ms)
+    except Exception:
+        lock.release()
+        raise
+    return _LockedPipe(pipe, lock)
 
 
 def query_client(record_or_pid):

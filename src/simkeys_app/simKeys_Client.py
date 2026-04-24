@@ -10,16 +10,34 @@
 #   chat-send T  -> send chat text through the in-game chat path (default mode 2)
 #   chat-poll    -> fetch captured chat/log lines from the hook ring buffer
 
-import argparse, struct
+import argparse, struct, time
 import ctypes as C
 import ctypes.wintypes as W
 
 k32 = C.WinDLL("kernel32", use_last_error=True)
 INVALID_HANDLE_VALUE = C.c_void_p(-1).value
 CHAR_NAME_CAPACITY = 128
+ERROR_SUCCESS = 0
+ERROR_FILE_NOT_FOUND = 2
+ERROR_PATH_NOT_FOUND = 3
+ERROR_ACCESS_DENIED = 5
+ERROR_BROKEN_PIPE = 109
+ERROR_SEM_TIMEOUT = 121
+ERROR_PIPE_BUSY = 231
+ERROR_PIPE_NOT_CONNECTED = 233
+RETRYABLE_PIPE_OPEN_ERRORS = {
+    ERROR_FILE_NOT_FOUND,
+    ERROR_PATH_NOT_FOUND,
+    ERROR_ACCESS_DENIED,
+    ERROR_BROKEN_PIPE,
+    ERROR_SEM_TIMEOUT,
+    ERROR_PIPE_BUSY,
+    ERROR_PIPE_NOT_CONNECTED,
+}
 
-def winerr(prefix):
-    err = C.get_last_error()
+def winerr(prefix, err=None):
+    if err is None:
+        err = C.get_last_error()
     message = C.FormatError(err).strip() if err else "no last-error information"
     return f"{prefix} (err={err}: {message})"
 
@@ -43,10 +61,39 @@ class Pipe:
         self.WriteFile.argtypes = [W.HANDLE, W.LPCVOID, W.DWORD, W.LPVOID, W.LPVOID]
         self.WriteFile.restype = W.BOOL
 
-        self.WaitNamedPipeW(self.path, timeout_ms)
-        self.h = self.CreateFileW(self.path, 0xC0000000, 0, None, 3, 0, None)  # GENERIC_READ|WRITE
-        if self.h in (None, 0, INVALID_HANDLE_VALUE):
-            raise OSError(winerr(f"Could not open pipe: {self.path}"))
+        self.h = self._open_with_retry(timeout_ms)
+
+    def _open_with_retry(self, timeout_ms):
+        timeout_ms = max(int(timeout_ms), 0)
+        deadline = time.monotonic() + (timeout_ms / 1000.0)
+        last_error = ERROR_SUCCESS
+
+        while True:
+            handle = self.CreateFileW(self.path, 0xC0000000, 0, None, 3, 0, None)  # GENERIC_READ|WRITE
+            if handle not in (None, 0, INVALID_HANDLE_VALUE):
+                return handle
+
+            last_error = C.get_last_error()
+            if last_error not in RETRYABLE_PIPE_OPEN_ERRORS:
+                break
+
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+
+            if last_error == ERROR_PIPE_BUSY:
+                wait_ms = max(1, min(int(remaining * 1000), 250))
+                if self.WaitNamedPipeW(self.path, wait_ms):
+                    continue
+
+                wait_error = C.get_last_error()
+                if wait_error not in (ERROR_SUCCESS, *RETRYABLE_PIPE_OPEN_ERRORS):
+                    last_error = wait_error
+                    break
+
+            time.sleep(min(0.025, max(deadline - time.monotonic(), 0.0)))
+
+        raise OSError(winerr(f"Could not open pipe after {timeout_ms} ms: {self.path}", last_error))
 
     def _write(self, b):
         n = self.W.DWORD()

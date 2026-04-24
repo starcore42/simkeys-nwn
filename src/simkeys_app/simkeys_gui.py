@@ -16,7 +16,15 @@ def _probe_error_is_busy(text):
     if not text:
         return False
     lowered = str(text).lower()
-    return "err=231" in lowered or "all pipe instances are busy" in lowered or "pipe busy" in lowered
+    return (
+        "err=5" in lowered
+        or "err=32" in lowered
+        or "err=231" in lowered
+        or "access is denied" in lowered
+        or "sharing violation" in lowered
+        or "all pipe instances are busy" in lowered
+        or "pipe busy" in lowered
+    )
 
 
 SCRIPT_CARD_LAYOUTS = {
