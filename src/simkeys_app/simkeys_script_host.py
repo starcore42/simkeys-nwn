@@ -4060,6 +4060,7 @@ class AutoAttackScript(ClientScriptBase):
 
 class AutoFollowScript(ClientScriptBase):
     script_id = "auto_follow"
+    script_label = "Auto Follow"
     FOLLOW_CUES = ("fall in", "follow me", "follow my")
     ASO_COMMAND = "!action aso target"
 
@@ -4081,30 +4082,32 @@ class AutoFollowScript(ClientScriptBase):
         self.last_message = ""
         self.last_error_key = ""
         self.set_status("Listening for follow cues")
-        self.host.emit("info", f"{self.host.client.display_name}: Auto Follow started", script_id=self.script_id)
+        self.host.emit("info", f"{self.host.client.display_name}: {self.script_label} started", script_id=self.script_id)
 
     def on_stop(self):
         super().on_stop()
         self.enabled = False
-        self.host.emit("info", f"{self.host.client.display_name}: Auto Follow stopped", script_id=self.script_id)
+        self.host.emit("info", f"{self.host.client.display_name}: {self.script_label} stopped", script_id=self.script_id)
 
     def on_chat_line(self, sequence: int, text: str):
         if not self.should_process(sequence) or not self.enabled:
             return
+        self._handle_follow_line(text)
 
+    def _handle_follow_line(self, text: str):
         parsed = self._parse_follow_cue(text)
         if parsed is None:
-            return
+            return False
 
         speaker, message = parsed
         if self._speaker_matches_character(speaker):
             self.set_status(f"Ignored own cue ({speaker})")
-            return
+            return True
 
         now = time.monotonic()
         if now < self.cooldown_until:
             self.set_status(f"{speaker}: cooldown")
-            return
+            return True
 
         tell_command = f'/tell "{speaker}" !target'
         try:
@@ -4115,10 +4118,10 @@ class AutoFollowScript(ClientScriptBase):
             self.set_status(f"{speaker}: follow failed")
             self.host.emit(
                 "error",
-                f"{self.host.client.display_name}: Auto Follow chat send failed for '{speaker}': {exc}",
+                f"{self.host.client.display_name}: {self.script_label} chat send failed for '{speaker}': {exc}",
                 script_id=self.script_id,
             )
-            return
+            return True
 
         self.cooldown_until = now + self._cooldown_seconds()
         self.follow_count += 1
@@ -4128,7 +4131,7 @@ class AutoFollowScript(ClientScriptBase):
         if success:
             self.set_status(f"{speaker}: followed")
             if self.last_error_key:
-                self.host.emit("info", f"{self.host.client.display_name}: Auto Follow recovered", script_id=self.script_id)
+                self.host.emit("info", f"{self.host.client.display_name}: {self.script_label} recovered", script_id=self.script_id)
                 self.last_error_key = ""
         else:
             self.set_status(f"{speaker}: follow failed")
@@ -4137,15 +4140,16 @@ class AutoFollowScript(ClientScriptBase):
         self.host.emit(
             "info" if success else "error",
             (
-                f"{self.host.client.display_name}: Auto Follow cue from '{speaker}' message='{message}' "
+                f"{self.host.client.display_name}: {self.script_label} cue from '{speaker}' message='{message}' "
                 f"aso success={aso_result['success']} rc={aso_result['rc']} err={aso_result['err']} "
                 f"target success={target_result['success']} rc={target_result['rc']} err={target_result['err']}"
             ),
             script_id=self.script_id,
         )
         if success and bool(self.config.get("echo_console", False)):
-            self.host.send_console(f"SimKeys Auto Follow -> {speaker}")
+            self.host.send_console(f"SimKeys {self.script_label} -> {speaker}")
         self.host.notify_state_changed()
+        return True
 
     def _parse_follow_cue(self, text: str) -> Optional[Tuple[str, str]]:
         normalized = hgx_combat.normalize_chat_line(text)
@@ -4189,8 +4193,127 @@ class AutoFollowScript(ClientScriptBase):
         }
 
 
-class AutoRSMScript(ClientScriptBase):
+class AlwaysOnScript(AutoFollowScript):
+    script_id = "always_on"
+    script_label = "Always On"
+
+    def __init__(self, client, config: Dict[str, object], host):
+        super().__init__(client, config, host)
+        self.wallet_count = 0
+        self.spellbook_fill_count = 0
+        self.fog_off_count = 0
+        self.last_wallet_action = ""
+
+    def on_start(self):
+        super().on_start()
+        self.wallet_count = 0
+        self.spellbook_fill_count = 0
+        self.fog_off_count = 0
+        self.last_wallet_action = ""
+        self.set_status("Listening for utility cues")
+
+    def on_chat_line(self, sequence: int, text: str):
+        if not self.should_process(sequence) or not self.enabled:
+            return
+
+        line = str(text or "")
+        self._handle_auto_wallet_line(line)
+        if not self._disabled("disable_follow"):
+            self._handle_follow_line(line)
+
+    def _handle_auto_wallet_line(self, line: str):
+        if not line:
+            return
+
+        if "You are now in Zerial's Workshop" in line and not self._disabled("disable_wallet"):
+            deposit_ok = self._send_utility_command("!wallet deposit all", "wallet deposit")
+            withdraw_ok = self._send_utility_command("!wallet withdraw 100000", "wallet withdraw")
+            self.wallet_count += 1
+            self.last_wallet_action = "Zerial's Workshop"
+            if deposit_ok and withdraw_ok:
+                self.set_status("Wallet refreshed")
+                self.host.emit(
+                    "info",
+                    f"{self.host.client.display_name}: Always On refreshed wallet at Zerial's Workshop",
+                    script_id=self.script_id,
+                )
+            self.host.notify_state_changed()
+
+        if "Resting." in line and not self._disabled("disable_spellbook_fill"):
+            if self._send_utility_command("!sb fill", "spellbook fill"):
+                self.spellbook_fill_count += 1
+                self.last_wallet_action = "Resting"
+                self.set_status("Spellbook filled")
+                self.host.notify_state_changed()
+
+        if "You are now in" in line and not self._disabled("disable_fog_off"):
+            if self._send_utility_command("##mainscene.fog 0", "fog off"):
+                self.fog_off_count += 1
+                self.last_wallet_action = "Fog off"
+                self.set_status("Fog disabled")
+                self.host.notify_state_changed()
+
+    def _disabled(self, key: str) -> bool:
+        return bool(self.config.get(key, False))
+
+    def _send_utility_command(self, command: str, label: str) -> bool:
+        try:
+            result = self.host.send_chat(command, 2)
+        except Exception as exc:
+            self.set_status(f"{label} failed")
+            self.host.emit(
+                "error",
+                f"{self.host.client.display_name}: Always On {label} failed: {exc}",
+                script_id=self.script_id,
+            )
+            return False
+
+        if result["success"]:
+            return True
+
+        self.set_status(f"{label} failed")
+        self.host.emit(
+            "error",
+            (
+                f"{self.host.client.display_name}: Always On {label} failed command={command} "
+                f"rc={result['rc']} err={result['err']}"
+            ),
+            script_id=self.script_id,
+        )
+        return False
+
+    def get_state_details(self) -> dict:
+        details = super().get_state_details()
+        details.update({
+            "wallet_count": self.wallet_count,
+            "spellbook_fill_count": self.spellbook_fill_count,
+            "fog_off_count": self.fog_off_count,
+            "last_wallet_action": self.last_wallet_action,
+            "disable_follow": self._disabled("disable_follow"),
+            "disable_wallet": self._disabled("disable_wallet"),
+            "disable_spellbook_fill": self._disabled("disable_spellbook_fill"),
+            "disable_fog_off": self._disabled("disable_fog_off"),
+        })
+        return details
+
+
+class AutoCombatModeScript(ClientScriptBase):
     script_id = "auto_rsm"
+    MODE_RAPID_SHOT = "Rapid Shot"
+    MODE_FLURRY_OF_BLOWS = "Flurry of Blows"
+    MODE_EXPERTISE = "Expertise"
+    MODE_IMPROVED_EXPERTISE = "Improved Expertise"
+    MODE_POWER_ATTACK = "Power Attack"
+    MODE_IMPROVED_POWER_ATTACK = "Improved Power Attack"
+    MODE_CONFIG = {
+        MODE_RAPID_SHOT: ("!action rsm self", "memory"),
+        MODE_FLURRY_OF_BLOWS: ("!action fbm self", "combat log"),
+        MODE_EXPERTISE: ("!action exm self", "combat log"),
+        MODE_IMPROVED_EXPERTISE: ("!action iem self", "combat log"),
+        MODE_POWER_ATTACK: ("!action pam self", "combat log"),
+        MODE_IMPROVED_POWER_ATTACK: ("!action ipm self", "combat log"),
+    }
+    MODE_CHOICES = tuple(MODE_CONFIG.keys())
 
     def __init__(self, client, config: Dict[str, object], host):
         super().__init__(client, config, host)
@@ -4200,6 +4323,9 @@ class AutoRSMScript(ClientScriptBase):
         self.cooldown_until = 0.0
         self.identity_wait_logged = False
         self.last_probe_error = ""
+        self.trigger_count = 0
+        self.last_defender = ""
+        self.last_active_modes: Tuple[str, ...] = ()
 
     def on_start(self):
         super().on_start()
@@ -4208,14 +4334,21 @@ class AutoRSMScript(ClientScriptBase):
         self.cooldown_until = 0.0
         self.identity_wait_logged = False
         self.last_probe_error = ""
-        try:
-            address = self._resolve_rsm_address()
-            self.set_status(f"Armed 0x{address:08X}")
-        except Exception:
-            self.set_status("Armed (probe pending)")
+        self.trigger_count = 0
+        self.last_defender = ""
+        self.last_active_modes = ()
+        mode = self._mode_label()
+        if mode == self.MODE_RAPID_SHOT:
+            try:
+                address = self._resolve_rsm_address()
+                self.set_status(f"{mode} armed 0x{address:08X}")
+            except Exception:
+                self.set_status(f"{mode} armed (probe pending)")
+        else:
+            self.set_status(f"{mode} armed")
         self.host.emit(
             "info",
-            f"{self.host.client.display_name}: Auto RSM started",
+            f"{self.host.client.display_name}: Auto Combat Mode started ({mode})",
             script_id=self.script_id,
         )
 
@@ -4223,7 +4356,7 @@ class AutoRSMScript(ClientScriptBase):
         super().on_stop()
         self.enabled = False
         self._close_process_handle()
-        self.host.emit("info", f"{self.host.client.display_name}: Auto RSM stopped", script_id=self.script_id)
+        self.host.emit("info", f"{self.host.client.display_name}: Auto Combat Mode stopped", script_id=self.script_id)
 
     def on_chat_line(self, sequence: int, text: str):
         if not self.should_process(sequence) or not self.enabled:
@@ -4240,7 +4373,7 @@ class AutoRSMScript(ClientScriptBase):
                 self.identity_wait_logged = True
                 self.host.emit(
                     "info",
-                    f"{self.host.client.display_name}: Auto RSM is waiting for character identity before parsing attack lines",
+                    f"{self.host.client.display_name}: Auto Combat Mode is waiting for character identity before parsing attack lines",
                     script_id=self.script_id,
                 )
             return
@@ -4253,62 +4386,88 @@ class AutoRSMScript(ClientScriptBase):
         if now < self.cooldown_until:
             return
 
-        try:
-            rsm_status = self._read_rsm_status()
-        except Exception as exc:
-            error_text = str(exc)
-            self.set_status("Probe failed")
-            if error_text != self.last_probe_error:
-                self.last_probe_error = error_text
-                self.host.emit(
-                    "error",
-                    f"{self.host.client.display_name}: Auto RSM memory probe failed: {error_text}",
-                    script_id=self.script_id,
-                )
-            return
-
-        if self.last_probe_error:
-            self.host.emit(
-                "info",
-                f"{self.host.client.display_name}: Auto RSM memory probe recovered",
-                script_id=self.script_id,
-            )
-            self.last_probe_error = ""
-
-        if rsm_status != 0:
-            self.set_status(f"RSM active ({rsm_status})")
+        mode = self._mode_label()
+        command = self._mode_command()
+        if self._mode_is_active(mode, attack):
             return
 
         try:
-            result = self.host.send_chat("!action rsm self", 2)
+            result = self.host.send_chat(command, 2)
         except Exception as exc:
             self.set_status("Trigger failed")
             self.host.emit(
                 "error",
-                f"{self.host.client.display_name}: Auto RSM chat send failed: {exc}",
+                f"{self.host.client.display_name}: Auto Combat Mode {mode} chat send failed: {exc}",
                 script_id=self.script_id,
             )
             self.cooldown_until = now + 1.0
             return
 
         self.cooldown_until = now + self._cooldown_seconds()
+        self.last_defender = attack.defender
+        self.trigger_count += 1
         if result["success"]:
-            self.set_status(f"Triggered ({self._cooldown_seconds():.1f}s)")
+            self.set_status(f"{mode} triggered")
         else:
             self.set_status("Trigger failed")
 
         self.host.emit(
             "info",
             (
-                f"{self.host.client.display_name}: Auto RSM triggered on '{attack.defender}' "
-                f"success={result['success']} rc={result['rc']} err={result['err']}"
+                f"{self.host.client.display_name}: Auto Combat Mode triggered {mode} on '{attack.defender}' "
+                f"command={command} success={result['success']} rc={result['rc']} err={result['err']}"
             ),
             script_id=self.script_id,
         )
         if bool(self.config.get("echo_console", False)):
             self.host.send_console(
-                f"SimKeys Auto RSM -> !action rsm self rc={result['rc']} err={result['err']}"
+                f"SimKeys Auto Combat Mode {mode} -> {command} rc={result['rc']} err={result['err']}"
             )
+
+    def _mode_label(self) -> str:
+        mode = str(self.config.get("mode", self.MODE_RAPID_SHOT)).strip()
+        if mode in self.MODE_CONFIG:
+            return mode
+        return self.MODE_RAPID_SHOT
+
+    def _mode_command(self) -> str:
+        return self.MODE_CONFIG[self._mode_label()][0]
+
+    def _mode_is_active(self, mode: str, attack) -> bool:
+        if mode == self.MODE_RAPID_SHOT:
+            try:
+                rsm_status = self._read_rsm_status()
+            except Exception as exc:
+                error_text = str(exc)
+                self.set_status("Probe failed")
+                if error_text != self.last_probe_error:
+                    self.last_probe_error = error_text
+                    self.host.emit(
+                        "error",
+                        f"{self.host.client.display_name}: Auto Combat Mode Rapid Shot memory probe failed: {error_text}",
+                        script_id=self.script_id,
+                    )
+                return True
+
+            if self.last_probe_error:
+                self.host.emit(
+                    "info",
+                    f"{self.host.client.display_name}: Auto Combat Mode Rapid Shot memory probe recovered",
+                    script_id=self.script_id,
+                )
+                self.last_probe_error = ""
+
+            if rsm_status != 0:
+                self.set_status(f"{mode} active ({rsm_status})")
+                return True
+            return False
+
+        active_modes = hgx_combat.parse_attack_mode_names(attack.attack_mode)
+        self.last_active_modes = active_modes
+        if mode in active_modes:
+            self.set_status(f"{mode} active")
+            return True
+        return False
 
     def _character_name(self) -> str:
         live_name = (self.host.client.character_name or "").strip()
@@ -4378,7 +4537,15 @@ class AutoRSMScript(ClientScriptBase):
         return self._read_u8(self._resolve_rsm_address())
 
     def _cooldown_seconds(self) -> float:
-        return max(float(self.config.get("cooldown_seconds", 7.0)), 0.1)
+        return max(float(self.config.get("cooldown_seconds", 6.0)), 0.1)
+
+    def get_state_details(self) -> dict:
+        return {
+            "mode": self._mode_label(),
+            "trigger_count": self.trigger_count,
+            "last_defender": self.last_defender,
+            "last_active_modes": self.last_active_modes,
+        }
 
 
 class ClientScriptHost:
@@ -4421,7 +4588,6 @@ class ClientScriptHost:
         with self.lock:
             if definition.script_id in self.scripts:
                 raise RuntimeError(f"{definition.name} is already running for pid {self.client.pid}.")
-
             started_at = time.perf_counter()
             self.emit("info", f"{self.client.display_name}: starting {definition.name}", script_id=definition.script_id)
 
@@ -4748,36 +4914,51 @@ class ScriptManager:
         )
         self.registry[auto_attack.script_id] = auto_attack
 
-        auto_follow = ScriptDefinition(
-            script_id="auto_follow",
-            name="Auto Follow",
+        always_on = ScriptDefinition(
+            script_id="always_on",
+            name="Always On",
             description=(
-                "Listen for follow voice cues such as 'fall in' or 'follow me', then target the speaker "
-                "using the old HGXLE autoFollow.py command sequence."
+                "Bundle the usual background helpers: Auto Follow cues, Zerial wallet refresh, spellbook fill on rest, "
+                "and fog disable on area transitions."
             ),
             fields=[
-                ScriptField("cooldown_seconds", "Cooldown", "float", 1.0, minimum=0.1, maximum=30.0, step=0.1, width=6),
+                ScriptField("cooldown_seconds", "Follow CD", "float", 1.0, minimum=0.1, maximum=30.0, step=0.1, width=6),
+                ScriptField("disable_follow", "Disable Follow", "bool", False),
+                ScriptField("disable_wallet", "Disable Wallet", "bool", False),
+                ScriptField("disable_spellbook_fill", "Disable SB Fill", "bool", False),
+                ScriptField("disable_fog_off", "Disable Fog Off", "bool", False),
                 ScriptField("poll_interval", "Poll", "float", 0.05, minimum=0.01, maximum=2.0, step=0.01, width=6),
                 ScriptField("max_lines", "Batch", "int", 200, minimum=1, maximum=500, step=1, width=5),
                 ScriptField("echo_console", "Echo", "bool", False),
                 ScriptField("include_backlog", "Backlog", "bool", False),
             ],
-            factory=AutoFollowScript,
+            factory=AlwaysOnScript,
         )
-        self.registry[auto_follow.script_id] = auto_follow
+        self.registry[always_on.script_id] = always_on
 
         auto_rsm = ScriptDefinition(
             script_id="auto_rsm",
-            name="Auto RSM",
-            description="Trigger `!action rsm self` automatically when you attack and the RSM status byte is not active.",
+            name="Auto Combat Mode",
+            description=(
+                "Keep one selected combat mode active while attacking. Rapid Shot uses the RSM memory byte; "
+                "the other modes read active mode prefixes from combat log attack lines."
+            ),
             fields=[
-                ScriptField("cooldown_seconds", "Cooldown", "float", 7.0, minimum=0.1, maximum=30.0, step=0.1, width=6),
+                ScriptField(
+                    "mode",
+                    "Mode",
+                    "choice",
+                    AutoCombatModeScript.MODE_RAPID_SHOT,
+                    choices=list(AutoCombatModeScript.MODE_CHOICES),
+                    width=20,
+                ),
+                ScriptField("cooldown_seconds", "Retry CD", "float", 6.0, minimum=0.1, maximum=30.0, step=0.1, width=6),
                 ScriptField("poll_interval", "Poll", "float", 0.10, minimum=0.05, maximum=2.0, step=0.05, width=6),
                 ScriptField("max_lines", "Batch", "int", 60, minimum=1, maximum=200, step=1, width=5),
                 ScriptField("echo_console", "Echo", "bool", False),
                 ScriptField("include_backlog", "Backlog", "bool", False),
             ],
-            factory=AutoRSMScript,
+            factory=AutoCombatModeScript,
         )
         self.registry[auto_rsm.script_id] = auto_rsm
 

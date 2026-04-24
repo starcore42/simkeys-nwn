@@ -58,10 +58,11 @@ SCRIPT_CARD_LAYOUTS = {
         ],
         "advanced": [],
     },
-    "auto_follow": {
+    "always_on": {
         "expanded": False,
         "sections": [
-            ("Trigger", ["cooldown_seconds"]),
+            ("Follow", ["cooldown_seconds"]),
+            ("Disable", ["disable_follow", "disable_wallet", "disable_spellbook_fill", "disable_fog_off"]),
         ],
         "advanced": ["poll_interval", "max_lines", "echo_console", "include_backlog"],
     },
@@ -79,7 +80,7 @@ SCRIPT_CARD_ACCENTS = {
     "auto_aa": "#00a878",
     "auto_action": "#f59f00",
     "auto_attack": "#d9480f",
-    "auto_follow": "#0ca678",
+    "always_on": "#087f5b",
     "auto_rsm": "#7950f2",
 }
 BANK_PAGE_TO_VALUE = {"None": 0, "Shift": 1, "Control": 2}
@@ -181,7 +182,7 @@ class ScriptCard:
         if self.definition.script_id == "auto_aa":
             self._create_header_mode_control(header, next_column, on_change=self.on_auto_damage_mode_changed)
             next_column += 2
-        elif self.definition.script_id == "auto_action":
+        elif self.definition.script_id in ("auto_action", "auto_rsm"):
             self._create_header_mode_control(header, next_column)
             next_column += 2
 

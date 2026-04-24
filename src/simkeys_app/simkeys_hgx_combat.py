@@ -23,6 +23,19 @@ BREACH_LINE_RE = re.compile(r"^(?P<target>.+?)\s*:\s*Breach\s+(?P<effect>.+)$", 
 TARGET_BLIND_RE = re.compile(r"\(Target Blind\)", re.IGNORECASE)
 EQUIPPED_ITEM_SWAPPED_RE = re.compile(r"^Equipped item swapped out\.\s*$", re.IGNORECASE)
 WEAPON_EQUIPPED_RE = re.compile(r"^Weapon equipped as .* weapon\.\s*$", re.IGNORECASE)
+ATTACK_MODE_ALIASES = {
+    "expertise": "Expertise",
+    "improved expertise": "Improved Expertise",
+    "power attack": "Power Attack",
+    "improved power attack": "Improved Power Attack",
+    "flurry of blows": "Flurry of Blows",
+    "rapid shot": "Rapid Shot",
+    "defensive stance": "Defensive Stance",
+    "dirty fighting": "Dirty Fighting",
+    "sneak attack": "Sneak Attack",
+    "death attack": "Death Attack",
+    "attack of opportunity": "Attack of Opportunity",
+}
 
 COMBAT_LOG_DAMAGE_ALIASES = {
     "physical": (None, "Physical"),
@@ -186,6 +199,27 @@ def parse_attack_line(text: str) -> Optional[ParsedAttackLine]:
         is_hit=result_text.lower() in {"hit", "critical hit"},
         is_critical=result_text.lower() == "critical hit",
     )
+
+
+def normalize_attack_mode_name(text: str) -> str:
+    value = normalize_actor_name(text).lower()
+    value = re.sub(r"[^a-z0-9]+", " ", value)
+    value = WHITESPACE_RE.sub(" ", value).strip()
+    return ATTACK_MODE_ALIASES.get(value, "")
+
+
+def parse_attack_mode_names(text: str) -> Tuple[str, ...]:
+    names = []
+    for part in str(text or "").split(":"):
+        mode_name = normalize_attack_mode_name(part)
+        if mode_name:
+            names.append(mode_name)
+    return tuple(names)
+
+
+def attack_mode_has(text: str, mode_name: str) -> bool:
+    normalized = normalize_attack_mode_name(mode_name)
+    return bool(normalized and normalized in parse_attack_mode_names(text))
 
 
 def parse_damage_line(text: str) -> Optional[ParsedDamageLine]:
