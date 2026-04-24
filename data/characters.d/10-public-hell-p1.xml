@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <creatures>
-  <creature name="Chosen of Tiamat" race="Outsider" type="Greater" />  
+  <creature name="Chosen of Tiamat" race="Outsider" type="Greater">
+    <damageImmunities>
+      <damage type="Acid" healing="2" />
+      <damage type="Cold" healing="2" />
+      <damage type="Electrical" healing="2" />
+      <damage type="Fire" healing="2" />
+      <damage type="Sonic" healing="2" />
+    </damageImmunities>
+  </creature>
   <creature name="Swarm Master" base="Advespa" type="Greater" />
   <creature name="Frostweaver" base="Arachill" type="Greater" />
   <creature name="Ayperobos Horde" base="Ayperobos Swarm" type="Greater" />
@@ -34,7 +42,7 @@
   <creature name="Unbound" base="Maelephant" type="Greater" />
   <creature name="Ravening Malebranche" base="Malebranche" type="Greater" />
   <creature name="Effluviarch" base="Malefic Wind" type="Greater" />
-  <creature name="Dolorous Tear" base="Mammons Tears" type="Greater" />
+  <creature name="Dolorous Tear" base="Mammons Tears" type="Greater" kickback="Area" />
   <creature name="Minauran Rotscale" base="Minauran Murkfiend" type="Greater" />
   <creature name="Narzugon Eye" base="Narzugon" type="Greater" />
   <creature name="Elder Nag" base="Nightmare" type="Greater" />

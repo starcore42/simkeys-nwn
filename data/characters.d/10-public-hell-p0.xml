@@ -1306,7 +1306,7 @@
       <add name="Bigbys Clenched Fist" />
     </spellImmunities>
   </creature>
-  <creature name="Mammons Tear" />
+  <creature name="Mammons Tear" kickback="Area" />
   <creature name="Minauran Murkfiend" timeStamp="2011-07-30T13:59:06.0000000Z" race="Animal">
     <damageImmunities>
       <damage type="Bludgeoning" immunity="0" resistance="15" />

@@ -664,12 +664,12 @@ class ScriptCard:
         if is_weapon:
             max_bindings = _weapon_mode_limit(mode)
             self.mode_hint_var.set(
-                f"{mode} swaps weapons by quickbar and auto-detects each weapon family from combat log damage lines. "
+                f"{mode} swaps weapons by quickbar and learns each weapon's damage profile from combat log lines, including adaptive P2-style signatures and rolling damage estimates. "
                 f"Select up to {max_bindings} weapon buttons. The starting weapon is assumed Unknown and reconciled from combat."
             )
             self.weapon_limit_var.set(
                 "Round delay: the swap lands at the start of the next combat round. "
-                "The script learns DB/P1/XR automatically and will not re-press the current weapon."
+                "The script treats one-off type changes as swap/boundary noise first, then only recategorizes after repeated evidence."
             )
             self.command_section.grid_remove()
             self.weapon_section.grid()
@@ -730,7 +730,7 @@ class ScriptCard:
             else:
                 self.weapon_limit_var.set(
                     "Round delay: the swap lands at the start of the next combat round. "
-                    "From Unknown, the script probes a selected slot; physical-only damage is treated as Unarmed, then the slot is pressed again."
+                    "From Unknown, the script probes from combat, treats physical-only hits as Unarmed, and builds approximate per-type damage estimates over time."
                 )
 
     def on_toggle(self):
@@ -1141,6 +1141,9 @@ class SimKeysDesktopApp:
         matched = str(analysis.get("matched_name") or target)
         paragon = int(analysis.get("paragon_ranks") or 0)
         lines.append(f"Target: {target}    Matched: {matched}    Paragon: {paragon}")
+        special_rule = str(analysis.get("special_target_rule") or "").strip()
+        if special_rule:
+            lines.append(f"Rule:       {special_rule}")
         lines.append(f"Immunity:   {self._format_target_stat_entries(analysis.get('immunity'), '%')}")
         lines.append(f"Resistance: {self._format_target_stat_entries(analysis.get('resistance'))}")
         lines.append(f"Healing:    {self._format_target_stat_entries(analysis.get('healing'))}")
@@ -1169,8 +1172,10 @@ class SimKeysDesktopApp:
                 expected_text = f"{int(expected):4d}"
             healing_types = list(weapon.get("healing_types") or [])
             healing_text = f" HEALS {'/'.join(healing_types)}" if healing_types else ""
+            ignored_types = list(weapon.get("ignored_types") or [])
+            ignored_text = f" IGNORE {'/'.join(ignored_types)}" if ignored_types else ""
             summary = str(weapon.get("summary") or "Unknown")
-            lines.append(f"{marker_text} {label:<8} expected={expected_text}{healing_text}  {summary}")
+            lines.append(f"{marker_text} {label:<8} expected={expected_text}{healing_text}{ignored_text}  {summary}")
 
         lines.append("")
         lines.append("* current   > pending   ! recommended")

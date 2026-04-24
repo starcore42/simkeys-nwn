@@ -33,8 +33,23 @@ WEAPON_SLOT_NONE = "-"
 WEAPON_CURRENT_UNKNOWN = "Unknown"
 WEAPON_CURRENT_UNARMED = "Unarmed"
 WEAPON_BINDING_KEYS = tuple(f"W{index}" for index in range(1, 7))
+WEAPON_PHYSICAL_TYPES = frozenset({0, 1, 2})
 WEAPON_ELEMENTAL_TYPES = frozenset({3, 4, 5, 6, 7})
 WEAPON_EXOTIC_TYPES = frozenset({8, 9, 10, 11})
+WEAPON_SIGNATURE_TYPES = frozenset(set(WEAPON_ELEMENTAL_TYPES) | set(WEAPON_EXOTIC_TYPES))
+WEAPON_ESTIMATE_TYPES = frozenset(set(WEAPON_PHYSICAL_TYPES) | set(WEAPON_SIGNATURE_TYPES))
+P2_SPECIAL_NAME = "P2"
+MAMMONS_WRATH_SIGNATURE = tuple(sorted((
+    hgx_data.DAMAGE_TYPE_NAME_TO_ID["cold"],
+    hgx_data.DAMAGE_TYPE_NAME_TO_ID["fire"],
+    hgx_data.DAMAGE_TYPE_NAME_TO_ID["negative"],
+)))
+MAMMONS_TEAR_TARGETS = frozenset({
+    "mammons tear",
+    "dolorous tear",
+    "superior dolorous tear",
+    "elite dolorous tear",
+})
 _DAMAGE_TYPE_LABEL_BY_ID = {
     value: name.replace("raw", "raw ").replace("negative", "negative energy").replace("positive", "positive energy").title()
     for name, value in hgx_data.DAMAGE_TYPE_NAME_TO_ID.items()
@@ -129,15 +144,6 @@ class SlingerTargetState:
 
 
 @dataclass(frozen=True)
-class WeaponFamilyConfig:
-    family_key: str
-    elemental_count: int
-    elemental_dice: int
-    exotic_count: int
-    exotic_dice: int
-
-
-@dataclass(frozen=True)
 class WeaponBinding:
     key: str
     choice: str
@@ -147,23 +153,36 @@ class WeaponBinding:
 
 
 @dataclass
+class WeaponDamageEstimate:
+    base_estimate: float = 0.0
+    observations: int = 0
+    last_base_sample: float = 0.0
+    last_observed_amount: int = 0
+    max_observed_amount: int = 0
+
+
+@dataclass
 class WeaponLearningProfile:
     binding: WeaponBinding
     observations: int = 0
     attack_attempts: int = 0
     last_seen_at: float = 0.0
     last_attack_at: float = 0.0
-    locked_family_key: str = ""
-    locked_elemental: Tuple[int, ...] = ()
-    locked_exotic: Tuple[int, ...] = ()
+    stable_signature: Tuple[int, ...] = ()
+    stable_signature_observations: int = 0
+    candidate_signature: Tuple[int, ...] = ()
+    candidate_signature_streak: int = 0
+    current_signature: Tuple[int, ...] = ()
     mismatch_streak: int = 0
     mismatch_total: int = 0
     last_mismatch_at: float = 0.0
     rediscoveries: int = 0
-    elemental_counts: Dict[int, int] = field(default_factory=dict)
-    exotic_counts: Dict[int, int] = field(default_factory=dict)
-    elemental_max_amounts: Dict[int, int] = field(default_factory=dict)
-    exotic_max_amounts: Dict[int, int] = field(default_factory=dict)
+    dynamic_kind: str = ""
+    signature_counts: Dict[Tuple[int, ...], int] = field(default_factory=dict)
+    target_signatures: Dict[str, Tuple[int, ...]] = field(default_factory=dict)
+    type_counts: Dict[int, int] = field(default_factory=dict)
+    type_estimates: Dict[int, WeaponDamageEstimate] = field(default_factory=dict)
+    target_type_estimates: Dict[str, Dict[int, WeaponDamageEstimate]] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -172,12 +191,13 @@ class WeaponRecommendation:
     expected_damage: int
     matched_name: str
     paragon_ranks: int
-    family_label: str
-    learned_elemental: Tuple[int, ...]
-    learned_exotic: Tuple[int, ...]
+    learned_types: Tuple[int, ...]
+    estimated_components: Tuple[Tuple[int, int], ...]
     healing_types: Tuple[int, ...]
-    missing_elemental: int
-    missing_exotic: int
+    ignored_types: Tuple[int, ...]
+    special_name: str
+    signature_observations: int
+    estimate_observations: int
 
 
 class ClientScriptBase:
@@ -236,6 +256,9 @@ class AutoDrinkScript(ClientScriptBase):
         self.max_hp_observed = 0
         self.drink_generation = 0
         self.drinking = False
+        self.monitor_stop = threading.Event()
+        self.monitor_thread = None
+        self.last_poll_error = ""
 
     def on_start(self):
         super().on_start()
@@ -246,11 +269,19 @@ class AutoDrinkScript(ClientScriptBase):
         self.max_hp_observed = 0
         self.drink_generation = 0
         self.drinking = False
+        self.last_poll_error = ""
+        self.monitor_stop = threading.Event()
         try:
             current_hp, max_hp, percent, source = self._read_health_snapshot()
             self.set_status(f"Armed {current_hp}/{max_hp} ({percent:.1f}%) [{source}]")
         except Exception:
             self.set_status("Armed")
+        self.monitor_thread = threading.Thread(
+            target=self._run_health_monitor,
+            name=f"AutoDrinkMonitor-{self.client.pid}",
+            daemon=True,
+        )
+        self.monitor_thread.start()
         self.host.emit("info", f"{self.client.display_name}: AutoDrink started", script_id=self.script_id)
 
     def on_stop(self):
@@ -258,25 +289,85 @@ class AutoDrinkScript(ClientScriptBase):
         self.enabled = False
         self.drinking = False
         self.drink_generation += 1
+        self.monitor_stop.set()
         self._close_process_handle()
         self.host.emit("info", f"{self.client.display_name}: AutoDrink stopped", script_id=self.script_id)
 
+    def needs_chat_feed(self) -> bool:
+        return False
+
     def on_chat_line(self, sequence: int, text: str):
-        if not self.should_process(sequence):
-            return
+        return
 
+    def _clear_hp_path(self):
+        self.hp_address = 0
+        self.hp_owner_address = 0
+        self.max_hp_address = 0
+
+    def _resolve_hp_address(self):
+        module_base = int((self.client.query or {}).get("module_base", 0)) or kLegacyImageBase
+        pointer1_address = module_base + kLegacyHpPointerOffset
+        pointer2_holder = self._read_u32(pointer1_address)
+        if pointer2_holder == 0:
+            raise RuntimeError(f"hp pointer1 at 0x{pointer1_address:08X} was null")
+        hp_owner = self._read_u32(pointer2_holder + kLegacyHpOwnerOffset)
+        if hp_owner == 0:
+            raise RuntimeError(f"hp owner at 0x{pointer2_holder + kLegacyHpOwnerOffset:08X} was null")
+
+        hp_address = hp_owner + kLegacyCurrentHpOffset
+        if hp_owner != self.hp_owner_address or hp_address != self.hp_address:
+            previous_address = self.hp_address
+            self.hp_owner_address = hp_owner
+            self.hp_address = hp_address
+            self.max_hp_address = 0
+            if previous_address != hp_address:
+                self.host.emit(
+                    "info",
+                    (
+                        f"{self.client.display_name}: hp path resolved module=0x{module_base:08X} "
+                        f"pointer1=0x{pointer1_address:08X} holder=0x{pointer2_holder:08X} "
+                        f"owner=0x{hp_owner:08X} currentHp=0x{self.hp_address:08X}"
+                    ),
+                    script_id=self.script_id,
+                )
+        return self.hp_address
+
+    def _plausible_health_value(self, value: int) -> bool:
+        return 0 < int(value) <= 20000
+
+    def _plausible_max_health_value(self, value: int, current_hp: int) -> bool:
+        return int(value) >= int(current_hp) and 0 < int(value) <= 20000
+
+    def _health_poll_interval_seconds(self) -> float:
+        return max(float(self.config.get("poll_interval", 1.0)), 0.10)
+
+    def _run_health_monitor(self):
+        while not self.monitor_stop.is_set():
+            if not self.enabled:
+                break
+            try:
+                self._poll_health_once()
+                if self.last_poll_error:
+                    self.host.emit(
+                        "info",
+                        f"{self.client.display_name}: AutoDrink HP polling recovered",
+                        script_id=self.script_id,
+                    )
+                    self.last_poll_error = ""
+            except Exception as exc:
+                error_text = str(exc)
+                if error_text != self.last_poll_error:
+                    self.last_poll_error = error_text
+                    self.host.emit(
+                        "error",
+                        f"{self.client.display_name}: AutoDrink HP poll failed: {error_text}",
+                        script_id=self.script_id,
+                    )
+                self.set_status("HP poll failed")
+            self.monitor_stop.wait(self._health_poll_interval_seconds())
+
+    def _poll_health_once(self):
         if not self.enabled or self.drinking:
-            return
-
-        lower = text.lower()
-        combat_trigger = False
-        if " attacks " in lower:
-            name = (self.client.character_name or "").strip().lower()
-            combat_trigger = not name or name in lower
-        elif "casts" in lower:
-            combat_trigger = True
-
-        if not combat_trigger:
             return
 
         current_hp, max_hp, percent, source = self._read_health_snapshot()
@@ -346,32 +437,6 @@ class AutoDrinkScript(ClientScriptBase):
             raise OSError(simkeys.winerr(f"ReadProcessMemory(u16, 0x{address:08X}) failed"))
         return int(value.value)
 
-    def _resolve_hp_address(self):
-        if self.hp_address:
-            return self.hp_address
-
-        module_base = int((self.client.query or {}).get("module_base", 0)) or kLegacyImageBase
-        pointer1_address = module_base + kLegacyHpPointerOffset
-        pointer2_holder = self._read_u32(pointer1_address)
-        if pointer2_holder == 0:
-            raise RuntimeError(f"hp pointer1 at 0x{pointer1_address:08X} was null")
-        hp_owner = self._read_u32(pointer2_holder + kLegacyHpOwnerOffset)
-        if hp_owner == 0:
-            raise RuntimeError(f"hp owner at 0x{pointer2_holder + kLegacyHpOwnerOffset:08X} was null")
-
-        self.hp_owner_address = hp_owner
-        self.hp_address = hp_owner + kLegacyCurrentHpOffset
-        self.host.emit(
-            "info",
-            (
-                f"{self.client.display_name}: hp path resolved module=0x{module_base:08X} "
-                f"pointer1=0x{pointer1_address:08X} holder=0x{pointer2_holder:08X} "
-                f"owner=0x{hp_owner:08X} currentHp=0x{self.hp_address:08X}"
-            ),
-            script_id=self.script_id,
-        )
-        return self.hp_address
-
     def _guess_max_hp(self, current_hp: int):
         best_value = 0
         best_address = 0
@@ -393,34 +458,47 @@ class AutoDrinkScript(ClientScriptBase):
         return best_value
 
     def _read_health_snapshot(self):
-        self._resolve_hp_address()
-        current_hp = self._read_u16(self.hp_address)
-        if current_hp <= 0:
-            raise RuntimeError(f"current HP at 0x{self.hp_address:08X} was {current_hp}")
-
-        max_hp = 0
-        source = "observed"
-        if self.max_hp_address:
+        last_error = None
+        for attempt in range(3):
             try:
-                candidate = self._read_u16(self.max_hp_address)
-                if candidate >= current_hp and candidate <= 5000:
-                    max_hp = candidate
-                    source = f"probe+0x{self.max_hp_address - self.hp_address:X}"
-            except Exception:
-                self.max_hp_address = 0
+                self._resolve_hp_address()
+                current_hp = self._read_u16(self.hp_address)
+                if not self._plausible_health_value(current_hp):
+                    raise RuntimeError(f"current HP at 0x{self.hp_address:08X} was implausible ({current_hp})")
 
-        if max_hp == 0:
-            candidate = self._guess_max_hp(current_hp)
-            if candidate >= current_hp:
-                max_hp = candidate
-                source = f"probe+0x{self.max_hp_address - self.hp_address:X}"
+                max_hp = 0
+                source = "observed"
+                if self.max_hp_address:
+                    try:
+                        candidate = self._read_u16(self.max_hp_address)
+                        if self._plausible_max_health_value(candidate, current_hp):
+                            max_hp = candidate
+                            source = f"probe+0x{self.max_hp_address - self.hp_address:X}"
+                        else:
+                            self.max_hp_address = 0
+                    except Exception:
+                        self.max_hp_address = 0
 
-        self.max_hp_observed = max(self.max_hp_observed, current_hp, max_hp)
-        if max_hp == 0:
-            max_hp = self.max_hp_observed
+                if max_hp == 0:
+                    candidate = self._guess_max_hp(current_hp)
+                    if self._plausible_max_health_value(candidate, current_hp):
+                        max_hp = candidate
+                        source = f"probe+0x{self.max_hp_address - self.hp_address:X}"
 
-        percent = (float(current_hp) * 100.0 / float(max_hp)) if max_hp > 0 else 100.0
-        return current_hp, max_hp, percent, source
+                self.max_hp_observed = max(self.max_hp_observed, current_hp, max_hp)
+                if max_hp == 0:
+                    max_hp = self.max_hp_observed
+                if not self._plausible_max_health_value(max_hp, current_hp):
+                    raise RuntimeError(f"max HP was implausible ({max_hp}) for current HP {current_hp}")
+
+                percent = (float(current_hp) * 100.0 / float(max_hp)) if max_hp > 0 else 100.0
+                return current_hp, max_hp, percent, source
+            except Exception as exc:
+                last_error = exc
+                self._clear_hp_path()
+                if attempt < 2:
+                    continue
+        raise last_error if last_error is not None else RuntimeError("health snapshot failed")
 
     def _begin_drink_cooldown(self):
         self.drinking = True
@@ -527,6 +605,11 @@ class StopHittingScript(ClientScriptBase):
         self.last_target = record.name
         self.last_damage_summary = self._damage_summary(damage_line)
 
+        if self._protected_target_allows_mammon_wrath(record.name, damage_line):
+            self.set_status(f"{record.name}: Mammon's Wrath allowed")
+            self.host.notify_state_changed()
+            return
+
         if self.interrupting:
             self.set_status(f"{record.name}: interrupting")
             self.host.notify_state_changed()
@@ -585,6 +668,44 @@ class StopHittingScript(ClientScriptBase):
         ]
         return bool(parts and parts[-1] == character_key)
 
+    def _damage_line_looks_like_mammon_wrath(self, damage_line) -> bool:
+        observed_types = set()
+        has_physical = False
+        for component in damage_line.components:
+            damage_type = getattr(component, "damage_type", None)
+            if damage_type in WEAPON_SIGNATURE_TYPES:
+                observed_types.add(int(damage_type))
+            type_name = str(getattr(component, "type_name", "") or "").strip().lower()
+            if damage_type in WEAPON_PHYSICAL_TYPES or type_name in {"physical", "bludgeoning", "piercing", "slashing"}:
+                has_physical = True
+        return has_physical and tuple(sorted(observed_types)) == MAMMONS_WRATH_SIGNATURE
+
+    def _protected_target_allows_mammon_wrath(self, target_name: str, damage_line) -> bool:
+        if str(target_name or "").strip().lower() not in MAMMONS_TEAR_TARGETS:
+            return False
+
+        try:
+            state = self.host.get_state("auto_aa")
+        except Exception:
+            return False
+        if not state.get("running"):
+            return False
+
+        details = dict(state.get("details", {}))
+        if not details.get("weapon_mode"):
+            return False
+
+        if bool(details.get("current_is_mammon_wrath")) or bool(details.get("pending_is_mammon_wrath")):
+            return True
+
+        analysis = dict(details.get("target_analysis", {}))
+        matched_name = str(analysis.get("matched_name") or "").strip().lower()
+        target = str(analysis.get("target") or "").strip().lower()
+        if target_name.lower() in {matched_name, target} and bool(analysis.get("recommended_is_mammon_wrath")):
+            return True
+
+        return False
+
     def _begin_interrupt_cooldown(self):
         self.interrupting = True
         self.interrupt_generation += 1
@@ -618,15 +739,7 @@ class AutoAAScript(ClientScriptBase):
     MODE_GNOMISH_INVENTOR = "Gnomish Inventor"
     MODE_WEAPON_SWAP = "Weapon Swap"
     MAX_WEAPON_BINDINGS = len(WEAPON_BINDING_KEYS)
-    WEAPON_FAMILY_CONFIG = {
-        "DB": WeaponFamilyConfig("DB", elemental_count=3, elemental_dice=5, exotic_count=3, exotic_dice=2),
-        "P1": WeaponFamilyConfig("P1", elemental_count=1, elemental_dice=9, exotic_count=2, exotic_dice=6),
-        "XR": WeaponFamilyConfig("XR", elemental_count=2, elemental_dice=11, exotic_count=1, exotic_dice=8),
-    }
-    WEAPON_FAMILY_BY_SIGNATURE = {
-        (config.elemental_count, config.exotic_count): family_key
-        for family_key, config in WEAPON_FAMILY_CONFIG.items()
-    }
+    WEAPON_SIGNATURE_CONFIRM_THRESHOLD = 2
     WEAPON_LEARNING_ATTACKS_BEFORE_ROTATE = 3
     WEAPON_REDISCOVERY_MISMATCH_THRESHOLD = 8
     WEAPON_EQUIPPED_PROBE_INTERVAL_SECONDS = 0.50
@@ -663,6 +776,7 @@ class AutoAAScript(ClientScriptBase):
         self.weapon_profiles: Dict[str, WeaponLearningProfile] = {}
         self.current_weapon_key = ""
         self.pending_weapon_key = ""
+        self.pending_weapon_unarm = False
         self.pending_weapon_ready_at = 0.0
         self.pending_weapon_requested_at = 0.0
         self.pending_weapon_request_sequence = 0
@@ -705,6 +819,7 @@ class AutoAAScript(ClientScriptBase):
         self.weapon_profiles = {}
         self.current_weapon_key = ""
         self.pending_weapon_key = ""
+        self.pending_weapon_unarm = False
         self.pending_weapon_ready_at = 0.0
         self.pending_weapon_requested_at = 0.0
         self.pending_weapon_request_sequence = 0
@@ -770,6 +885,7 @@ class AutoAAScript(ClientScriptBase):
         self.weapon_profiles = {}
         self.current_weapon_key = ""
         self.pending_weapon_key = ""
+        self.pending_weapon_unarm = False
         self.pending_weapon_ready_at = 0.0
         self.pending_weapon_requested_at = 0.0
         self.pending_weapon_request_sequence = 0
@@ -994,6 +1110,7 @@ class AutoAAScript(ClientScriptBase):
 
     def _clear_pending_weapon_state(self):
         self.pending_weapon_key = ""
+        self.pending_weapon_unarm = False
         self.pending_weapon_ready_at = 0.0
         self.pending_weapon_requested_at = 0.0
         self.pending_weapon_request_sequence = 0
@@ -1003,6 +1120,14 @@ class AutoAAScript(ClientScriptBase):
         self.pending_weapon_conceal_seen = False
         self.pending_weapon_conceal_sequence = 0
         self.pending_weapon_ignored_damage_count = 0
+
+    def _pending_weapon_display(self) -> str:
+        if not self.pending_weapon_key:
+            return ""
+        if self.pending_weapon_unarm:
+            source = self._binding_display(self.pending_weapon_key)
+            return f"{WEAPON_CURRENT_UNARMED} via {source}"
+        return self._binding_display(self.pending_weapon_key)
 
     def _equipped_binding_keys_from_mask(self, mask: int) -> Tuple[str, ...]:
         matches = []
@@ -1102,7 +1227,7 @@ class AutoAAScript(ClientScriptBase):
         if not self.pending_weapon_key:
             return False
 
-        pending_display = self._binding_display(self.pending_weapon_key)
+        pending_display = self._pending_weapon_display()
         self._clear_pending_weapon_state()
         self.host.emit(
             "info",
@@ -1112,185 +1237,314 @@ class AutoAAScript(ClientScriptBase):
         self.host.notify_state_changed()
         return True
 
-    def _matching_locked_profile_for_observed_types(
+    def _damage_signature(self, observed_types: Set[int]) -> Tuple[int, ...]:
+        if not observed_types:
+            return ()
+        return tuple(sorted(damage_type for damage_type in observed_types if damage_type in WEAPON_SIGNATURE_TYPES))
+
+    def _is_p2_signature(self, signature: Tuple[int, ...]) -> bool:
+        signature_types = {int(damage_type) for damage_type in signature if isinstance(damage_type, int)}
+        if len(signature_types) != 3:
+            return False
+        elemental_count = len(signature_types.intersection(WEAPON_ELEMENTAL_TYPES))
+        exotic_count = len(signature_types.intersection(WEAPON_EXOTIC_TYPES))
+        return elemental_count == 2 and exotic_count == 1
+
+    def _profile_is_p2(self, profile: Optional[WeaponLearningProfile]) -> bool:
+        return profile is not None and str(profile.dynamic_kind or "").strip() == P2_SPECIAL_NAME
+
+    def _profile_target_key(self, creature_name: str) -> str:
+        combat_profile = self.db._resolve_combat_profile(creature_name)
+        if combat_profile is not None and combat_profile.matched_name:
+            return str(combat_profile.matched_name).strip().lower()
+        return str(creature_name or "").strip().lower()
+
+    def _matching_profile_for_observed_types(
         self,
         observed_types: Set[int],
         exclude_key: str = "",
     ) -> Optional[WeaponLearningProfile]:
-        if not observed_types:
+        signature = self._damage_signature(observed_types)
+        if not signature:
             return None
 
         for profile in self.weapon_profiles.values():
             if profile.binding.key == exclude_key:
                 continue
-            if self._profile_is_locked(profile) and self._observed_types_exactly_match_profile(profile, observed_types):
+            if tuple(profile.stable_signature) == signature:
                 return profile
+
+        dynamic_matches = [
+            profile
+            for profile in self.weapon_profiles.values()
+            if profile.binding.key != exclude_key
+            and self._profile_is_p2(profile)
+            and signature in profile.signature_counts
+        ]
+        if len(dynamic_matches) == 1:
+            return dynamic_matches[0]
         return None
-
-    def _family_amounts_compatible(self, profile: WeaponLearningProfile, family: WeaponFamilyConfig) -> bool:
-        # Critical hits, sneak attacks, and server-side multipliers can inflate
-        # component amounts far beyond the base dice. The stable signal is the
-        # type signature: DB=3/3, P1=1/2, XR=2/1.
-        return True
-
-    def _exact_weapon_family(self, profile: WeaponLearningProfile) -> Optional[WeaponFamilyConfig]:
-        if profile.locked_family_key:
-            return self.WEAPON_FAMILY_CONFIG.get(profile.locked_family_key)
-
-        family_key = self.WEAPON_FAMILY_BY_SIGNATURE.get((len(profile.elemental_counts), len(profile.exotic_counts)))
-        if not family_key:
-            return None
-        family = self.WEAPON_FAMILY_CONFIG[family_key]
-        if not self._family_amounts_compatible(profile, family):
-            return None
-        return family
-
-    def _profile_is_locked(self, profile: Optional[WeaponLearningProfile]) -> bool:
-        return bool(profile and profile.locked_family_key)
-
-    def _profile_locked_types(self, profile: Optional[WeaponLearningProfile]) -> Set[int]:
-        if profile is None or not profile.locked_family_key:
-            return set()
-        return set(profile.locked_elemental) | set(profile.locked_exotic)
-
-    def _lock_weapon_profile(self, profile: WeaponLearningProfile, family: WeaponFamilyConfig):
-        if profile.locked_family_key:
-            return
-
-        profile.locked_family_key = family.family_key
-        profile.locked_elemental = self._top_damage_types(profile.elemental_counts, family.elemental_count)
-        profile.locked_exotic = self._top_damage_types(profile.exotic_counts, family.exotic_count)
-        profile.mismatch_streak = 0
-        profile.mismatch_total = 0
-        profile.last_mismatch_at = 0.0
 
     def _reset_weapon_profile_for_rediscovery(self, profile: WeaponLearningProfile):
         profile.observations = 0
         profile.attack_attempts = 0
         profile.last_seen_at = 0.0
         profile.last_attack_at = 0.0
-        profile.locked_family_key = ""
-        profile.locked_elemental = ()
-        profile.locked_exotic = ()
+        profile.stable_signature = ()
+        profile.stable_signature_observations = 0
+        profile.candidate_signature = ()
+        profile.candidate_signature_streak = 0
+        profile.current_signature = ()
         profile.mismatch_streak = 0
         profile.mismatch_total = 0
         profile.last_mismatch_at = 0.0
         profile.rediscoveries += 1
-        profile.elemental_counts.clear()
-        profile.exotic_counts.clear()
-        profile.elemental_max_amounts.clear()
-        profile.exotic_max_amounts.clear()
+        profile.dynamic_kind = ""
+        profile.signature_counts.clear()
+        profile.target_signatures.clear()
+        profile.type_counts.clear()
+        profile.type_estimates.clear()
+        profile.target_type_estimates.clear()
 
-    def _compatible_weapon_families(self, profile: WeaponLearningProfile) -> Tuple[WeaponFamilyConfig, ...]:
-        exact_family = self._exact_weapon_family(profile)
-        if exact_family is not None:
-            return (exact_family,)
+    def _profile_signature_types(self, profile: Optional[WeaponLearningProfile]) -> Set[int]:
+        if profile is None:
+            return set()
+        if self._profile_is_p2(profile) and profile.current_signature:
+            return set(profile.current_signature)
+        return set(profile.stable_signature)
 
-        seen_elemental = len(profile.elemental_counts)
-        seen_exotic = len(profile.exotic_counts)
-        compatible = []
-        for family in self.WEAPON_FAMILY_CONFIG.values():
-            if seen_elemental > family.elemental_count or seen_exotic > family.exotic_count:
-                continue
-            if not self._family_amounts_compatible(profile, family):
-                continue
-            compatible.append(family)
-        compatible.sort(key=lambda family: family.family_key)
-        return tuple(compatible)
+    def _profile_known_damage_types(self, profile: Optional[WeaponLearningProfile]) -> Set[int]:
+        if profile is None:
+            return set()
+        known_types = set(profile.stable_signature) | set(profile.current_signature)
+        for signature in profile.signature_counts.keys():
+            known_types.update(signature)
+        for signature in profile.target_signatures.values():
+            known_types.update(signature)
+        known_types.update(profile.type_counts.keys())
+        known_types.update(profile.type_estimates.keys())
+        return known_types
 
-    def _top_damage_types(self, counts: Dict[int, int], limit: int) -> Tuple[int, ...]:
-        if limit <= 0 or not counts:
-            return ()
-        ranked = sorted(
-            counts.items(),
-            key=lambda item: (-item[1], _format_damage_type_label(item[0]), item[0]),
-        )
-        return tuple(damage_type for damage_type, _count in ranked[:limit])
-
-    def _weapon_profile_context(
+    def _profile_target_component_estimates(
         self,
-        profile: WeaponLearningProfile,
-    ) -> Optional[Tuple[Dict[int, float], str, Tuple[int, ...], Tuple[int, ...], int, int]]:
-        exact_family = self._exact_weapon_family(profile)
-        if exact_family is not None and profile.locked_family_key:
-            learned_elemental = profile.locked_elemental
-            learned_exotic = profile.locked_exotic
-            missing_elemental = 0
-            missing_exotic = 0
-            elemental_dice = exact_family.elemental_dice
-            exotic_dice = exact_family.exotic_dice
-            family_label = exact_family.family_key
-        elif exact_family is not None:
-            learned_elemental = self._top_damage_types(profile.elemental_counts, exact_family.elemental_count)
-            learned_exotic = self._top_damage_types(profile.exotic_counts, exact_family.exotic_count)
-            missing_elemental = max(exact_family.elemental_count - len(learned_elemental), 0)
-            missing_exotic = max(exact_family.exotic_count - len(learned_exotic), 0)
-            elemental_dice = exact_family.elemental_dice
-            exotic_dice = exact_family.exotic_dice
-            family_label = exact_family.family_key
-        else:
-            compatible = self._compatible_weapon_families(profile)
-            if not compatible:
-                return None
+        profile: Optional[WeaponLearningProfile],
+        creature_name: str,
+    ) -> Dict[int, float]:
+        if profile is None:
+            return {}
 
-            if len(compatible) == 1:
-                family = compatible[0]
-                learned_elemental = self._top_damage_types(profile.elemental_counts, family.elemental_count)
-                learned_exotic = self._top_damage_types(profile.exotic_counts, family.exotic_count)
-                missing_elemental = max(family.elemental_count - len(learned_elemental), 0)
-                missing_exotic = max(family.exotic_count - len(learned_exotic), 0)
-                elemental_dice = family.elemental_dice
-                exotic_dice = family.exotic_dice
-                family_label = f"{family.family_key}?"
-            else:
-                learned_elemental = self._top_damage_types(
-                    profile.elemental_counts,
-                    max(family.elemental_count for family in compatible),
-                )
-                learned_exotic = self._top_damage_types(
-                    profile.exotic_counts,
-                    max(family.exotic_count for family in compatible),
-                )
-                missing_elemental = min(
-                    max(family.elemental_count - len(learned_elemental), 0)
-                    for family in compatible
-                )
-                missing_exotic = min(
-                    max(family.exotic_count - len(learned_exotic), 0)
-                    for family in compatible
-                )
-                elemental_dice = min(family.elemental_dice for family in compatible)
-                exotic_dice = min(family.exotic_dice for family in compatible)
-                family_label = "/".join(family.family_key for family in compatible) + "?"
+        target_key = self._profile_target_key(creature_name)
+        if not target_key:
+            return {}
+
+        estimates = profile.target_type_estimates.get(target_key) or {}
+        components: Dict[int, float] = {}
+        for damage_type, estimate in estimates.items():
+            if damage_type not in WEAPON_ESTIMATE_TYPES:
+                continue
+            if estimate.observations <= 0:
+                continue
+            components[damage_type] = float(estimate.base_estimate)
+        return components
+
+    def _profile_signature_for_target(
+        self,
+        profile: Optional[WeaponLearningProfile],
+        creature_name: str,
+    ) -> Tuple[int, ...]:
+        if profile is None:
+            return ()
+        target_key = self._profile_target_key(creature_name)
+        if not target_key:
+            return ()
+        signature = profile.target_signatures.get(target_key)
+        if signature:
+            return tuple(signature)
+        return ()
+
+    def _profile_component_estimates(self, profile: Optional[WeaponLearningProfile]) -> Dict[int, float]:
+        if profile is None:
+            return {}
 
         components: Dict[int, float] = {}
-        elemental_base_damage = 6.5 * float(elemental_dice)
-        exotic_base_damage = 6.5 * float(exotic_dice)
-        for damage_type in learned_elemental:
-            components[damage_type] = components.get(damage_type, 0.0) + elemental_base_damage
-        for damage_type in learned_exotic:
-            components[damage_type] = components.get(damage_type, 0.0) + exotic_base_damage
+        for damage_type, estimate in profile.type_estimates.items():
+            if damage_type not in WEAPON_ESTIMATE_TYPES:
+                continue
+            if estimate.observations <= 0 or estimate.base_estimate <= 0.0:
+                continue
+            components[damage_type] = float(estimate.base_estimate)
+        return components
 
-        return components, family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic
+    def _is_mammons_tear_target_name(self, creature_name: str) -> bool:
+        return str(creature_name or "").strip().lower() in MAMMONS_TEAR_TARGETS
 
-    def _weapon_profile_summary(
+    def _resolve_target_record(self, creature_name: str):
+        if not creature_name:
+            return None
+        return self.db.lookup(creature_name)
+
+    def _is_mammons_tear_target(self, creature_name: str) -> bool:
+        record = self._resolve_target_record(creature_name)
+        if record is None:
+            return self._is_mammons_tear_target_name(creature_name)
+        return self._is_mammons_tear_target_name(record.name)
+
+    def _is_mammon_wrath_profile(self, profile: Optional[WeaponLearningProfile]) -> bool:
+        if profile is None:
+            return False
+        if self._profile_is_p2(profile):
+            return False
+        if len([signature for signature in profile.signature_counts.keys() if signature]) > 1:
+            return False
+        signature = tuple(sorted(damage_type for damage_type in self._profile_known_damage_types(profile) if damage_type in WEAPON_SIGNATURE_TYPES))
+        if signature != MAMMONS_WRATH_SIGNATURE:
+            return False
+        has_physical = any(
+            profile.type_counts.get(damage_type, 0) > 0 or damage_type in profile.type_estimates
+            for damage_type in WEAPON_PHYSICAL_TYPES
+        )
+        return has_physical or profile.observations > 0
+
+    def _special_weapon_name_for_profile(self, profile: Optional[WeaponLearningProfile]) -> str:
+        if self._profile_is_p2(profile):
+            return P2_SPECIAL_NAME
+        if self._is_mammon_wrath_profile(profile):
+            return "Mammon's Wrath"
+        return ""
+
+    def _mammon_wrath_profile_key(self) -> str:
+        for binding_key, profile in self.weapon_profiles.items():
+            if self._is_mammon_wrath_profile(profile):
+                return binding_key
+        return ""
+
+    def _mammon_wrath_candidate(self, candidates: List[WeaponRecommendation]) -> Optional[WeaponRecommendation]:
+        for candidate in candidates:
+            if candidate.special_name == "Mammon's Wrath":
+                return candidate
+        return None
+
+    def _weapon_ignored_damage_types(
         self,
-        family_label: str,
-        learned_elemental: Tuple[int, ...],
-        learned_exotic: Tuple[int, ...],
-        missing_elemental: int,
-        missing_exotic: int,
-    ) -> str:
+        profile: Optional[WeaponLearningProfile],
+        components: Optional[Dict[int, float]] = None,
+    ) -> Tuple[int, ...]:
+        if profile is None:
+            return ()
+
+        negative_estimate = profile.type_estimates.get(10)
+        if negative_estimate is None or negative_estimate.observations <= 0:
+            return ()
+        if int(negative_estimate.max_observed_amount) > 1:
+            return ()
+
+        effective_components = components if components is not None else self._profile_component_estimates(profile)
+        has_other_damage = any(
+            damage_type != 10 and float(base_damage) > 0.0
+            for damage_type, base_damage in effective_components.items()
+        )
+        if not has_other_damage:
+            return ()
+
+        return (10,)
+
+    def _effective_weapon_components(
+        self,
+        profile: Optional[WeaponLearningProfile],
+        components: Optional[Dict[int, float]] = None,
+    ) -> Tuple[Dict[int, float], Tuple[int, ...]]:
+        components = dict(components if components is not None else self._profile_component_estimates(profile))
+        ignored_types = self._weapon_ignored_damage_types(profile, components)
+        if ignored_types:
+            ignored_set = set(ignored_types)
+            components = {
+                damage_type: base_damage
+                for damage_type, base_damage in components.items()
+                if damage_type not in ignored_set
+            }
+        return components, ignored_types
+
+    def _profile_estimate_observations(self, profile: Optional[WeaponLearningProfile]) -> int:
+        if profile is None:
+            return 0
+        return sum(int(estimate.observations) for estimate in profile.type_estimates.values())
+
+    def _profile_learning_complete(self, profile: Optional[WeaponLearningProfile]) -> bool:
+        if profile is None:
+            return False
+        has_signature_state = bool(profile.stable_signature) or self._profile_is_p2(profile)
+        return has_signature_state and bool(profile.type_estimates)
+
+    def _format_estimated_components(self, components: Dict[int, float]) -> str:
+        if not components:
+            return ""
         parts = []
-        if family_label:
-            parts.append(family_label)
-        if learned_elemental:
-            parts.append("Elem " + "/".join(_format_damage_type_label(value) for value in learned_elemental))
-        if learned_exotic:
-            parts.append("Exo " + "/".join(_format_damage_type_label(value) for value in learned_exotic))
-        if missing_elemental or missing_exotic:
-            parts.append(f"Learn E{missing_elemental}/X{missing_exotic}")
-        return ", ".join(parts) if parts else "Unlearned"
+        for damage_type in sorted(components):
+            parts.append(f"{_format_damage_type_label(damage_type)}~{int(round(components[damage_type]))}")
+        return "/".join(parts)
+
+    def _format_ignored_damage_types(self, profile: Optional[WeaponLearningProfile], ignored_types: Tuple[int, ...]) -> str:
+        if profile is None or not ignored_types:
+            return ""
+        parts = []
+        for damage_type in ignored_types:
+            estimate = profile.type_estimates.get(damage_type)
+            if estimate is not None and int(estimate.max_observed_amount) > 0:
+                parts.append(f"{_format_damage_type_label(damage_type)}~{int(estimate.max_observed_amount)}")
+            else:
+                parts.append(_format_damage_type_label(damage_type))
+        return "/".join(parts)
+
+    def _weapon_profile_summary(self, profile: WeaponLearningProfile) -> str:
+        parts = []
+        special_name = self._special_weapon_name_for_profile(profile)
+        if special_name:
+            parts.append(special_name)
+        if self._profile_is_p2(profile):
+            if profile.current_signature:
+                parts.append("Current " + self._format_weapon_type_set(set(profile.current_signature)))
+            else:
+                parts.append("Adaptive")
+            distinct_signatures = [
+                signature
+                for signature in profile.signature_counts.keys()
+                if self._is_p2_signature(signature)
+            ]
+            if distinct_signatures:
+                parts.append(f"Seen {len(distinct_signatures)} sigs")
+        else:
+            known_types = self._profile_known_damage_types(profile)
+            if profile.stable_signature:
+                parts.append("Types " + self._format_weapon_type_set(known_types))
+            elif profile.candidate_signature:
+                parts.append(
+                    "Seen "
+                    + self._format_weapon_type_set(set(profile.candidate_signature))
+                    + f"? ({profile.candidate_signature_streak}/{self.WEAPON_SIGNATURE_CONFIRM_THRESHOLD})"
+                )
+            elif known_types:
+                parts.append("Seen " + self._format_weapon_type_set(known_types))
+            else:
+                parts.append("Unknown")
+
+        components = self._profile_component_estimates(profile)
+        if components:
+            parts.append("Base " + self._format_estimated_components(components))
+        ignored_types = self._weapon_ignored_damage_types(profile, components)
+        if ignored_types:
+            parts.append(f"Ignore {self._format_ignored_damage_types(profile, ignored_types)} rider")
+
+        suffix = f"obs {profile.observations}, attacks {profile.attack_attempts}"
+        if self._profile_is_p2(profile):
+            suffix += ", adaptive"
+        if profile.stable_signature_observations:
+            suffix += f", stable {profile.stable_signature_observations}"
+        if profile.mismatch_streak:
+            suffix += f", mismatch {profile.mismatch_streak}/{self.WEAPON_REDISCOVERY_MISMATCH_THRESHOLD}"
+        if profile.rediscoveries:
+            suffix += f", rediscovered {profile.rediscoveries}"
+        parts.append(suffix)
+        return ", ".join(part for part in parts if part)
 
     def _weapon_swap_cooldown_seconds(self) -> float:
         return max(float(self.config.get("swap_cooldown_seconds", 6.2)), 0.1)
@@ -1298,6 +1552,8 @@ class AutoAAScript(ClientScriptBase):
     def _confirm_pending_weapon(self, reason: str) -> bool:
         if not self.pending_weapon_key:
             return False
+        if self.pending_weapon_unarm:
+            return self._confirm_unarmed_state(reason)
 
         pending_key = self.pending_weapon_key
         self.current_weapon_key = pending_key
@@ -1346,35 +1602,27 @@ class AutoAAScript(ClientScriptBase):
                 self.pending_weapon_feedback_sequence = self.current_chat_sequence
             if self.pending_weapon_key:
                 if time.monotonic() >= self.pending_weapon_ready_at:
-                    self.set_status(f"awaiting {self._binding_display(self.pending_weapon_key)} damage")
+                    self.set_status(f"awaiting {self._pending_weapon_display()} damage")
                 else:
-                    self.set_status(f"waiting {self._binding_display(self.pending_weapon_key)} damage")
+                    self.set_status(f"waiting {self._pending_weapon_display()} damage")
                 self.host.notify_state_changed()
             else:
                 self.host.notify_state_changed()
 
-    def _profile_damage_types(self, profile: Optional[WeaponLearningProfile]) -> Set[int]:
-        if profile is None:
-            return set()
-        locked_types = self._profile_locked_types(profile)
-        if locked_types:
-            return locked_types
-        return set(profile.elemental_counts.keys()) | set(profile.exotic_counts.keys())
-
     def _observed_types_fit_profile(self, profile: Optional[WeaponLearningProfile], observed_types: Set[int]) -> bool:
         if profile is None or not observed_types:
             return False
-
-        known_types = self._profile_damage_types(profile)
-        if not known_types:
-            return False
-
-        return observed_types == known_types
+        if self._profile_is_p2(profile):
+            return self._damage_signature(observed_types) in profile.signature_counts
+        known_types = self._profile_signature_types(profile)
+        return bool(known_types) and observed_types == known_types
 
     def _observed_types_exactly_match_profile(self, profile: Optional[WeaponLearningProfile], observed_types: Set[int]) -> bool:
         if profile is None or not observed_types:
             return False
-        known_types = self._profile_damage_types(profile)
+        if self._profile_is_p2(profile):
+            return self._damage_signature(observed_types) in profile.signature_counts
+        known_types = self._profile_signature_types(profile)
         return bool(known_types) and observed_types == known_types
 
     def _pending_weapon_can_accept_damage(self, now: float) -> bool:
@@ -1389,14 +1637,14 @@ class AutoAAScript(ClientScriptBase):
             return
         self.pending_weapon_ignored_damage_count += 1
         self.set_status(
-            f"{defender_name}: waiting round boundary for {self._binding_display(self.pending_weapon_key)}"
+            f"{defender_name}: waiting round boundary for {self._pending_weapon_display()}"
         )
         if self.pending_weapon_ignored_damage_count in (1, 4):
             self.host.emit(
                 "info",
                 (
                     f"{self.host.client.display_name}: {self._mode_label()} ignored pre-boundary "
-                    f"damage while waiting for {self._binding_display(self.pending_weapon_key)}; "
+                    f"damage while waiting for {self._pending_weapon_display()}; "
                     f"observed {self._format_weapon_type_set(observed_types)}"
                 ),
                 script_id=self.script_id,
@@ -1411,13 +1659,13 @@ class AutoAAScript(ClientScriptBase):
 
         self.pending_weapon_conceal_seen = True
         self.pending_weapon_conceal_sequence = self.current_chat_sequence
-        self.set_status(f"{attack.defender}: round boundary for {self._binding_display(self.pending_weapon_key)}")
+        self.set_status(f"{attack.defender}: round boundary for {self._pending_weapon_display()}")
         self.host.notify_state_changed()
 
     def _damage_line_is_physical_only(self, damage_line) -> bool:
         has_physical = False
         for component in damage_line.components:
-            if component.damage_type in WEAPON_ELEMENTAL_TYPES or component.damage_type in WEAPON_EXOTIC_TYPES:
+            if component.damage_type in WEAPON_SIGNATURE_TYPES:
                 return False
             type_name = str(getattr(component, "type_name", "") or "").strip().lower()
             if type_name in {"physical", "bludgeoning", "piercing", "slashing"}:
@@ -1429,7 +1677,7 @@ class AutoAAScript(ClientScriptBase):
     def _observed_weapon_damage_types(self, damage_line) -> Set[int]:
         observed_types: Set[int] = set()
         for component in damage_line.components:
-            if component.damage_type in WEAPON_ELEMENTAL_TYPES or component.damage_type in WEAPON_EXOTIC_TYPES:
+            if component.damage_type in WEAPON_SIGNATURE_TYPES:
                 observed_types.add(component.damage_type)
         return observed_types
 
@@ -1456,7 +1704,7 @@ class AutoAAScript(ClientScriptBase):
                 self._set_current_weapon_from_equipped_key(equipped_key, "equipped quickbar mask")
                 current_profile = self.weapon_profiles.get(equipped_key)
 
-            matching_profile = self._matching_locked_profile_for_observed_types(
+            matching_profile = self._matching_profile_for_observed_types(
                 observed_types,
                 exclude_key=self.current_weapon_key,
             )
@@ -1480,8 +1728,8 @@ class AutoAAScript(ClientScriptBase):
             self._clear_pending_weapon_state()
             return current_profile
 
-        current_types = self._profile_damage_types(current_profile)
-        pending_types = self._profile_damage_types(pending_profile)
+        current_types = self._profile_signature_types(current_profile)
+        pending_types = self._profile_signature_types(pending_profile)
 
         if not pending_can_accept:
             if current_types and self._observed_types_exactly_match_profile(current_profile, observed_types):
@@ -1500,15 +1748,33 @@ class AutoAAScript(ClientScriptBase):
                 self._set_current_weapon_from_equipped_key(equipped_key, "equipped quickbar mask")
                 return equipped_profile
 
+        if self.pending_weapon_unarm:
+            if current_types and self._observed_types_fit_profile(current_profile, observed_types):
+                self.set_status(f"{defender_name}: awaiting {self._pending_weapon_display()} damage")
+                return current_profile
+
+            matching_profile = self._matching_profile_for_observed_types(
+                observed_types,
+                exclude_key="",
+            )
+            if matching_profile is not None and matching_profile.binding.key != self.pending_weapon_key:
+                matching_display = self._binding_display(matching_profile.binding.key)
+                self._cancel_pending_weapon(f"damage matched {matching_display}")
+                self._set_current_weapon_from_equipped_key(matching_profile.binding.key, "damage matched a learned slot")
+                return matching_profile
+
+            self.set_status(f"{defender_name}: awaiting {self._pending_weapon_display()} damage")
+            return None
+
         if pending_types and self._observed_types_fit_profile(pending_profile, observed_types):
             self._confirm_pending_weapon("matched pending damage")
             return pending_profile
 
         if current_types and self._observed_types_fit_profile(current_profile, observed_types):
-            self.set_status(f"{defender_name}: awaiting {self._binding_display(self.pending_weapon_key)} damage")
+            self.set_status(f"{defender_name}: awaiting {self._pending_weapon_display()} damage")
             return current_profile
 
-        matching_profile = self._matching_locked_profile_for_observed_types(
+        matching_profile = self._matching_profile_for_observed_types(
             observed_types,
             exclude_key="",
         )
@@ -1517,7 +1783,7 @@ class AutoAAScript(ClientScriptBase):
             if matching_key == self.pending_weapon_key:
                 self._confirm_pending_weapon("damage matched pending learned slot")
             elif equipped_key and equipped_key != matching_key:
-                self.set_status(f"{defender_name}: awaiting {self._binding_display(self.pending_weapon_key)} damage")
+                self.set_status(f"{defender_name}: awaiting {self._pending_weapon_display()} damage")
                 return None
             else:
                 matching_display = self._binding_display(matching_key)
@@ -1531,9 +1797,9 @@ class AutoAAScript(ClientScriptBase):
             or self.pending_weapon_conceal_seen
         )
         equipped_mask_does_not_contradict_pending = not equipped_key or equipped_key == self.pending_weapon_key
-        pending_has_no_exact_family = self._exact_weapon_family(pending_profile) is None
+        pending_has_no_stable_signature = not pending_profile.stable_signature
         if (
-            pending_has_no_exact_family
+            pending_has_no_stable_signature
             and observed_types
             and strong_pending_evidence
             and equipped_mask_does_not_contradict_pending
@@ -1550,7 +1816,7 @@ class AutoAAScript(ClientScriptBase):
             self._confirm_pending_weapon("damage types changed")
             return pending_profile
 
-        self.set_status(f"{defender_name}: awaiting {self._binding_display(self.pending_weapon_key)} damage")
+        self.set_status(f"{defender_name}: awaiting {self._pending_weapon_display()} damage")
         return None
 
     def _format_weapon_type_set(self, damage_types: Set[int]) -> str:
@@ -1558,14 +1824,14 @@ class AutoAAScript(ClientScriptBase):
             return "physical-only"
         return "/".join(_format_damage_type_label(value) for value in sorted(damage_types))
 
-    def _record_locked_profile_mismatch(
+    def _record_profile_signature_mismatch(
         self,
         profile: WeaponLearningProfile,
         observed_types: Set[int],
         defender_name: str,
         now: float,
     ) -> bool:
-        expected_types = self._profile_damage_types(profile)
+        expected_types = self._profile_signature_types(profile)
         profile.mismatch_streak += 1
         profile.mismatch_total += 1
         profile.last_mismatch_at = now
@@ -1591,23 +1857,21 @@ class AutoAAScript(ClientScriptBase):
             self.host.notify_state_changed()
             return False
 
-        if self.weapon_equipped_key != profile.binding.key:
-            if self.weapon_equipped_key in self.weapon_profiles:
+        equipped_key = str(self.weapon_equipped_key or "").strip()
+        if equipped_key and equipped_key != profile.binding.key and equipped_key in self.weapon_profiles:
+            self._set_current_weapon_from_equipped_key(
+                equipped_key,
+                "mismatch belonged to a different equipped slot",
+            )
+            profile.mismatch_streak = 0
+            self.host.notify_state_changed()
+            return False
+
+        if self.current_weapon_key not in (profile.binding.key, WEAPON_CURRENT_UNKNOWN):
+            if self.current_weapon_key in self.weapon_profiles:
                 self._set_current_weapon_from_equipped_key(
-                    self.weapon_equipped_key,
-                    "mismatch belonged to a different equipped slot",
-                )
-            elif self.current_weapon_key == profile.binding.key:
-                previous = self._binding_display(self.current_weapon_key)
-                self.current_weapon_key = WEAPON_CURRENT_UNKNOWN
-                self.host.emit(
-                    "error",
-                    (
-                        f"{self.host.client.display_name}: {self._mode_label()} stopped trusting "
-                        f"{previous} after {profile.mismatch_streak} mismatched damage lines; "
-                        "the equipped quickbar mask does not confirm that slot"
-                    ),
-                    script_id=self.script_id,
+                    self.current_weapon_key,
+                    "mismatch belonged to the current tracked slot",
                 )
             profile.mismatch_streak = 0
             self.host.notify_state_changed()
@@ -1621,10 +1885,136 @@ class AutoAAScript(ClientScriptBase):
                 f"consecutive mismatched damage lines; expected {self._format_weapon_type_set(expected_types)} "
                 f"observed {self._format_weapon_type_set(observed_types)}"
             ),
-            script_id=self.script_id,
-        )
+                script_id=self.script_id,
+            )
         self._reset_weapon_profile_for_rediscovery(profile)
         return True
+
+    def _profile_accepts_signature_variation(
+        self,
+        profile: WeaponLearningProfile,
+        observed_types: Set[int],
+    ) -> bool:
+        signature = self._damage_signature(observed_types)
+        if not signature:
+            return False
+        if self._profile_is_p2(profile):
+            return self._is_p2_signature(signature)
+        stable_signature = tuple(profile.stable_signature)
+        if not stable_signature:
+            return False
+        return self._is_p2_signature(stable_signature) and self._is_p2_signature(signature)
+
+    def _update_profile_dynamic_kind(self, profile: WeaponLearningProfile) -> bool:
+        if self._profile_is_p2(profile):
+            return False
+        confirmed_signatures = [
+            signature
+            for signature, count in profile.signature_counts.items()
+            if count >= self.WEAPON_SIGNATURE_CONFIRM_THRESHOLD and self._is_p2_signature(signature)
+        ]
+        if len(confirmed_signatures) < 2:
+            return False
+        profile.dynamic_kind = P2_SPECIAL_NAME
+        profile.candidate_signature = ()
+        profile.candidate_signature_streak = 0
+        profile.mismatch_streak = 0
+        return True
+
+    def _observe_profile_signature(
+        self,
+        profile: WeaponLearningProfile,
+        observed_types: Set[int],
+        target_key: str = "",
+    ) -> bool:
+        signature = self._damage_signature(observed_types)
+        if not signature:
+            return False
+
+        profile.current_signature = signature
+        profile.signature_counts[signature] = profile.signature_counts.get(signature, 0) + 1
+        if target_key:
+            profile.target_signatures[target_key] = signature
+
+        if self._profile_is_p2(profile):
+            profile.candidate_signature = ()
+            profile.candidate_signature_streak = 0
+            profile.mismatch_streak = 0
+            return profile.signature_counts[signature] == 1
+
+        if profile.stable_signature:
+            if tuple(profile.stable_signature) == signature:
+                profile.stable_signature_observations += 1
+                profile.candidate_signature = ()
+                profile.candidate_signature_streak = 0
+                return False
+            if self._profile_accepts_signature_variation(profile, observed_types):
+                if tuple(profile.candidate_signature) != signature:
+                    profile.candidate_signature = signature
+                    profile.candidate_signature_streak = 1
+                else:
+                    profile.candidate_signature_streak += 1
+                return self._update_profile_dynamic_kind(profile)
+            return False
+
+        if tuple(profile.candidate_signature) != signature:
+            profile.candidate_signature = signature
+            profile.candidate_signature_streak = 1
+            return False
+
+        profile.candidate_signature_streak += 1
+        if profile.candidate_signature_streak < self.WEAPON_SIGNATURE_CONFIRM_THRESHOLD:
+            return False
+
+        profile.stable_signature = signature
+        profile.stable_signature_observations = profile.candidate_signature_streak
+        profile.candidate_signature = ()
+        profile.candidate_signature_streak = 0
+        profile.mismatch_streak = 0
+        return True
+
+    def _estimate_component_base_damage(self, combat_profile, component) -> Optional[float]:
+        damage_type = component.damage_type
+        if not isinstance(damage_type, int) or damage_type not in WEAPON_ESTIMATE_TYPES:
+            return None
+        if combat_profile is None:
+            return None
+        if combat_profile.healing[damage_type] != 0:
+            return None
+
+        immunity = int(combat_profile.immunity[damage_type] or 0)
+        resistance = int(combat_profile.resistance[damage_type] or 0)
+        reduction_factor = 1.0 - ((float(immunity) + 10.0 * float(combat_profile.paragon_ranks)) / 100.0)
+        if reduction_factor <= 0.0:
+            return None
+
+        estimated = (float(component.amount) + float(resistance)) / reduction_factor
+        return max(estimated, 0.0)
+
+    def _apply_component_estimate_map(
+        self,
+        estimate_map: Dict[int, WeaponDamageEstimate],
+        damage_type: int,
+        observed_amount: int,
+        sample: float,
+    ):
+        estimate = estimate_map.get(damage_type)
+        if estimate is None:
+            estimate = WeaponDamageEstimate()
+            estimate_map[damage_type] = estimate
+
+        prior_weight = min(int(estimate.observations), 12)
+        if estimate.observations <= 0:
+            estimate.base_estimate = float(sample)
+        else:
+            estimate.base_estimate = ((estimate.base_estimate * float(prior_weight)) + float(sample)) / float(prior_weight + 1)
+        estimate.observations += 1
+        estimate.last_base_sample = float(sample)
+        estimate.last_observed_amount = int(observed_amount)
+        estimate.max_observed_amount = max(int(estimate.max_observed_amount), int(observed_amount))
+
+    def _apply_component_estimate(self, profile: WeaponLearningProfile, damage_type: int, observed_amount: int, sample: float):
+        self._apply_component_estimate_map(profile.type_estimates, damage_type, observed_amount, sample)
 
     def _apply_weapon_profile_observation(
         self,
@@ -1632,39 +2022,44 @@ class AutoAAScript(ClientScriptBase):
         damage_line,
         observed_types: Set[int],
         now: float,
-    ) -> bool:
-        if self._profile_is_locked(profile):
-            locked_types = self._profile_locked_types(profile)
-            if observed_types != locked_types:
-                if not self._record_locked_profile_mismatch(profile, observed_types, damage_line.defender, now):
-                    return False
-            else:
+    ) -> Tuple[bool, bool, Set[int], Set[int]]:
+        before_known_types = set(self._profile_known_damage_types(profile))
+        before_estimated_types = set(profile.type_estimates.keys())
+        target_key = self._profile_target_key(damage_line.defender)
+
+        if profile.stable_signature and observed_types != set(profile.stable_signature):
+            if self._profile_accepts_signature_variation(profile, observed_types):
                 profile.mismatch_streak = 0
+            elif not self._record_profile_signature_mismatch(profile, observed_types, damage_line.defender, now):
+                return False, False, set(), set()
+        else:
+            profile.mismatch_streak = 0
 
         profile.observations += 1
         profile.last_seen_at = now
-        allowed_types = self._profile_locked_types(profile)
+        signature_changed = self._observe_profile_signature(profile, observed_types, target_key)
+        combat_profile = self.db._resolve_combat_profile(damage_line.defender)
         for component in damage_line.components:
             damage_type = component.damage_type
-            if allowed_types and damage_type not in allowed_types:
+            if not isinstance(damage_type, int) or damage_type not in WEAPON_ESTIMATE_TYPES:
                 continue
-            if damage_type in WEAPON_ELEMENTAL_TYPES:
-                profile.elemental_counts[damage_type] = profile.elemental_counts.get(damage_type, 0) + 1
-                profile.elemental_max_amounts[damage_type] = max(
-                    profile.elemental_max_amounts.get(damage_type, 0),
-                    int(component.amount),
-                )
-            elif damage_type in WEAPON_EXOTIC_TYPES:
-                profile.exotic_counts[damage_type] = profile.exotic_counts.get(damage_type, 0) + 1
-                profile.exotic_max_amounts[damage_type] = max(
-                    profile.exotic_max_amounts.get(damage_type, 0),
-                    int(component.amount),
-                )
+            profile.type_counts[damage_type] = profile.type_counts.get(damage_type, 0) + 1
+            sample = self._estimate_component_base_damage(combat_profile, component)
+            if sample is None:
+                continue
+            self._apply_component_estimate(profile, damage_type, int(component.amount), sample)
+            if target_key:
+                target_estimates = profile.target_type_estimates.setdefault(target_key, {})
+                self._apply_component_estimate_map(target_estimates, damage_type, int(component.amount), sample)
 
-        family = self._exact_weapon_family(profile)
-        if family is not None and not profile.locked_family_key:
-            self._lock_weapon_profile(profile, family)
-        return True
+        after_known_types = set(self._profile_known_damage_types(profile))
+        after_estimated_types = set(profile.type_estimates.keys())
+        return (
+            True,
+            signature_changed,
+            after_known_types.difference(before_known_types),
+            after_estimated_types.difference(before_estimated_types),
+        )
 
     def _observe_weapon_damage_line(self, text: str):
         if " damages " in str(text or "").lower():
@@ -1701,35 +2096,226 @@ class AutoAAScript(ClientScriptBase):
         if profile is None:
             return
 
-        before_context = self._weapon_profile_context(profile)
-        if not self._apply_weapon_profile_observation(profile, damage_line, observed_types, now):
+        applied, signature_changed, new_types, new_estimates = self._apply_weapon_profile_observation(
+            profile,
+            damage_line,
+            observed_types,
+            now,
+        )
+        if not applied:
             return
 
-        after_context = self._weapon_profile_context(profile)
-        if after_context != before_context and after_context is not None:
-            _components, family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic = after_context
+        if signature_changed or new_types or new_estimates:
+            learned_summary = self._weapon_profile_summary(profile)
+            detail_parts = []
+            if new_types:
+                detail_parts.append("types " + self._format_weapon_type_set(new_types))
+            if new_estimates:
+                detail_parts.append("base " + self._format_weapon_type_set(new_estimates))
+            detail_suffix = f" ({'; '.join(detail_parts)})" if detail_parts else ""
             self.host.emit(
                 "info",
                 (
                     f"{self.host.client.display_name}: {self._mode_label()} learned {self._binding_display(profile.binding.key)} "
                     f"from '{damage_line.defender}' -> "
-                    f"{self._weapon_profile_summary(family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic)}"
+                    f"{learned_summary}{detail_suffix}"
                 ),
                 script_id=self.script_id,
             )
 
+    def _expected_component_damage_for_target(self, combat_profile, damage_type: int, base_damage: float) -> int:
+        if combat_profile is None:
+            return 0
+        if not isinstance(damage_type, int):
+            return 0
+        if damage_type < 0 or damage_type >= len(combat_profile.immunity):
+            return 0
+        if float(base_damage) <= 0.0:
+            return 0
+        if combat_profile.healing[damage_type] != 0:
+            return 0
+        return self.db._apply_immunity_and_resistance(
+            float(base_damage),
+            combat_profile.immunity[damage_type],
+            combat_profile.resistance[damage_type],
+            combat_profile.paragon_ranks,
+        )
+
+    def _components_for_signature(
+        self,
+        profile: WeaponLearningProfile,
+        creature_name: str,
+        signature: Tuple[int, ...],
+    ) -> Dict[int, float]:
+        allowed_types = set(signature) | set(WEAPON_PHYSICAL_TYPES)
+        target_components = self._profile_target_component_estimates(profile, creature_name)
+        global_components = self._profile_component_estimates(profile)
+        components: Dict[int, float] = {}
+        for damage_type in sorted(allowed_types):
+            if damage_type in target_components:
+                components[damage_type] = float(target_components[damage_type])
+            elif damage_type in global_components:
+                components[damage_type] = float(global_components[damage_type])
+        return components
+
+    def _predict_p2_signature_components(
+        self,
+        profile: WeaponLearningProfile,
+        creature_name: str,
+    ) -> Tuple[Tuple[int, ...], Dict[int, float]]:
+        combat_profile = self.db._resolve_combat_profile(creature_name)
+        if combat_profile is None:
+            return (), {}
+
+        target_components = self._profile_target_component_estimates(profile, creature_name)
+        global_components = self._profile_component_estimates(profile)
+
+        def base_for_type(damage_type: int) -> Optional[float]:
+            if damage_type in target_components:
+                return float(target_components[damage_type])
+            if damage_type in global_components:
+                return float(global_components[damage_type])
+            return None
+
+        elemental_scores = []
+        for damage_type in sorted(WEAPON_ELEMENTAL_TYPES):
+            base_damage = base_for_type(damage_type)
+            if base_damage is None:
+                continue
+            elemental_scores.append((
+                self._expected_component_damage_for_target(combat_profile, damage_type, base_damage),
+                damage_type,
+            ))
+
+        exotic_scores = []
+        for damage_type in sorted(WEAPON_EXOTIC_TYPES):
+            base_damage = base_for_type(damage_type)
+            if base_damage is None:
+                continue
+            exotic_scores.append((
+                self._expected_component_damage_for_target(combat_profile, damage_type, base_damage),
+                damage_type,
+            ))
+
+        if len(elemental_scores) >= 2 and exotic_scores:
+            elemental_scores.sort(key=lambda item: (item[0], item[1]), reverse=True)
+            exotic_scores.sort(key=lambda item: (item[0], item[1]), reverse=True)
+            signature = tuple(sorted((
+                elemental_scores[0][1],
+                elemental_scores[1][1],
+                exotic_scores[0][1],
+            )))
+            return signature, self._components_for_signature(profile, creature_name, signature)
+
+        best_signature: Tuple[int, ...] = ()
+        best_components: Dict[int, float] = {}
+        best_expected = -1
+        for signature in sorted(profile.signature_counts.keys()):
+            if not self._is_p2_signature(signature):
+                continue
+            components = self._components_for_signature(profile, creature_name, signature)
+            if not components:
+                continue
+            estimate = self.db.estimate_custom_damage(creature_name, components)
+            if estimate is None:
+                continue
+            if estimate.expected_damage > best_expected:
+                best_signature = signature
+                best_components = components
+                best_expected = estimate.expected_damage
+        return best_signature, best_components
+
+    def _p2_target_healing_types(self, combat_profile) -> Tuple[int, ...]:
+        if combat_profile is None:
+            return ()
+        return tuple(sorted(
+            damage_type
+            for damage_type in WEAPON_SIGNATURE_TYPES
+            if combat_profile.healing[damage_type] != 0
+        ))
+
+    def _p2_candidate_for_target(
+        self,
+        profile: WeaponLearningProfile,
+        creature_name: str,
+    ) -> Optional[WeaponRecommendation]:
+        combat_profile = self.db._resolve_combat_profile(creature_name)
+        if combat_profile is None:
+            return None
+
+        healing_types = self._p2_target_healing_types(combat_profile)
+        target_signature = self._profile_signature_for_target(profile, creature_name)
+        raw_components = self._components_for_signature(profile, creature_name, target_signature) if target_signature else {}
+        if not raw_components:
+            predicted_signature, predicted_components = self._predict_p2_signature_components(profile, creature_name)
+            if predicted_signature:
+                target_signature = predicted_signature
+                raw_components = predicted_components
+
+        effective_components, ignored_types = self._effective_weapon_components(profile, raw_components)
+        if healing_types:
+            return WeaponRecommendation(
+                binding=profile.binding,
+                expected_damage=0,
+                matched_name=combat_profile.matched_name,
+                paragon_ranks=combat_profile.paragon_ranks,
+                learned_types=tuple(sorted(target_signature)),
+                estimated_components=tuple(
+                    sorted(
+                        (damage_type, int(round(base_damage)))
+                        for damage_type, base_damage in raw_components.items()
+                    )
+                ),
+                healing_types=healing_types,
+                ignored_types=ignored_types,
+                special_name=self._special_weapon_name_for_profile(profile),
+                signature_observations=profile.stable_signature_observations,
+                estimate_observations=self._profile_estimate_observations(profile),
+            )
+
+        if not effective_components:
+            return None
+
+        estimate = self.db.estimate_custom_damage(creature_name, effective_components)
+        if estimate is None:
+            return None
+
+        return WeaponRecommendation(
+            binding=profile.binding,
+            expected_damage=estimate.expected_damage,
+            matched_name=estimate.matched_name,
+            paragon_ranks=estimate.paragon_ranks,
+            learned_types=tuple(sorted(target_signature)),
+            estimated_components=tuple(
+                sorted(
+                    (damage_type, int(round(base_damage)))
+                    for damage_type, base_damage in raw_components.items()
+                )
+            ),
+            healing_types=estimate.healing_types,
+            ignored_types=ignored_types,
+            special_name=self._special_weapon_name_for_profile(profile),
+            signature_observations=profile.stable_signature_observations,
+            estimate_observations=self._profile_estimate_observations(profile),
+        )
+
     def _weapon_candidates_for_target(self, creature_name: str) -> List[WeaponRecommendation]:
         candidates: List[WeaponRecommendation] = []
         for profile in self.weapon_profiles.values():
-            context = self._weapon_profile_context(profile)
-            if context is None:
+            if self._profile_is_p2(profile):
+                candidate = self._p2_candidate_for_target(profile, creature_name)
+                if candidate is not None:
+                    candidates.append(candidate)
                 continue
 
-            components, family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic = context
-            if not components:
+            raw_components = self._profile_component_estimates(profile)
+            if not raw_components:
+                continue
+            effective_components, ignored_types = self._effective_weapon_components(profile, raw_components)
+            if not effective_components:
                 continue
 
-            estimate = self.db.estimate_custom_damage(creature_name, components)
+            estimate = self.db.estimate_custom_damage(creature_name, effective_components)
             if estimate is None:
                 continue
 
@@ -1739,12 +2325,21 @@ class AutoAAScript(ClientScriptBase):
                     expected_damage=estimate.expected_damage,
                     matched_name=estimate.matched_name,
                     paragon_ranks=estimate.paragon_ranks,
-                    family_label=family_label,
-                    learned_elemental=learned_elemental,
-                    learned_exotic=learned_exotic,
+                    learned_types=tuple(sorted(self._profile_known_damage_types(profile))),
+                    estimated_components=tuple(
+                        sorted(
+                            (
+                                damage_type,
+                                int(round(base_damage)),
+                            )
+                            for damage_type, base_damage in raw_components.items()
+                        )
+                    ),
                     healing_types=estimate.healing_types,
-                    missing_elemental=missing_elemental,
-                    missing_exotic=missing_exotic,
+                    ignored_types=ignored_types,
+                    special_name=self._special_weapon_name_for_profile(profile),
+                    signature_observations=profile.stable_signature_observations,
+                    estimate_observations=self._profile_estimate_observations(profile),
                 )
             )
         return candidates
@@ -1757,48 +2352,33 @@ class AutoAAScript(ClientScriptBase):
             candidates,
             key=lambda candidate: (
                 candidate.expected_damage,
-                0 if candidate.family_label.endswith("?") else 1,
                 1 if candidate.binding.key == self.current_weapon_key else 0,
-                -(candidate.missing_elemental + candidate.missing_exotic),
+                candidate.signature_observations,
+                len(candidate.estimated_components),
+                candidate.estimate_observations,
                 candidate.binding.key,
             ),
         )
 
     def _weapon_learning_status(self, target_name: str) -> str:
-        learned_count = 0
-        resolved_count = 0
+        ready_count = 0
+        estimated_count = 0
+        adaptive_count = 0
         for profile in self.weapon_profiles.values():
-            context = self._weapon_profile_context(profile)
-            if context is not None and context[0]:
-                learned_count += 1
-            if self._exact_weapon_family(profile) is not None:
-                resolved_count += 1
+            if self._profile_learning_complete(profile):
+                ready_count += 1
+            if profile.type_estimates:
+                estimated_count += 1
+            if self._profile_is_p2(profile):
+                adaptive_count += 1
+        adaptive_suffix = f", {adaptive_count} adaptive" if adaptive_count else ""
         return (
             f"{target_name}: learning weapons "
-            f"({resolved_count}/{len(self.weapon_profiles)} typed, {learned_count} seen)"
+            f"({ready_count}/{len(self.weapon_profiles)} ready, {estimated_count} with estimates{adaptive_suffix})"
         )
 
     def _weapon_runtime_summary(self, profile: WeaponLearningProfile) -> str:
-        context = self._weapon_profile_context(profile)
-        if context is None:
-            compatible = "/".join(family.family_key for family in self._compatible_weapon_families(profile))
-            suffix = f"obs {profile.observations}, attacks {profile.attack_attempts}"
-            if profile.mismatch_streak:
-                suffix += f", mismatch {profile.mismatch_streak}/{self.WEAPON_REDISCOVERY_MISMATCH_THRESHOLD}"
-            if profile.rediscoveries:
-                suffix += f", rediscovered {profile.rediscoveries}"
-            return f"Unknown ({compatible or 'no compatible family'}), {suffix}"
-
-        _components, family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic = context
-        prefix = "" if self._exact_weapon_family(profile) is not None else "Unknown "
-        suffix = f"obs {profile.observations}, attacks {profile.attack_attempts}"
-        if profile.locked_family_key:
-            suffix += ", locked"
-        if profile.mismatch_streak:
-            suffix += f", mismatch {profile.mismatch_streak}/{self.WEAPON_REDISCOVERY_MISMATCH_THRESHOLD}"
-        if profile.rediscoveries:
-            suffix += f", rediscovered {profile.rediscoveries}"
-        return f"{prefix}{self._weapon_profile_summary(family_label, learned_elemental, learned_exotic, missing_elemental, missing_exotic)}, {suffix}"
+        return self._weapon_profile_summary(profile)
 
     def _next_weapon_to_learn(self) -> Optional[WeaponLearningProfile]:
         if not self.weapon_profiles:
@@ -1807,8 +2387,7 @@ class AutoAAScript(ClientScriptBase):
         current_profile = self.weapon_profiles.get(self.current_weapon_key)
         if (
             current_profile is not None
-            and self._exact_weapon_family(current_profile) is None
-            and current_profile.observations == 0
+            and not self._profile_learning_complete(current_profile)
             and current_profile.attack_attempts < self.WEAPON_LEARNING_ATTACKS_BEFORE_ROTATE
         ):
             return current_profile
@@ -1816,11 +2395,21 @@ class AutoAAScript(ClientScriptBase):
         candidates = [
             profile
             for profile in self.weapon_profiles.values()
-            if profile.binding.key != self.current_weapon_key and self._exact_weapon_family(profile) is None
+            if profile.binding.key != self.current_weapon_key and not self._profile_learning_complete(profile)
         ]
         if not candidates:
             return None
-        return min(candidates, key=lambda profile: (profile.observations, profile.attack_attempts, profile.last_seen_at, profile.binding.key))
+        return min(
+            candidates,
+            key=lambda profile: (
+                1 if profile.stable_signature else 0,
+                1 if profile.type_estimates else 0,
+                profile.observations,
+                profile.attack_attempts,
+                profile.last_seen_at,
+                profile.binding.key,
+            ),
+        )
 
     def _request_weapon_swap(self, binding: WeaponBinding, target_name: str, reason: str) -> bool:
         equipped_keys = self._query_equipped_binding_keys(force=True)
@@ -1854,6 +2443,7 @@ class AutoAAScript(ClientScriptBase):
         if result["success"]:
             now = time.monotonic()
             self.pending_weapon_key = binding.key
+            self.pending_weapon_unarm = False
             self.pending_weapon_ready_at = now + self._weapon_swap_cooldown_seconds()
             self.pending_weapon_requested_at = now
             self.pending_weapon_request_sequence = self.current_chat_sequence
@@ -1882,14 +2472,101 @@ class AutoAAScript(ClientScriptBase):
         self.host.notify_state_changed()
         return bool(result["success"])
 
-    def _weapon_recommendation_summary(self, recommendation: WeaponRecommendation) -> str:
-        return self._weapon_profile_summary(
-            recommendation.family_label,
-            recommendation.learned_elemental,
-            recommendation.learned_exotic,
-            recommendation.missing_elemental,
-            recommendation.missing_exotic,
+    def _request_unarmed_fallback(self, target_name: str, reason: str) -> bool:
+        if self.pending_weapon_key and self.pending_weapon_unarm:
+            self.set_status(f"{target_name}: awaiting {self._pending_weapon_display()} damage")
+            self.host.notify_state_changed()
+            return True
+
+        if self.current_weapon_key == WEAPON_CURRENT_UNARMED:
+            self.set_status(f"{target_name}: already unarmed")
+            self.host.notify_state_changed()
+            return True
+
+        equipped_keys = self._query_equipped_binding_keys(force=True)
+        source_key = ""
+        if len(equipped_keys) == 1:
+            source_key = equipped_keys[0]
+            self._set_current_weapon_from_equipped_key(source_key, "equipped quickbar mask")
+        elif self.current_weapon_key in self.weapon_bindings:
+            source_key = self.current_weapon_key
+        elif len(equipped_keys) > 1 and self.current_weapon_key in equipped_keys:
+            source_key = self.current_weapon_key
+
+        binding = self.weapon_bindings.get(source_key)
+        if binding is None:
+            self.set_status(f"{target_name}: no safe weapon; unarmed source unknown")
+            self.host.notify_state_changed()
+            return False
+
+        try:
+            result = self.host.trigger_slot(binding.slot, page=binding.page)
+        except Exception as exc:
+            self.set_status(f"{target_name}: unarm failed")
+            self.host.emit(
+                "error",
+                (
+                    f"{self.host.client.display_name}: {self._mode_label()} trigger failed for "
+                    f"{WEAPON_CURRENT_UNARMED} via {self._binding_display(binding.key)}: {exc}"
+                ),
+                script_id=self.script_id,
+            )
+            return False
+
+        if result["success"]:
+            now = time.monotonic()
+            self.pending_weapon_key = binding.key
+            self.pending_weapon_unarm = True
+            self.pending_weapon_ready_at = now + self._weapon_swap_cooldown_seconds()
+            self.pending_weapon_requested_at = now
+            self.pending_weapon_request_sequence = self.current_chat_sequence
+            self.pending_weapon_feedback_seen = False
+            self.pending_weapon_equipped_feedback_seen = False
+            self.pending_weapon_feedback_sequence = 0
+            self.pending_weapon_conceal_seen = False
+            self.pending_weapon_conceal_sequence = 0
+            self.pending_weapon_ignored_damage_count = 0
+            self.weapon_equipped_key = ""
+            self.weapon_equipped_keys = ()
+            self.weapon_equipped_probe_at = 0.0
+            self.set_status(f"{target_name}: {reason} {WEAPON_CURRENT_UNARMED} ({self._weapon_swap_cooldown_seconds():.1f}s)")
+        else:
+            self.set_status(f"{target_name}: unarm failed")
+
+        self.host.emit(
+            "info",
+            (
+                f"{self.host.client.display_name}: {self._mode_label()} target='{target_name}' "
+                f"weapon={WEAPON_CURRENT_UNARMED} source={self._binding_display(binding.key)} reason={reason} "
+                f"success={result['success']} rc={result['rc']} aux={result['aux_rc']} "
+                f"path={result['path']} err={result['err']}"
+            ),
+            script_id=self.script_id,
         )
+        self.host.notify_state_changed()
+        return bool(result["success"])
+
+    def _weapon_recommendation_summary(self, recommendation: WeaponRecommendation) -> str:
+        parts = []
+        if recommendation.special_name:
+            parts.append(recommendation.special_name)
+        if recommendation.learned_types:
+            parts.append("Types " + self._format_weapon_type_set(set(recommendation.learned_types)))
+        if recommendation.estimated_components:
+            parts.append(
+                "Base "
+                + "/".join(
+                    f"{_format_damage_type_label(damage_type)}~{amount}"
+                    for damage_type, amount in recommendation.estimated_components
+                )
+            )
+        if recommendation.ignored_types:
+            parts.append(
+                "Ignore "
+                + "/".join(_format_damage_type_label(damage_type) for damage_type in recommendation.ignored_types)
+                + " rider"
+            )
+        return ", ".join(parts) if parts else "Unknown"
 
     def _target_stat_entries(self, values: Tuple[int, ...], include_values: bool = True) -> List[dict]:
         entries = []
@@ -1917,6 +2594,8 @@ class AutoAAScript(ClientScriptBase):
             "healing": [],
             "weapons": [],
             "recommended_weapon": "",
+            "recommended_is_mammon_wrath": False,
+            "special_target_rule": "",
             "message": "",
         }
         if not target_name:
@@ -1936,12 +2615,21 @@ class AutoAAScript(ClientScriptBase):
             "resistance": self._target_stat_entries(profile.resistance),
             "healing": self._target_stat_entries(profile.healing, include_values=False),
         })
+        if self._is_mammons_tear_target(profile.matched_name):
+            analysis["special_target_rule"] = "Mammon's Wrath is the only allowed weapon for this target."
 
         candidates = self._weapon_candidates_for_target(target_name)
         safe_candidates = [candidate for candidate in candidates if not candidate.healing_types]
-        recommendation = self._choose_best_weapon(safe_candidates) if safe_candidates else None
+        if self._is_mammons_tear_target(profile.matched_name):
+            mammon_candidate = self._mammon_wrath_candidate(safe_candidates)
+            recommendation = mammon_candidate
+        else:
+            recommendation = self._choose_best_weapon(safe_candidates) if safe_candidates else None
+            if not safe_candidates:
+                analysis["special_target_rule"] = "No configured weapon is safe here; Auto Damage will prefer an unarmed fallback."
         if recommendation is not None:
             analysis["recommended_weapon"] = recommendation.binding.key
+            analysis["recommended_is_mammon_wrath"] = recommendation.special_name == "Mammon's Wrath"
 
         estimates_by_key = {candidate.binding.key: candidate for candidate in candidates}
         weapons = []
@@ -1963,6 +2651,8 @@ class AutoAAScript(ClientScriptBase):
                 "matched_name": "",
                 "paragon_ranks": 0,
                 "healing_types": [],
+                "ignored_types": [],
+                "special_name": self._special_weapon_name_for_profile(weapon_profile),
             }
             if estimate is not None:
                 weapon.update({
@@ -1973,6 +2663,11 @@ class AutoAAScript(ClientScriptBase):
                         _format_damage_type_label(damage_type)
                         for damage_type in estimate.healing_types
                     ],
+                    "ignored_types": [
+                        _format_damage_type_label(damage_type)
+                        for damage_type in estimate.ignored_types
+                    ],
+                    "special_name": estimate.special_name,
                 })
             weapons.append(weapon)
 
@@ -1985,17 +2680,17 @@ class AutoAAScript(ClientScriptBase):
         now = time.monotonic()
         if self.pending_weapon_key and now < self.pending_weapon_ready_at:
             remaining = self.pending_weapon_ready_at - now
-            self.set_status(f"{attack.defender}: waiting {self._binding_display(self.pending_weapon_key)} {remaining:.1f}s")
+            self.set_status(f"{attack.defender}: waiting {self._pending_weapon_display()} {remaining:.1f}s")
             return
 
         if self.pending_weapon_key:
-            self.set_status(f"{attack.defender}: awaiting {self._binding_display(self.pending_weapon_key)} damage")
+            self.set_status(f"{attack.defender}: awaiting {self._pending_weapon_display()} damage")
             return
 
         self._reconcile_current_weapon_from_equipped_mask()
 
         current_profile = self.weapon_profiles.get(self.current_weapon_key)
-        if current_profile is not None and self._exact_weapon_family(current_profile) is None:
+        if current_profile is not None and not self._profile_learning_complete(current_profile):
             current_profile.attack_attempts += 1
             current_profile.last_attack_at = now
 
@@ -2038,13 +2733,25 @@ class AutoAAScript(ClientScriptBase):
             return
 
         safe_candidates = [candidate for candidate in candidates if not candidate.healing_types]
+        protected_target = self._is_mammons_tear_target(attack.defender)
+        if protected_target:
+            recommendation = self._mammon_wrath_candidate(safe_candidates)
+            if recommendation is None:
+                self.set_status(f"{attack.defender}: Mammon's Wrath required")
+                return
+        else:
+            recommendation = None
+
         if not safe_candidates:
             unsafe_candidate = self._choose_best_weapon(candidates)
             healing_text = ", ".join(_format_damage_type_label(value) for value in unsafe_candidate.healing_types) if unsafe_candidate else "unknown"
+            if self._request_unarmed_fallback(attack.defender, f"unarm unsafe ({healing_text})"):
+                return
             self.set_status(f"{attack.defender}: unsafe ({healing_text})")
             return
 
-        recommendation = self._choose_best_weapon(safe_candidates)
+        if recommendation is None:
+            recommendation = self._choose_best_weapon(safe_candidates)
         if recommendation is None:
             self.set_status(self._weapon_learning_status(attack.defender))
             return
@@ -2095,6 +2802,7 @@ class AutoAAScript(ClientScriptBase):
     def get_state_details(self) -> dict:
         if not self._is_weapon_mode():
             return {}
+        mammon_wrath_key = self._mammon_wrath_profile_key()
         if self.weapon_equipped_key in self.weapon_profiles:
             equipped_display = self._binding_display(self.weapon_equipped_key)
         elif self.weapon_equipped_key == "Multiple":
@@ -2116,7 +2824,9 @@ class AutoAAScript(ClientScriptBase):
                 "current": binding.key == self.current_weapon_key,
                 "pending": binding.key == self.pending_weapon_key,
                 "observations": profile.observations,
-                "locked": bool(profile.locked_family_key),
+                "stable": bool(profile.stable_signature) or self._profile_is_p2(profile),
+                "p2": self._profile_is_p2(profile),
+                "mammon_wrath": binding.key == mammon_wrath_key,
                 "mismatch_streak": profile.mismatch_streak,
                 "rediscoveries": profile.rediscoveries,
                 "summary": self._weapon_runtime_summary(profile),
@@ -2126,7 +2836,10 @@ class AutoAAScript(ClientScriptBase):
             "current_weapon": self.current_weapon_key,
             "current_display": self._binding_display(self.current_weapon_key),
             "pending_weapon": self.pending_weapon_key,
-            "pending_display": self._binding_display(self.pending_weapon_key) if self.pending_weapon_key else "",
+            "pending_display": self._pending_weapon_display(),
+            "mammon_wrath_key": mammon_wrath_key,
+            "current_is_mammon_wrath": bool(mammon_wrath_key and self.current_weapon_key == mammon_wrath_key),
+            "pending_is_mammon_wrath": bool(mammon_wrath_key and self.pending_weapon_key == mammon_wrath_key),
             "equipped_weapon": self.weapon_equipped_key,
             "equipped_display": equipped_display,
             "equipped_mask": self.weapon_last_equipped_mask,
@@ -3111,6 +3824,7 @@ class ClientScriptHost:
         initialized = False
         last_poll_error = ""
         last_slow_log_at = 0.0
+        last_backlog_log_at = 0.0
         try:
             while not self.stop_event.is_set():
                 with self.lock:
@@ -3143,17 +3857,23 @@ class ClientScriptHost:
                     self.emit("info", f"{self.client.display_name}: chat poll recovered")
                     last_poll_error = ""
 
-                after = polled["latest_seq"]
-                self.latest_sequence = after
+                polled_latest = int(polled.get("latest_seq", after) or 0)
+                polled_lines = list(polled.get("lines") or [])
+                self.latest_sequence = polled_latest
                 if not initialized:
                     initialized = True
+                    after = polled_latest
                     self.emit("info", f"{self.client.display_name}: host connected at seq {after}")
                     self.stop_event.wait(poll_interval)
                     continue
 
-                if polled["lines"]:
+                if polled_lines:
                     batch_started_at = time.perf_counter()
-                    for line in polled["lines"]:
+                    returned_latest = after
+                    for line in polled_lines:
+                        line_sequence = int(line["seq"])
+                        if line_sequence > returned_latest:
+                            returned_latest = line_sequence
                         with self.lock:
                             current_scripts = [script for script in self.scripts.values() if script.needs_chat_feed()]
                         for script in current_scripts:
@@ -3176,17 +3896,35 @@ class ClientScriptHost:
                                         "error",
                                         (
                                             f"{self.client.display_name}: slow {getattr(script, 'script_id', 'script')} "
-                                            f"chat handler took {line_elapsed:.2f}s at seq {line['seq']}"
+                                            f"chat handler took {line_elapsed:.2f}s at seq {line_sequence}"
                                         ),
                                         script_id=getattr(script, "script_id", None),
                                     )
+                    after = returned_latest
                     batch_elapsed = time.perf_counter() - batch_started_at
                     if batch_elapsed > 1.0 and time.perf_counter() - last_slow_log_at > 10.0:
                         last_slow_log_at = time.perf_counter()
                         self.emit(
                             "error",
-                            f"{self.client.display_name}: slow chat batch processed {len(polled['lines'])} lines in {batch_elapsed:.2f}s",
+                            f"{self.client.display_name}: slow chat batch processed {len(polled_lines)} lines in {batch_elapsed:.2f}s",
                         )
+                elif polled_latest < after:
+                    after = polled_latest
+
+                backlog_remaining = polled_latest > after
+                if backlog_remaining:
+                    now_perf = time.perf_counter()
+                    if now_perf - last_backlog_log_at > 10.0:
+                        last_backlog_log_at = now_perf
+                        self.emit(
+                            "info",
+                            (
+                                f"{self.client.display_name}: draining chat backlog "
+                                f"(processed up to seq {after}, queue at {polled_latest})"
+                            ),
+                        )
+                    continue
+
                 self.stop_event.wait(poll_interval)
         except Exception as exc:
             self.emit("error", f"{self.client.display_name}: host stopped after error: {exc}")
@@ -3209,7 +3947,7 @@ class ScriptManager:
         autodrink = ScriptDefinition(
             script_id="autodrink",
             name="AutoDrink",
-            description="Watch combat activity, sample HP, and drink from the selected quickbar slot when health falls below the configured threshold.",
+            description="Poll HP from memory and drink from the selected quickbar slot when health falls below the configured threshold.",
             fields=[
                 ScriptField("slot", "Slot", "int", 2, minimum=1, maximum=12, step=1, width=4),
                 ScriptField("page", "Bank", "choice", "None", choices=["None", "Shift", "Control"], width=8),
@@ -3217,10 +3955,8 @@ class ScriptManager:
                 ScriptField("cooldown_seconds", "Cooldown", "float", 3.0, minimum=0.1, maximum=10.0, step=0.1, width=6),
                 ScriptField("lock_target", "Lock", "bool", True),
                 ScriptField("resume_attack", "Resume", "bool", True),
-                ScriptField("poll_interval", "Poll", "float", 0.20, minimum=0.05, maximum=2.0, step=0.05, width=6),
-                ScriptField("max_lines", "Batch", "int", 20, minimum=1, maximum=200, step=1, width=5),
+                ScriptField("poll_interval", "Poll", "float", 1.0, minimum=0.10, maximum=5.0, step=0.10, width=6),
                 ScriptField("echo_console", "Echo", "bool", True),
-                ScriptField("include_backlog", "Backlog", "bool", False),
             ],
             factory=AutoDrinkScript,
         )
@@ -3317,8 +4053,8 @@ class ScriptManager:
             ),
             fields=[
                 ScriptField("cooldown_seconds", "Cooldown", "float", 1.0, minimum=0.1, maximum=30.0, step=0.1, width=6),
-                ScriptField("poll_interval", "Poll", "float", 0.10, minimum=0.05, maximum=2.0, step=0.05, width=6),
-                ScriptField("max_lines", "Batch", "int", 60, minimum=1, maximum=200, step=1, width=5),
+                ScriptField("poll_interval", "Poll", "float", 0.05, minimum=0.01, maximum=2.0, step=0.01, width=6),
+                ScriptField("max_lines", "Batch", "int", 200, minimum=1, maximum=500, step=1, width=5),
                 ScriptField("echo_console", "Echo", "bool", False),
                 ScriptField("include_backlog", "Backlog", "bool", False),
             ],

@@ -30,7 +30,7 @@ constexpr UINT kMsgTriggerVk = WM_APP + 0x491;
 constexpr UINT kMsgSendChat = WM_APP + 0x492;
 constexpr UINT kMsgRefreshIdentity = WM_APP + 0x493;
 constexpr UINT kMsgTriggerPageSlot = WM_APP + 0x494;
-constexpr DWORD kPipeBufferSize = 8192;
+constexpr DWORD kPipeBufferSize = 65536;
 constexpr DWORD kDispatchTimeoutMs = 2000;
 constexpr DWORD kPipeStartupTimeoutMs = 2000;
 constexpr uintptr_t kPreferredImageBase = 0x00400000u;
@@ -67,7 +67,7 @@ constexpr BYTE kQuickbarItemSlotType = 1;
 constexpr int kQuickbarPageCount = 3;
 constexpr int kQuickbarSlotCount = 12;
 constexpr int kPendingChatCapacity = 1024;
-constexpr int kChatQueueCapacity = 128;
+constexpr int kChatQueueCapacity = 1024;
 constexpr int kChatTextCapacity = 768;
 constexpr int kCharacterNameCapacity = 128;
 
