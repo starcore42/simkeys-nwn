@@ -42,7 +42,7 @@
   <creature name="Unbound" base="Maelephant" type="Greater" />
   <creature name="Ravening Malebranche" base="Malebranche" type="Greater" />
   <creature name="Effluviarch" base="Malefic Wind" type="Greater" />
-  <creature name="Dolorous Tear" base="Mammons Tears" type="Greater" kickback="Area" />
+  <creature name="Dolorous Tear" base="Mammon's Tears" type="Greater" kickback="Area" />
   <creature name="Minauran Rotscale" base="Minauran Murkfiend" type="Greater" />
   <creature name="Narzugon Eye" base="Narzugon" type="Greater" />
   <creature name="Elder Nag" base="Nightmare" type="Greater" />

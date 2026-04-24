@@ -220,7 +220,7 @@
 		<add name="Petrification" />
 	</otherImmunities>
 </creature>
-<creature name="Dolorous Tear" timeStamp="2014-11-24T06:26:19.000000Z" race="Ooze">
+<creature name="Dolorous Tear" timeStamp="2014-11-24T06:26:19.000000Z" race="Ooze" kickback="Area">
 	<damageImmunities>
 		<damage type="Bludgeoning" immunity="80" resistance="5" />
 		<damage type="Piercing" immunity="20" resistance="10" />
@@ -487,7 +487,7 @@
 		<add name="Petrification" />
 	</otherImmunities>
 </creature>
-<creature name="Mammon's Tears" timeStamp="2015-01-28T00:27:47.000000Z" race="Ooze">
+<creature name="Mammon's Tears" timeStamp="2015-01-28T00:27:47.000000Z" race="Ooze" kickback="Area">
 	<damageImmunities>
 		<damage type="Bludgeoning" immunity="80" resistance="5" />
 		<damage type="Piercing" immunity="20" resistance="10" />

@@ -2,6 +2,7 @@ import threading
 import time
 import ctypes as C
 import ctypes.wintypes as W
+import re
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional, Set, Tuple
@@ -46,6 +47,7 @@ MAMMONS_WRATH_SIGNATURE = tuple(sorted((
 )))
 MAMMONS_TEAR_TARGETS = frozenset({
     "mammons tear",
+    "mammons tears",
     "dolorous tear",
     "superior dolorous tear",
     "elite dolorous tear",
@@ -68,6 +70,11 @@ def _build_quickbar_slot_choices() -> List[str]:
     values.extend(f"S+F{slot}" for slot in range(1, 13))
     values.extend(f"C+F{slot}" for slot in range(1, 13))
     return values
+
+
+def _normalize_creature_name_key(text: str) -> str:
+    cleaned = str(text or "").strip().lower().replace("'", "").replace("’", "")
+    return re.sub(r"[^a-z0-9]+", " ", cleaned).strip()
 
 
 WEAPON_SLOT_CHOICES = _build_quickbar_slot_choices()
@@ -694,7 +701,8 @@ class StopHittingScript(ClientScriptBase):
         return has_physical and tuple(sorted(observed_types)) == MAMMONS_WRATH_SIGNATURE
 
     def _protected_target_allows_mammon_wrath(self, target_name: str, damage_line) -> bool:
-        if str(target_name or "").strip().lower() not in MAMMONS_TEAR_TARGETS:
+        target_key = _normalize_creature_name_key(target_name)
+        if target_key not in MAMMONS_TEAR_TARGETS:
             return False
 
         try:
@@ -712,9 +720,9 @@ class StopHittingScript(ClientScriptBase):
             return True
 
         analysis = dict(details.get("target_analysis", {}))
-        matched_name = str(analysis.get("matched_name") or "").strip().lower()
-        target = str(analysis.get("target") or "").strip().lower()
-        if target_name.lower() in {matched_name, target} and bool(analysis.get("recommended_is_mammon_wrath")):
+        matched_name = _normalize_creature_name_key(analysis.get("matched_name"))
+        target = _normalize_creature_name_key(analysis.get("target"))
+        if target_key in {matched_name, target} and bool(analysis.get("recommended_is_mammon_wrath")):
             return True
 
         return False
@@ -800,6 +808,8 @@ class AutoAAScript(ClientScriptBase):
         self.pending_weapon_conceal_sequence = 0
         self.pending_weapon_ignored_damage_count = 0
         self.weapon_last_swap_feedback = ""
+        self.weapon_external_unknown = False
+        self.weapon_external_unknown_feedback = ""
         self.weapon_last_equipped_mask = 0
         self.weapon_equipped_key = ""
         self.weapon_equipped_keys: Tuple[str, ...] = ()
@@ -843,6 +853,8 @@ class AutoAAScript(ClientScriptBase):
         self.pending_weapon_conceal_sequence = 0
         self.pending_weapon_ignored_damage_count = 0
         self.weapon_last_swap_feedback = ""
+        self.weapon_external_unknown = False
+        self.weapon_external_unknown_feedback = ""
         self.weapon_last_equipped_mask = 0
         self.weapon_equipped_key = ""
         self.weapon_equipped_keys = ()
@@ -909,6 +921,8 @@ class AutoAAScript(ClientScriptBase):
         self.pending_weapon_conceal_sequence = 0
         self.pending_weapon_ignored_damage_count = 0
         self.weapon_last_swap_feedback = ""
+        self.weapon_external_unknown = False
+        self.weapon_external_unknown_feedback = ""
         self.weapon_last_equipped_mask = 0
         self.weapon_equipped_key = ""
         self.weapon_equipped_keys = ()
@@ -1134,6 +1148,44 @@ class AutoAAScript(ClientScriptBase):
         self.pending_weapon_conceal_sequence = 0
         self.pending_weapon_ignored_damage_count = 0
 
+    def _mark_external_weapon_unknown(self, feedback: str):
+        self._clear_pending_weapon_state()
+        previous = self._binding_display(self.current_weapon_key)
+        self.current_weapon_key = WEAPON_CURRENT_UNKNOWN
+        feedback_text = str(feedback or "").strip()
+        already_marked = self.weapon_external_unknown and self.weapon_external_unknown_feedback == feedback_text
+        self.weapon_external_unknown = True
+        self.weapon_external_unknown_feedback = feedback_text
+        self.set_status("Weapon state unknown after external swap")
+        if not already_marked:
+            detail = feedback_text or "weapon swap feedback"
+            self.host.emit(
+                "info",
+                (
+                    f"{self.host.client.display_name}: {self._mode_label()} detected external weapon swap "
+                    f"({detail}); current weapon changed from {previous} to {WEAPON_CURRENT_UNKNOWN} until SimKeys re-establishes control"
+                ),
+                script_id=self.script_id,
+            )
+        self.host.notify_state_changed()
+
+    def _clear_external_weapon_unknown(self, reason: str):
+        if not self.weapon_external_unknown:
+            return
+        feedback = self.weapon_external_unknown_feedback
+        self.weapon_external_unknown = False
+        self.weapon_external_unknown_feedback = ""
+        detail = f" after {feedback}" if feedback else ""
+        self.host.emit(
+            "info",
+            (
+                f"{self.host.client.display_name}: {self._mode_label()} resumed weapon learning "
+                f"({reason}{detail})"
+            ),
+            script_id=self.script_id,
+        )
+        self.host.notify_state_changed()
+
     def _pending_weapon_display(self) -> str:
         if not self.pending_weapon_key:
             return ""
@@ -1201,10 +1253,13 @@ class AutoAAScript(ClientScriptBase):
         if binding_key not in self.weapon_profiles:
             return False
         if self.current_weapon_key == binding_key:
+            if self.weapon_external_unknown:
+                self._clear_external_weapon_unknown(reason)
             return False
 
         previous = self._binding_display(self.current_weapon_key)
         self.current_weapon_key = binding_key
+        self._clear_external_weapon_unknown(reason)
         self.host.emit(
             "info",
             (
@@ -1217,7 +1272,7 @@ class AutoAAScript(ClientScriptBase):
         return True
 
     def _reconcile_current_weapon_from_equipped_mask(self, force: bool = False) -> str:
-        if self.pending_weapon_key:
+        if self.pending_weapon_key or self.weapon_external_unknown:
             return ""
 
         matches = self._query_equipped_binding_keys(force=force)
@@ -1517,7 +1572,7 @@ class AutoAAScript(ClientScriptBase):
         return components
 
     def _is_mammons_tear_target_name(self, creature_name: str) -> bool:
-        return str(creature_name or "").strip().lower() in MAMMONS_TEAR_TARGETS
+        return _normalize_creature_name_key(creature_name) in MAMMONS_TEAR_TARGETS
 
     def _resolve_target_record(self, creature_name: str):
         if not creature_name:
@@ -1702,6 +1757,7 @@ class AutoAAScript(ClientScriptBase):
         pending_key = self.pending_weapon_key
         self.current_weapon_key = pending_key
         self._clear_pending_weapon_state()
+        self._clear_external_weapon_unknown(reason)
         self.host.emit(
             "info",
             f"{self.host.client.display_name}: {self._mode_label()} confirmed {self._binding_display(pending_key)} ({reason})",
@@ -1715,6 +1771,7 @@ class AutoAAScript(ClientScriptBase):
         previous_pending = self.pending_weapon_key
         self.current_weapon_key = WEAPON_CURRENT_UNARMED
         self._clear_pending_weapon_state()
+        self._clear_external_weapon_unknown(reason)
         self.weapon_unarmed_observations += 1
         if previous_key != WEAPON_CURRENT_UNARMED or previous_pending:
             source = self._binding_display(previous_pending) if previous_pending else self._binding_display(previous_key)
@@ -1732,6 +1789,10 @@ class AutoAAScript(ClientScriptBase):
             return
 
         self.weapon_last_swap_feedback = feedback
+        if not self.pending_weapon_key:
+            self._mark_external_weapon_unknown(feedback)
+            return
+
         if feedback == "item_swapped":
             self.pending_weapon_feedback_seen = bool(self.pending_weapon_key) or self.pending_weapon_feedback_seen
             if self.pending_weapon_key:
@@ -2228,6 +2289,10 @@ class AutoAAScript(ClientScriptBase):
         self.weapon_damage_matched_count += 1
 
         now = time.monotonic()
+        if self.weapon_external_unknown and not self.pending_weapon_key:
+            self.set_status("Weapon state unknown after external swap")
+            return
+
         observed_types = self._observed_weapon_damage_types(damage_line)
         if not observed_types and self._damage_line_is_physical_only(damage_line):
             if self.pending_weapon_key and not self._pending_weapon_can_accept_damage(now):
@@ -3011,9 +3076,15 @@ class AutoAAScript(ClientScriptBase):
         return {
             "weapon_mode": True,
             "current_weapon": self.current_weapon_key,
-            "current_display": self._binding_display(self.current_weapon_key),
+            "current_display": (
+                f"{self._binding_display(self.current_weapon_key)} (external swap)"
+                if self.weapon_external_unknown
+                else self._binding_display(self.current_weapon_key)
+            ),
             "pending_weapon": self.pending_weapon_key,
             "pending_display": self._pending_weapon_display(),
+            "external_unknown": self.weapon_external_unknown,
+            "external_unknown_feedback": self.weapon_external_unknown_feedback,
             "mammon_wrath_key": mammon_wrath_key,
             "current_is_mammon_wrath": bool(mammon_wrath_key and self.current_weapon_key == mammon_wrath_key),
             "pending_is_mammon_wrath": bool(mammon_wrath_key and self.pending_weapon_key == mammon_wrath_key),

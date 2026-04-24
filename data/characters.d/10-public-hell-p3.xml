@@ -170,7 +170,7 @@
       <damage type="Electrical" healing="6" />
     </damageImmunities>
   </creature>
-  <creature name="Elite Dolorous Tear" base="Mammons Tears" type="Elite" kickback="Area">
+  <creature name="Elite Dolorous Tear" base="Mammon's Tears" type="Elite" kickback="Area">
     <damageImmunities>
       <damage type="Acid" healing="6" />
     </damageImmunities>

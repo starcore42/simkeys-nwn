@@ -170,7 +170,7 @@
       <damage type="Electrical" healing="4" />
     </damageImmunities>
   </creature>
-  <creature name="Superior Dolorous Tear" base="Mammons Tears" type="Superior" kickback="Area">
+  <creature name="Superior Dolorous Tear" base="Mammon's Tears" type="Superior" kickback="Area">
     <damageImmunities>
       <damage type="Acid" healing="4" />
     </damageImmunities>
