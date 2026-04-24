@@ -1211,6 +1211,124 @@ class SimKeysDesktopApp:
                 parts.append(label)
         return ", ".join(parts)
 
+    def _target_analysis_weapon_sort_key(self, weapon):
+        selection = weapon.get("selection_damage")
+        if selection is None:
+            selection = -1
+        return (
+            0 if weapon.get("recommended") else 1,
+            0 if weapon.get("current") else 1,
+            0 if weapon.get("pending") else 1,
+            0 if not weapon.get("healing_types") else 1,
+            -int(selection),
+            str(weapon.get("key") or ""),
+        )
+
+    def _compact_damage_label(self, label):
+        label = str(label or "").strip()
+        compact = {
+            "Acid": "Acid",
+            "Bludgeoning": "Blud",
+            "Cold": "Cold",
+            "Divine": "Div",
+            "Electrical": "Elec",
+            "Fire": "Fire",
+            "Magical": "Magic",
+            "Negative": "Neg",
+            "Piercing": "Pierce",
+            "Positive": "Pos",
+            "Slashing": "Slash",
+            "Sonic": "Sonic",
+        }
+        return compact.get(label, label)
+
+    def _format_target_stat_entries_compact(self, entries, value_suffix=""):
+        entries = list(entries or [])
+        if not entries:
+            return "-"
+        parts = []
+        for entry in entries:
+            label = self._compact_damage_label(entry.get("label") or entry.get("type") or "?")
+            if "value" in entry:
+                parts.append(f"{label}{entry.get('value')}{value_suffix}")
+            else:
+                parts.append(label)
+        return " ".join(parts)
+
+    def _compact_weapon_type_text(self, weapon):
+        summary_text = str(weapon.get("summary") or "").strip()
+        if (
+            str(weapon.get("special_name") or "").strip() == "P2"
+            or "adaptive" in summary_text.lower()
+        ):
+            return "Adaptive"
+        for prefix in ("Current ", "Types ", "Seen ", "Predicted "):
+            marker = f"{prefix}"
+            if marker in summary_text:
+                fragment = summary_text.split(marker, 1)[1].split(", ", 1)[0]
+                compact_parts = [
+                    self._compact_damage_label(part)
+                    for part in str(fragment).split("/")
+                    if str(part).strip()
+                ]
+                if compact_parts:
+                    return "/".join(compact_parts)
+        if "Unknown" in summary_text:
+            return "Unknown"
+        return "-"
+
+    def _compact_weapon_state_text(self, weapon):
+        summary = str(weapon.get("summary") or "").strip()
+        if "Learning Complete" in summary:
+            return "done"
+        if "P2 check " in summary:
+            return summary.split("P2 check ", 1)[1].split(",", 1)[0].strip()
+        if "adaptive" in summary.lower() or str(weapon.get("special_name") or "").strip() == "P2":
+            return "P2"
+        if "Unknown" in summary:
+            return "unknown"
+        return "learn"
+
+    def _compact_weapon_flags_text(self, weapon):
+        flags = []
+        special_name = str(weapon.get("special_name") or "").strip()
+        if special_name == "Mammon's Wrath":
+            flags.append("MW")
+        elif special_name == "P2":
+            flags.append("P2")
+
+        healing_types = [
+            self._compact_damage_label(value)
+            for value in list(weapon.get("healing_types") or [])
+        ]
+        if healing_types:
+            flags.append("heal " + "/".join(healing_types))
+
+        ignored_types = [
+            self._compact_damage_label(value)
+            for value in list(weapon.get("ignored_types") or [])
+        ]
+        if ignored_types:
+            flags.append("ign " + "/".join(ignored_types))
+        return ", ".join(flags)
+
+    def _compact_weapon_damage_text(self, weapon):
+        selection = weapon.get("selection_damage")
+        expected = weapon.get("expected_damage")
+        actual = weapon.get("actual_damage")
+        actual_obs = int(weapon.get("actual_observations") or 0)
+        if selection is None and expected is None:
+            return "unlearned"
+
+        parts = []
+        if selection is not None:
+            parts.append(f"s{int(selection)}")
+        if expected is not None:
+            parts.append(f"e{int(expected)}")
+        if actual is not None and actual_obs > 0:
+            parts.append(f"a{int(actual)}/{actual_obs}")
+        return " ".join(parts)
+
     def _render_target_analysis(self, details):
         analysis = dict(details.get("target_analysis", {}))
         target = str(analysis.get("target") or "").strip()
@@ -1220,23 +1338,37 @@ class SimKeysDesktopApp:
         lines = []
         if not analysis.get("available"):
             message = str(analysis.get("message") or f"No data for '{target}'.")
-            return f"Target: {target}\n{message}"
+            return f"Target: {target}\nStatus: {message}"
 
         matched = str(analysis.get("matched_name") or target)
         paragon = int(analysis.get("paragon_ranks") or 0)
-        lines.append(f"Target: {target}    Matched: {matched}    Paragon: {paragon}")
+        target_line = f"Target: {target}"
+        if matched and matched != target:
+            target_line += f" | Entry: {matched}"
+        target_line += f" | Paragon {paragon}"
+        lines.append(target_line)
+
         special_rule = str(analysis.get("special_target_rule") or "").strip()
         if special_rule:
-            lines.append(f"Rule:       {special_rule}")
-        lines.append(f"Immunity:   {self._format_target_stat_entries(analysis.get('immunity'), '%')}")
-        lines.append(f"Resistance: {self._format_target_stat_entries(analysis.get('resistance'))}")
-        lines.append(f"Healing:    {self._format_target_stat_entries(analysis.get('healing'))}")
-        lines.append("")
-        lines.append("Weapon estimates:")
+            lines.append(f"Rule: {special_rule}")
+        lines.append(f"Imm:  {self._format_target_stat_entries_compact(analysis.get('immunity'), '%')}")
+        lines.append(f"Res:  {self._format_target_stat_entries_compact(analysis.get('resistance'))}")
+        lines.append(f"Heal: {self._format_target_stat_entries_compact(analysis.get('healing'))}")
 
         weapons = list(analysis.get("weapons") or [])
+
+        recommended = next((weapon for weapon in weapons if weapon.get("recommended")), None)
+        lines.append("")
+        if recommended is None:
+            lines.append("Best: -")
+        else:
+            recommendation_name = f"{recommended.get('key', '?')}/{recommended.get('label', '?')}"
+            recommendation_damage = self._compact_weapon_damage_text(recommended)
+            lines.append(f"Best: {recommendation_name} | {recommendation_damage}")
+
+        lines.append("")
         if not weapons:
-            lines.append("  No learned weapon profiles yet.")
+            lines.append("No learned weapon profiles yet.")
             return "\n".join(lines)
 
         for weapon in weapons:
@@ -1248,30 +1380,23 @@ class SimKeysDesktopApp:
             if weapon.get("recommended"):
                 markers += "!"
             marker_text = f"{markers:3}" if markers else "   "
-            label = f"{weapon.get('key', '?')}/{weapon.get('label', '?')}"
-            selection = weapon.get("selection_damage")
-            expected = weapon.get("expected_damage")
-            actual = weapon.get("actual_damage")
-            actual_obs = int(weapon.get("actual_observations") or 0)
-            if selection is None and expected is None:
-                damage_text = "unlearned"
-            else:
-                parts = []
-                if selection is not None:
-                    parts.append(f"score={int(selection):4d}")
-                if expected is not None:
-                    parts.append(f"exp={int(expected):4d}")
-                if actual is not None and actual_obs > 0:
-                    parts.append(f"act={int(actual):4d}/{actual_obs}")
-                damage_text = " ".join(parts)
-            healing_types = list(weapon.get("healing_types") or [])
-            healing_text = f" HEALS {'/'.join(healing_types)}" if healing_types else ""
-            ignored_types = list(weapon.get("ignored_types") or [])
-            ignored_text = f" IGNORE {'/'.join(ignored_types)}" if ignored_types else ""
-            summary = str(weapon.get("summary") or "Unknown")
-            lines.append(f"{marker_text} {label:<8} {damage_text}{healing_text}{ignored_text}  {summary}")
+
+            key = str(weapon.get("key") or "?")
+            label = str(weapon.get("label") or "?")
+            name_text = f"{key}/{label}"
+            flags_text = self._compact_weapon_flags_text(weapon)
+            if flags_text:
+                name_text = f"{name_text} {flags_text}"
+
+            damage_text = self._compact_weapon_damage_text(weapon)
+            type_text = self._compact_weapon_type_text(weapon)
+            state_text = self._compact_weapon_state_text(weapon)
+            lines.append(
+                f"{marker_text} {name_text:<18} {damage_text:<20} {type_text:<22} {state_text}"
+            )
 
         lines.append("")
+        lines.append("s score   e expected   a actual/obs")
         lines.append("* current   > pending   ! recommended")
         return "\n".join(lines)
 
