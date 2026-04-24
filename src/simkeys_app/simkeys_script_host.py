@@ -188,6 +188,7 @@ class WeaponLearningProfile:
     dynamic_kind: str = ""
     signature_counts: Dict[Tuple[int, ...], int] = field(default_factory=dict)
     target_signatures: Dict[str, Tuple[int, ...]] = field(default_factory=dict)
+    p2_verification_targets: Set[str] = field(default_factory=set)
     type_counts: Dict[int, int] = field(default_factory=dict)
     type_estimates: Dict[int, WeaponDamageEstimate] = field(default_factory=dict)
     target_type_estimates: Dict[str, Dict[int, WeaponDamageEstimate]] = field(default_factory=dict)
@@ -1314,6 +1315,7 @@ class AutoAAScript(ClientScriptBase):
         profile.dynamic_kind = ""
         profile.signature_counts.clear()
         profile.target_signatures.clear()
+        profile.p2_verification_targets.clear()
         profile.type_counts.clear()
         profile.type_estimates.clear()
         profile.target_type_estimates.clear()
@@ -1374,6 +1376,58 @@ class AutoAAScript(ClientScriptBase):
         if signature:
             return tuple(signature)
         return ()
+
+    def _generic_p2_signature_for_target(self, creature_name: str) -> Tuple[int, ...]:
+        combat_profile = self.db._resolve_combat_profile(creature_name)
+        if combat_profile is None:
+            return ()
+
+        def rank_type(damage_type: int) -> Tuple[int, int, int]:
+            healing_value = int(combat_profile.healing[damage_type] or 0)
+            if healing_value != 0:
+                return (1, healing_value, -int(damage_type))
+            expected = self._expected_component_damage_for_target(combat_profile, damage_type, 100.0)
+            return (0, expected, -int(damage_type))
+
+        elemental = sorted(
+            ((rank_type(damage_type), int(damage_type)) for damage_type in WEAPON_ELEMENTAL_TYPES),
+            reverse=True,
+        )
+        exotic = sorted(
+            ((rank_type(damage_type), int(damage_type)) for damage_type in WEAPON_EXOTIC_TYPES),
+            reverse=True,
+        )
+        if len(elemental) < 2 or not exotic:
+            return ()
+        return tuple(sorted((elemental[0][1], elemental[1][1], exotic[0][1])))
+
+    def _profile_requires_p2_verification(self, profile: Optional[WeaponLearningProfile]) -> bool:
+        if profile is None or self._profile_is_p2(profile):
+            return False
+        signature = tuple(profile.stable_signature)
+        return self._is_p2_signature(signature)
+
+    def _profile_p2_verification_complete(self, profile: Optional[WeaponLearningProfile]) -> bool:
+        if not self._profile_requires_p2_verification(profile):
+            return True
+        return len(getattr(profile, "p2_verification_targets", set()) or set()) >= 2
+
+    def _record_p2_verification_target(
+        self,
+        profile: WeaponLearningProfile,
+        creature_name: str,
+        observed_signature: Tuple[int, ...],
+    ):
+        if not self._profile_requires_p2_verification(profile):
+            return
+        if tuple(profile.stable_signature) != tuple(observed_signature):
+            return
+        target_key = self._profile_target_key(creature_name)
+        if not target_key:
+            return
+        generic_signature = self._generic_p2_signature_for_target(creature_name)
+        if generic_signature and generic_signature != tuple(profile.stable_signature):
+            profile.p2_verification_targets.add(target_key)
 
     def _apply_observed_damage_map(
         self,
@@ -1560,7 +1614,7 @@ class AutoAAScript(ClientScriptBase):
         if profile is None:
             return False
         has_signature_state = bool(profile.stable_signature) or self._profile_is_p2(profile)
-        return has_signature_state and bool(profile.type_estimates)
+        return has_signature_state and bool(profile.type_estimates) and self._profile_p2_verification_complete(profile)
 
     def _format_estimated_components(self, components: Dict[int, float]) -> str:
         if not components:
@@ -1620,6 +1674,9 @@ class AutoAAScript(ClientScriptBase):
         ignored_types = self._weapon_ignored_damage_types(profile, components)
         if ignored_types:
             parts.append(f"Ignore {self._format_ignored_damage_types(profile, ignored_types)} rider")
+        if self._profile_requires_p2_verification(profile):
+            verified = len(profile.p2_verification_targets)
+            parts.append(f"P2 check {verified}/2")
 
         suffix = f"obs {profile.observations}, attacks {profile.attack_attempts}"
         if self._profile_is_p2(profile):
@@ -2003,6 +2060,7 @@ class AutoAAScript(ClientScriptBase):
         if len(confirmed_signatures) < 2:
             return False
         profile.dynamic_kind = P2_SPECIAL_NAME
+        profile.p2_verification_targets.clear()
         profile.candidate_signature = ()
         profile.candidate_signature_streak = 0
         profile.mismatch_streak = 0
@@ -2138,6 +2196,7 @@ class AutoAAScript(ClientScriptBase):
             if target_key:
                 target_estimates = profile.target_type_estimates.setdefault(target_key, {})
                 self._apply_component_estimate_map(target_estimates, damage_type, int(component.amount), sample)
+        self._record_p2_verification_target(profile, damage_line.defender, self._damage_signature(observed_types))
         if target_key:
             self._record_profile_target_actual_damage(profile, target_key, self._damage_signature(observed_types), damage_line)
 
