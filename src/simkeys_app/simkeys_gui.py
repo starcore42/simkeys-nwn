@@ -47,7 +47,7 @@ SCRIPT_CARD_LAYOUTS = {
     "auto_action": {
         "expanded": False,
         "sections": [
-            ("Action", ["mode", "cooldown_seconds"]),
+            ("Action", ["cooldown_seconds"]),
         ],
         "advanced": [],
     },
@@ -179,6 +179,9 @@ class ScriptCard:
 
         next_column = 2
         if self.definition.script_id == "auto_aa":
+            self._create_header_mode_control(header, next_column, on_change=self.on_auto_damage_mode_changed)
+            next_column += 2
+        elif self.definition.script_id == "auto_action":
             self._create_header_mode_control(header, next_column)
             next_column += 2
 
@@ -222,7 +225,7 @@ class ScriptCard:
         action = "Stop" if running else "Start"
         return f"{action} {self.definition.name}"
 
-    def _create_header_mode_control(self, parent, column):
+    def _create_header_mode_control(self, parent, column, on_change=None):
         field = self.fields_by_key["mode"]
         ttk.Label(parent, text=f"{field.label}:").grid(row=0, column=column, padx=(0, 4), sticky="e")
         var = tk.StringVar(value=str(field.default))
@@ -234,7 +237,8 @@ class ScriptCard:
             state="readonly",
         )
         widget.grid(row=0, column=column + 1, padx=(0, 8), sticky="e")
-        widget.bind("<<ComboboxSelected>>", self.on_auto_damage_mode_changed)
+        if on_change is not None:
+            widget.bind("<<ComboboxSelected>>", on_change)
         self.vars[field.key] = (field, var, widget)
 
     def _build_generic_content(self):
