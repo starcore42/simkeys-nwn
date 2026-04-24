@@ -1921,6 +1921,9 @@ class AutoAAScript(ClientScriptBase):
     def _weapon_swap_cooldown_seconds(self) -> float:
         return max(float(self.config.get("swap_cooldown_seconds", 6.2)), 0.1)
 
+    def _weapon_swap_min_gain_percent(self) -> float:
+        return max(float(self.config.get("min_swap_gain_percent", 6.0)), 0.0)
+
     def _pending_weapon_retry_seconds(self) -> float:
         return max(self._weapon_swap_cooldown_seconds() * 2.0, 12.0)
 
@@ -2899,6 +2902,72 @@ class AutoAAScript(ClientScriptBase):
             ),
         )
 
+    def _current_weapon_candidate(self, candidates: List[WeaponRecommendation]) -> Optional[WeaponRecommendation]:
+        current_key = str(self.current_weapon_key or "").strip()
+        if not current_key:
+            return None
+        for candidate in candidates:
+            if candidate.binding.key == current_key:
+                return candidate
+        return None
+
+    def _weapon_swap_gain_percent(
+        self,
+        current_candidate: Optional[WeaponRecommendation],
+        best_candidate: Optional[WeaponRecommendation],
+    ) -> Optional[float]:
+        if current_candidate is None or best_candidate is None:
+            return None
+
+        current_score = max(int(current_candidate.selection_damage), 0)
+        best_score = max(int(best_candidate.selection_damage), 0)
+        if best_score <= current_score:
+            return 0.0
+        if current_score <= 0:
+            return None
+        return ((float(best_score) - float(current_score)) * 100.0) / float(current_score)
+
+    def _should_hold_current_weapon_for_margin(
+        self,
+        current_candidate: Optional[WeaponRecommendation],
+        best_candidate: Optional[WeaponRecommendation],
+        protected_target: bool = False,
+    ) -> bool:
+        if protected_target:
+            return False
+        if current_candidate is None or best_candidate is None:
+            return False
+        if current_candidate.binding.key == best_candidate.binding.key:
+            return False
+        if current_candidate.healing_types:
+            return False
+
+        current_score = max(int(current_candidate.selection_damage), 0)
+        best_score = max(int(best_candidate.selection_damage), 0)
+        if best_score <= current_score:
+            return True
+        if current_score <= 0:
+            return False
+
+        gain_percent = self._weapon_swap_gain_percent(current_candidate, best_candidate)
+        if gain_percent is None:
+            return False
+        return gain_percent < self._weapon_swap_min_gain_percent()
+
+    def _recommend_weapon_for_target(
+        self,
+        safe_candidates: List[WeaponRecommendation],
+        protected_target: bool = False,
+    ) -> Tuple[Optional[WeaponRecommendation], Optional[WeaponRecommendation], Optional[WeaponRecommendation]]:
+        if protected_target:
+            best_candidate = self._mammon_wrath_candidate(safe_candidates)
+        else:
+            best_candidate = self._choose_best_weapon(safe_candidates) if safe_candidates else None
+        current_candidate = self._current_weapon_candidate(safe_candidates)
+        if self._should_hold_current_weapon_for_margin(current_candidate, best_candidate, protected_target=protected_target):
+            return current_candidate, best_candidate, current_candidate
+        return best_candidate, best_candidate, current_candidate
+
     def _weapon_learning_status(self, target_name: str) -> str:
         ready_count = 0
         estimated_count = 0
@@ -3170,16 +3239,43 @@ class AutoAAScript(ClientScriptBase):
 
         candidates = self._weapon_candidates_for_target(target_name)
         safe_candidates = [candidate for candidate in candidates if not candidate.healing_types]
-        if self._is_mammons_tear_target(profile.matched_name):
-            mammon_candidate = self._mammon_wrath_candidate(safe_candidates)
-            recommendation = mammon_candidate
+        protected_target = self._is_mammons_tear_target(profile.matched_name)
+        recommendation = None
+        best_candidate = None
+        current_candidate = None
+        if protected_target:
+            recommendation, best_candidate, current_candidate = self._recommend_weapon_for_target(
+                safe_candidates,
+                protected_target=True,
+            )
         else:
-            recommendation = self._choose_best_weapon(safe_candidates) if safe_candidates else None
             if not safe_candidates:
                 analysis["special_target_rule"] = "No configured weapon is safe here; Auto Damage will prefer an unarmed fallback."
+            recommendation, best_candidate, current_candidate = self._recommend_weapon_for_target(
+                safe_candidates,
+                protected_target=False,
+            )
         if recommendation is not None:
             analysis["recommended_weapon"] = recommendation.binding.key
             analysis["recommended_is_mammon_wrath"] = recommendation.special_name == "Mammon's Wrath"
+        if (
+            recommendation is not None
+            and best_candidate is not None
+            and current_candidate is not None
+            and recommendation.binding.key == current_candidate.binding.key
+            and best_candidate.binding.key != current_candidate.binding.key
+        ):
+            gain_percent = self._weapon_swap_gain_percent(current_candidate, best_candidate)
+            if gain_percent is not None:
+                threshold = self._weapon_swap_min_gain_percent()
+                hold_text = (
+                    f"Hold current unless gain exceeds {threshold:.1f}% "
+                    f"(best alternate is only +{gain_percent:.1f}%)."
+                )
+                if analysis["special_target_rule"]:
+                    analysis["special_target_rule"] = f"{analysis['special_target_rule']} {hold_text}"
+                else:
+                    analysis["special_target_rule"] = hold_text
 
         estimates_by_key = {candidate.binding.key: candidate for candidate in candidates}
         weapons = []
@@ -3309,12 +3405,17 @@ class AutoAAScript(ClientScriptBase):
         safe_candidates = [candidate for candidate in candidates if not candidate.healing_types]
         protected_target = self._is_mammons_tear_target(attack.defender)
         if protected_target:
-            recommendation = self._mammon_wrath_candidate(safe_candidates)
+            recommendation, best_candidate, current_candidate = self._recommend_weapon_for_target(
+                safe_candidates,
+                protected_target=True,
+            )
             if recommendation is None:
                 self.set_status(f"{attack.defender}: Mammon's Wrath required")
                 return
         else:
             recommendation = None
+            best_candidate = None
+            current_candidate = None
 
         if not safe_candidates:
             unsafe_candidate = self._choose_best_weapon(candidates)
@@ -3325,7 +3426,10 @@ class AutoAAScript(ClientScriptBase):
             return
 
         if recommendation is None:
-            recommendation = self._choose_best_weapon(safe_candidates)
+            recommendation, best_candidate, current_candidate = self._recommend_weapon_for_target(
+                safe_candidates,
+                protected_target=False,
+            )
         if recommendation is None:
             self.set_status(self._weapon_learning_status(attack.defender))
             return
@@ -3346,6 +3450,23 @@ class AutoAAScript(ClientScriptBase):
                 script_id=self.script_id,
             )
             self.current_weapon_key = WEAPON_CURRENT_UNKNOWN
+
+        if (
+            current_candidate is not None
+            and best_candidate is not None
+            and recommendation.binding.key == current_candidate.binding.key
+            and best_candidate.binding.key != current_candidate.binding.key
+        ):
+            gain_percent = self._weapon_swap_gain_percent(current_candidate, best_candidate)
+            threshold = self._weapon_swap_min_gain_percent()
+            if gain_percent is not None:
+                self.set_status(
+                    f"{attack.defender}: keep {self._binding_display(current_candidate.binding.key)} "
+                    f"(+{gain_percent:.1f}% < {threshold:.1f}%)"
+                )
+            else:
+                self.set_status(f"{attack.defender}: keep {self._binding_display(current_candidate.binding.key)}")
+            return
 
         if not self._request_weapon_swap(recommendation.binding, attack.defender, "swap"):
             return
@@ -4591,6 +4712,7 @@ class ScriptManager:
                 ScriptField("weapon_slot_5", "W5", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
                 ScriptField("weapon_slot_6", "W6", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
                 ScriptField("swap_cooldown_seconds", "Swap", "float", 6.2, minimum=0.1, maximum=20.0, step=0.1, width=6),
+                ScriptField("min_swap_gain_percent", "Gain %", "float", 6.0, minimum=0.0, maximum=100.0, step=0.5, width=6),
                 ScriptField("elemental_dice", "Dice", "int", 10, minimum=1, maximum=30, step=1, width=5),
                 ScriptField("auto_canister", "Canister", "bool", True),
                 ScriptField("canister_cooldown_seconds", "Can CD", "float", 6.1, minimum=0.1, maximum=30.0, step=0.1, width=6),

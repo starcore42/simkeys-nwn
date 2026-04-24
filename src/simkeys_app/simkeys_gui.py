@@ -276,6 +276,7 @@ class ScriptCard:
         weapon_top.grid(row=0, column=0, sticky="ew")
 
         self._create_field_holder(weapon_top, "swap_cooldown_seconds", row=0, column=0)
+        self._create_field_holder(weapon_top, "min_swap_gain_percent", row=0, column=1)
 
         self.weapon_limit_var = tk.StringVar(value="")
         self.weapon_limit_label = ttk.Label(self.weapon_section, textvariable=self.weapon_limit_var, justify="left", wraplength=520)
@@ -428,6 +429,7 @@ class ScriptCard:
             "auto_canister",
             "canister_cooldown_seconds",
             "swap_cooldown_seconds",
+            "min_swap_gain_percent",
             "poll_interval",
             "max_lines",
             "echo_console",
@@ -510,6 +512,7 @@ class ScriptCard:
             "auto_canister",
             "canister_cooldown_seconds",
             "swap_cooldown_seconds",
+            "min_swap_gain_percent",
             "poll_interval",
             "max_lines",
             "echo_console",
@@ -669,7 +672,8 @@ class ScriptCard:
             )
             self.weapon_limit_var.set(
                 "Round delay: the swap lands at the start of the next combat round. "
-                "The script treats one-off type changes as swap/boundary noise first, then only recategorizes after repeated evidence."
+                "The script keeps the current weapon unless another clears the configured Gain % margin, "
+                "and treats one-off type changes as swap/boundary noise first."
             )
             self.command_section.grid_remove()
             self.weapon_section.grid()
@@ -1226,6 +1230,10 @@ class SimKeysDesktopApp:
 
     def _compact_damage_label(self, label):
         label = str(label or "").strip()
+        suffix = ""
+        while label and not label[-1].isalnum():
+            suffix = label[-1] + suffix
+            label = label[:-1]
         compact = {
             "Acid": "Acid",
             "Bludgeoning": "Blud",
@@ -1240,7 +1248,7 @@ class SimKeysDesktopApp:
             "Slashing": "Slsh",
             "Sonic": "Soni",
         }
-        return compact.get(label, label)
+        return compact.get(label, label) + suffix
 
     def _format_target_stat_entries_compact(self, entries, value_suffix=""):
         entries = list(entries or [])
