@@ -196,7 +196,7 @@
     <damageImmunities>
     </damageImmunities>
   </creature>
-  <creature name="Kaorti Alienist" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z" kickback="Area" special="AvoidHit">
+  <creature name="Kaorti Alienist" race="Outsider" timeStamp="2016-03-19T19:33:35.3454112Z" special="AvoidHit">
     <damageImmunities>
       <damage type="Psionic" immunity="0" resistance="0" kickback="true" />
     </damageImmunities>

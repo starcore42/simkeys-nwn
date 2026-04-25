@@ -6,14 +6,14 @@
     <damage type="Piercing" immunity="40" resistance="15" />
     <damage type="Slashing" immunity="30" resistance="15" />
     <damage type="Magical" immunity="110" resistance="10" />
-    <damage type="Acid" immunity="90" resistance="10" />
+    <damage type="Acid" immunity="90" resistance="10" healing="5" />
     <damage type="Cold" immunity="110" resistance="15" healing="5" />
     <damage type="Divine" immunity="50" resistance="0" />
-    <damage type="Electrical" immunity="100" resistance="10" />
-    <damage type="Fire" immunity="110" resistance="15" />
+    <damage type="Electrical" immunity="100" resistance="10" healing="5" />
+    <damage type="Fire" immunity="110" resistance="15" healing="5" />
     <damage type="Negative" immunity="110" resistance="10" />
     <damage type="Positive" immunity="110" resistance="10" />
-    <damage type="Sonic" immunity="80" resistance="5" />
+    <damage type="Sonic" immunity="80" resistance="5" healing="5" />
     <damage type="Subdual" immunity="0" resistance="0" />
     <damage type="Ectoplasmic" immunity="55" resistance="0" />
     <damage type="Psionic" immunity="55" resistance="0" />
