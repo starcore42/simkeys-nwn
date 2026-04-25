@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rules>
+	<state
+		text="Amnesia"
+		description="Amnesia - Amnizu"
+		enableRule="^The Amnizu has stricken you with amnesia!$"
+		color="Red"
+		disableOnRest="true" />
+	<state
+		text="Amnesia"
+		description="Amnesia - Laghathti"
+		enableRule="^The sight of the laghathti drains your memories!$"
+		color="Red"
+		disableOnRest="true" />
+	<state
+		text="Amnesia"
+		description="Amnesia - River of Styx"
+		enableRule="^The Styx has stricken you with amnesia!$"
+		color="Red"
+		disableOnRest="true" />
+</rules>

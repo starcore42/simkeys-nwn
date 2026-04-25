@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rules>
+	<timer
+		text="Death of Magic"
+		description="Death of Magic"
+		rule="The Weave has been suppressed, deadening magic in the area"
+		duration="00:00:18" />		
+</rules>

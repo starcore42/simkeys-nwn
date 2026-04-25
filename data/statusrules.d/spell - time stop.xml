@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rules>
+	<timer
+		text="Time Stop"
+		description="Time Stop"
+		rule="^Time Stop will be available again in 30 seconds\.$"
+		duration="00:00:30" />
+</rules>

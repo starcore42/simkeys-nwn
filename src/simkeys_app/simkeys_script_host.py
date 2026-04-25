@@ -1,11 +1,13 @@
+import os
 import threading
 import time
 import ctypes as C
 import ctypes.wintypes as W
 import re
+from xml.etree import ElementTree as ET
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from typing import Callable, Dict, List, Optional, Pattern, Set, Tuple
 
 from . import simKeys_Client as simkeys
 from . import simkeys_hgx_combat as hgx_combat
@@ -112,6 +114,215 @@ def _format_damage_type_label(damage_type: int) -> str:
     if damage_type in hgx_data.AA_TYPE_TO_WORD:
         return hgx_data.AA_TYPE_TO_WORD[damage_type].title()
     return hgx_data.GI_TYPE_TO_WORD.get(damage_type, str(damage_type)).title()
+
+
+def _repo_root() -> str:
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+
+def _default_status_rules_dir() -> str:
+    workspace_rules = os.path.join(_repo_root(), "data", "statusrules.d")
+    if os.path.isdir(workspace_rules):
+        return workspace_rules
+
+    hgx_rules = r"C:\NWN\HGXLE-final-beta\data\statusrules.d"
+    if os.path.isdir(hgx_rules):
+        return hgx_rules
+    return workspace_rules
+
+
+def _parse_duration_seconds(value) -> float:
+    text = str(value or "").strip()
+    if not text:
+        return 0.0
+    if ":" not in text:
+        try:
+            return max(float(text), 0.0)
+        except ValueError:
+            return 0.0
+
+    parts = [part.strip() for part in text.split(":")]
+    try:
+        numbers = [int(part or "0") for part in parts]
+    except ValueError:
+        return 0.0
+    if len(numbers) == 3:
+        hours, minutes, seconds = numbers
+    elif len(numbers) == 2:
+        hours = 0
+        minutes, seconds = numbers
+    else:
+        return 0.0
+    return float(max((hours * 3600) + (minutes * 60) + seconds, 0))
+
+
+def _parse_bool(value, default: bool = False) -> bool:
+    if value is None:
+        return default
+    return str(value).strip().lower() in ("1", "true", "yes", "y", "on")
+
+
+def _timer_color_rgb(value, default: int = 0xFFFFFF) -> int:
+    if isinstance(value, int):
+        return value & 0xFFFFFF
+    text = str(value or "").strip()
+    if not text:
+        return default
+    named = {
+        "white": 0xFFFFFF,
+        "green": 0x66FF66,
+        "yellow": 0xFFFF66,
+        "red": 0xFF6666,
+        "cyan": 0x66FFFF,
+        "blue": 0x6699FF,
+        "orange": 0xFFAA55,
+    }
+    key = text.lower()
+    if key in named:
+        return named[key]
+    if key.startswith("#"):
+        key = key[1:]
+    if key.lower().startswith("0x"):
+        key = key[2:]
+    try:
+        return int(key, 16) & 0xFFFFFF
+    except ValueError:
+        return default
+
+
+def _build_var_timer_regex(rule: str) -> Pattern:
+    counter = {"minutes": 0, "seconds": 0}
+
+    def replace(match):
+        token = match.group(1).lower()
+        counter[token] += 1
+        name = "MINUTES" if token == "minutes" else "SECONDS"
+        return rf"(?P<{name}_{counter[token]}>\d+)"
+
+    pattern = re.sub(r"\{(MINUTES|SECONDS)\}", replace, str(rule or ""), flags=re.IGNORECASE)
+    return re.compile(pattern)
+
+
+@dataclass(frozen=True)
+class OverlayTimerRule:
+    key: str
+    text: str
+    description: str
+    kind: str
+    pattern: Pattern
+    duration_seconds: float
+    disable_on_death: bool
+    disable_on_rest: bool
+    color_rgb: int
+    source: str
+
+
+@dataclass
+class ActiveOverlayTimer:
+    label: str
+    description: str
+    expires_at: float
+    duration_seconds: float
+    color_rgb: int
+    disable_on_death: bool
+    disable_on_rest: bool
+    source: str
+
+
+def _load_status_timer_rules(source_dir: str) -> Tuple[OverlayTimerRule, ...]:
+    rules: List[OverlayTimerRule] = []
+    directory = os.path.abspath(os.path.expanduser(os.path.expandvars(str(source_dir or ""))))
+    if not os.path.isdir(directory):
+        return ()
+
+    for file_name in sorted(os.listdir(directory)):
+        if not file_name.lower().endswith(".xml"):
+            continue
+        path = os.path.join(directory, file_name)
+        try:
+            root = ET.parse(path).getroot()
+        except Exception:
+            continue
+
+        for index, element in enumerate(list(root)):
+            tag = str(element.tag or "").strip().lower()
+            text = str(element.get("text") or element.get("description") or "").strip()
+            description = str(element.get("description") or text).strip()
+            duration = _parse_duration_seconds(element.get("duration"))
+            disable_on_death = _parse_bool(element.get("disableOnDeath"))
+            disable_on_rest = _parse_bool(element.get("disableOnRest"))
+            color_rgb = _timer_color_rgb(element.get("color"))
+            source = file_name
+            key = f"{file_name}:{index}:{tag}:{text}"
+
+            if not text:
+                continue
+            if tag == "timer":
+                raw_rule = str(element.get("rule") or "").strip()
+                if not raw_rule:
+                    continue
+                try:
+                    pattern = re.compile(raw_rule)
+                except re.error:
+                    continue
+            elif tag == "vartimer":
+                raw_rule = str(element.get("rule") or "").strip()
+                if not raw_rule:
+                    continue
+                try:
+                    pattern = _build_var_timer_regex(raw_rule)
+                except re.error:
+                    continue
+            elif tag == "spelltimer":
+                player = str(element.get("player") or "").strip()
+                spell = str(element.get("spell") or "").strip()
+                if not player or not spell or player == "^$" or duration <= 0:
+                    continue
+                try:
+                    pattern = re.compile(rf"^{re.escape(player)} casts {re.escape(spell)}$")
+                except re.error:
+                    continue
+            else:
+                continue
+
+            rules.append(OverlayTimerRule(
+                key=key,
+                text=text,
+                description=description,
+                kind=tag,
+                pattern=pattern,
+                duration_seconds=duration,
+                disable_on_death=disable_on_death,
+                disable_on_rest=disable_on_rest,
+                color_rgb=color_rgb,
+                source=source,
+            ))
+    return tuple(rules)
+
+
+def _duration_from_var_match(match) -> float:
+    if match is None:
+        return 0.0
+    minutes = 0
+    seconds = 0
+    for name, value in match.groupdict().items():
+        if value is None:
+            continue
+        if name.startswith("MINUTES"):
+            minutes = max(minutes, int(value))
+        elif name.startswith("SECONDS"):
+            seconds = max(seconds, int(value))
+    return float((minutes * 60) + seconds)
+
+
+def _format_remaining(seconds: float) -> str:
+    remaining = max(int(seconds + 0.999), 0)
+    hours = remaining // 3600
+    minutes = (remaining % 3600) // 60
+    secs = remaining % 60
+    if hours:
+        return f"{hours}:{minutes:02d}:{secs:02d}"
+    return f"{minutes}:{secs:02d}"
 
 
 @dataclass
@@ -247,6 +458,9 @@ class ClientScriptBase:
 
     def on_stop(self):
         self.status_text = "Stopped"
+
+    def on_tick(self):
+        pass
 
     def on_chat_line(self, sequence: int, text: str):
         raise NotImplementedError
@@ -4548,6 +4762,221 @@ class AutoCombatModeScript(ClientScriptBase):
         }
 
 
+class InGameTimersScript(ClientScriptBase):
+    script_id = "ingame_timers"
+    OVERLAY_ID = 7100
+    REST_RE = re.compile(r"\b(resting|rested|rests)\b", re.IGNORECASE)
+    DEATH_RE = re.compile(r"\b(you are dead|you died|you have been killed)\b", re.IGNORECASE)
+
+    def __init__(self, client, config: Dict[str, object], host):
+        super().__init__(client, config, host)
+        self.enabled = False
+        self.rules: Tuple[OverlayTimerRule, ...] = ()
+        self.active: Dict[str, ActiveOverlayTimer] = {}
+        self.last_render_text = ""
+        self.last_overlay_error = ""
+        self.next_render_at = 0.0
+        self.matched_count = 0
+        self.cleared_count = 0
+
+    def on_start(self):
+        super().on_start()
+        self.enabled = True
+        self.active.clear()
+        self.last_render_text = ""
+        self.last_overlay_error = ""
+        self.next_render_at = 0.0
+        self.matched_count = 0
+        self.cleared_count = 0
+        rules_dir = self._rules_dir()
+        self.rules = _load_status_timer_rules(rules_dir)
+        self.set_status(f"Loaded {len(self.rules)} rules")
+        self.host.emit(
+            "info",
+            f"{self.client.display_name}: In-Game Timers loaded {len(self.rules)} rules from {rules_dir}",
+            script_id=self.script_id,
+        )
+        self._clear_overlay()
+
+    def on_stop(self):
+        self.enabled = False
+        self.active.clear()
+        self._clear_overlay()
+        super().on_stop()
+        self.host.emit("info", f"{self.client.display_name}: In-Game Timers stopped", script_id=self.script_id)
+
+    def on_chat_line(self, sequence: int, text: str):
+        if not self.enabled or not self.should_process(sequence):
+            return
+
+        line = hgx_combat.normalize_chat_line(text)
+        if not line:
+            return
+
+        if self.REST_RE.search(line):
+            self._clear_flagged_timers(rest=True)
+        if self.DEATH_RE.search(line):
+            self._clear_flagged_timers(death=True)
+
+        now = time.monotonic()
+        changed = False
+        for rule in self.rules:
+            match = rule.pattern.search(line)
+            if not match:
+                continue
+
+            if rule.kind == "vartimer":
+                duration = _duration_from_var_match(match)
+            else:
+                duration = rule.duration_seconds
+
+            if duration <= 0:
+                changed = self._clear_timer_label(rule.text) or changed
+                continue
+
+            self.active[rule.key] = ActiveOverlayTimer(
+                label=rule.text,
+                description=rule.description,
+                expires_at=now + duration,
+                duration_seconds=duration,
+                color_rgb=rule.color_rgb,
+                disable_on_death=rule.disable_on_death,
+                disable_on_rest=rule.disable_on_rest,
+                source=rule.source,
+            )
+            self.matched_count += 1
+            changed = True
+
+        if changed:
+            self._render_overlay(force=True)
+
+    def on_tick(self):
+        if not self.enabled:
+            return
+        now = time.monotonic()
+        expired = [
+            key
+            for key, timer in self.active.items()
+            if timer.expires_at <= now
+        ]
+        for key in expired:
+            self.active.pop(key, None)
+        if expired:
+            self.cleared_count += len(expired)
+        if now >= self.next_render_at or expired:
+            self._render_overlay(force=bool(expired))
+
+    def _rules_dir(self) -> str:
+        value = str(self.config.get("rules_dir", "") or "").strip()
+        if value:
+            return os.path.abspath(os.path.expanduser(os.path.expandvars(value)))
+        return _default_status_rules_dir()
+
+    def _clear_flagged_timers(self, rest: bool = False, death: bool = False):
+        removed = []
+        for key, timer in self.active.items():
+            if (rest and timer.disable_on_rest) or (death and timer.disable_on_death):
+                removed.append(key)
+        for key in removed:
+            self.active.pop(key, None)
+        if removed:
+            self.cleared_count += len(removed)
+            self._render_overlay(force=True)
+
+    def _clear_timer_label(self, label: str) -> bool:
+        label_key = str(label or "").strip().lower()
+        if not label_key:
+            return False
+        removed = [
+            key
+            for key, timer in self.active.items()
+            if timer.label.strip().lower() == label_key
+        ]
+        for key in removed:
+            self.active.pop(key, None)
+        if removed:
+            self.cleared_count += len(removed)
+        return bool(removed)
+
+    def _format_lines(self) -> Tuple[str, ...]:
+        now = time.monotonic()
+        max_timers = max(int(self.config.get("max_timers", 8)), 1)
+        timers = sorted(self.active.values(), key=lambda timer: (timer.expires_at, timer.label.lower()))
+        lines = []
+        for timer in timers[:max_timers]:
+            remaining = timer.expires_at - now
+            lines.append(f"{timer.label} {_format_remaining(remaining)}")
+        return tuple(lines)
+
+    def _render_overlay(self, force: bool = False):
+        lines = self._format_lines()
+        text = "\n".join(lines)
+        now = time.monotonic()
+        self.next_render_at = now + 0.50
+
+        if not text:
+            if self.last_render_text or force:
+                self._clear_overlay()
+            self.last_render_text = ""
+            self.set_status("Idle")
+            return
+
+        if not force and text == self.last_render_text:
+            return
+
+        try:
+            result = self.host.show_overlay_text(
+                text,
+                overlay_id=self.OVERLAY_ID,
+                position=str(self.config.get("position", "TR")),
+                offset_x=int(self.config.get("offset_x", 0)),
+                offset_y=int(self.config.get("offset_y", 80)),
+                font_size=int(self.config.get("font_size", 16)),
+                color=_timer_color_rgb(self.config.get("color", "White")),
+            )
+        except Exception as exc:
+            error_text = str(exc)
+            self.set_status("Overlay failed")
+            if error_text != self.last_overlay_error:
+                self.last_overlay_error = error_text
+                self.host.emit(
+                    "error",
+                    f"{self.client.display_name}: In-Game Timers overlay update failed: {error_text}",
+                    script_id=self.script_id,
+                )
+            return
+
+        if self.last_overlay_error:
+            self.host.emit("info", f"{self.client.display_name}: In-Game Timers overlay recovered", script_id=self.script_id)
+            self.last_overlay_error = ""
+        self.last_render_text = text
+        self.set_status(f"{len(lines)} active")
+        if not result.get("success"):
+            self.set_status("Overlay failed")
+
+    def _clear_overlay(self):
+        try:
+            self.host.clear_overlay(self.OVERLAY_ID)
+        except Exception as exc:
+            error_text = str(exc)
+            if error_text != self.last_overlay_error:
+                self.last_overlay_error = error_text
+                self.host.emit(
+                    "error",
+                    f"{self.client.display_name}: In-Game Timers overlay clear failed: {error_text}",
+                    script_id=self.script_id,
+                )
+
+    def get_state_details(self) -> dict:
+        return {
+            "rules": len(self.rules),
+            "active": len(self.active),
+            "matched_count": self.matched_count,
+            "cleared_count": self.cleared_count,
+            "rules_dir": self._rules_dir(),
+        }
+
+
 class ClientScriptHost:
     def __init__(self, client, event_callback: Callable[[dict], None]):
         self.client = client
@@ -4681,12 +5110,50 @@ class ClientScriptHost:
     def send_chat(self, text: str, mode: int = 2):
         return runtime.send_chat(self.client, text, mode)
 
+    def show_overlay_text(
+        self,
+        text: str,
+        overlay_id: int = 1000,
+        position: str = "TR",
+        offset_x: int = 0,
+        offset_y: int = 0,
+        font_size: int = 16,
+        color: int = 0xFFFFFF,
+    ):
+        return runtime.show_overlay_text(
+            self.client,
+            text,
+            overlay_id=overlay_id,
+            position=position,
+            offset_x=offset_x,
+            offset_y=offset_y,
+            font_size=font_size,
+            color=color,
+        )
+
+    def clear_overlay(self, overlay_id: int = 1000):
+        return runtime.clear_overlay(self.client, overlay_id=overlay_id)
+
     def _chat_poll_once(self, after: int, max_lines: int):
         pipe = runtime.open_pipe(self.client.pid, timeout_ms=750)
         try:
             return simkeys.chat_poll(pipe, after=after, max_lines=max_lines)
         finally:
             pipe.close()
+
+    def _tick_scripts(self):
+        with self.lock:
+            current_scripts = list(self.scripts.values())
+        for script in current_scripts:
+            try:
+                script.on_tick()
+            except Exception as exc:
+                script.set_status(f"Error: {exc}")
+                self.emit(
+                    "error",
+                    f"{self.client.display_name}: {type(exc).__name__}: {exc}",
+                    script_id=getattr(script, "script_id", None),
+                )
 
     def _run(self):
         after = 0
@@ -4704,6 +5171,7 @@ class ClientScriptHost:
 
                 if not chat_scripts:
                     initialized = False
+                    self._tick_scripts()
                     self.stop_event.wait(0.25)
                     continue
 
@@ -4733,6 +5201,7 @@ class ClientScriptHost:
                     initialized = True
                     after = polled_latest
                     self.emit("info", f"{self.client.display_name}: host connected at seq {after}")
+                    self._tick_scripts()
                     self.stop_event.wait(poll_interval)
                     continue
 
@@ -4792,8 +5261,10 @@ class ClientScriptHost:
                                 f"(processed up to seq {after}, queue at {polled_latest})"
                             ),
                         )
+                    self._tick_scripts()
                     continue
 
+                self._tick_scripts()
                 self.stop_event.wait(poll_interval)
         except Exception as exc:
             self.emit("error", f"{self.client.display_name}: host stopped after error: {exc}")
@@ -4961,6 +5432,26 @@ class ScriptManager:
             factory=AutoCombatModeScript,
         )
         self.registry[auto_rsm.script_id] = auto_rsm
+
+        ingame_timers = ScriptDefinition(
+            script_id="ingame_timers",
+            name="In-Game Timers",
+            description="Display HGX-style status timers inside the NWN client from combat log/status rule matches.",
+            fields=[
+                ScriptField("position", "Pos", "choice", "TR", choices=["TL", "T", "TR", "CL", "C", "CR", "BL", "B", "BR", "A"], width=5),
+                ScriptField("offset_x", "X", "int", 0, minimum=-2000, maximum=2000, step=1, width=6),
+                ScriptField("offset_y", "Y", "int", 80, minimum=-2000, maximum=2000, step=1, width=6),
+                ScriptField("font_size", "Font", "int", 16, minimum=8, maximum=72, step=1, width=5),
+                ScriptField("color", "Color", "choice", "White", choices=["White", "Green", "Yellow", "Red", "Cyan", "Blue", "Orange"], width=8),
+                ScriptField("max_timers", "Max", "int", 8, minimum=1, maximum=32, step=1, width=5),
+                ScriptField("rules_dir", "Rules", "text", "", width=36),
+                ScriptField("poll_interval", "Poll", "float", 0.20, minimum=0.05, maximum=2.0, step=0.05, width=6),
+                ScriptField("max_lines", "Batch", "int", 80, minimum=1, maximum=500, step=1, width=5),
+                ScriptField("include_backlog", "Backlog", "bool", False),
+            ],
+            factory=InGameTimersScript,
+        )
+        self.registry[ingame_timers.script_id] = ingame_timers
 
     def definitions(self) -> List[ScriptDefinition]:
         return list(self.registry.values())

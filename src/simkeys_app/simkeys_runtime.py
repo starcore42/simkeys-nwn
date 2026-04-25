@@ -539,6 +539,48 @@ def send_chat(record_or_pid, text: str, mode: int = 2):
         pipe.close()
 
 
+def show_overlay_text(
+    record_or_pid,
+    text: str,
+    overlay_id: int = 1000,
+    position: str = "TR",
+    offset_x: int = 0,
+    offset_y: int = 0,
+    font_size: int = 16,
+    color: int = 0xFFFFFF,
+):
+    pipe = open_pipe(record_or_pid)
+    try:
+        return simkeys.overlay_show_text(
+            pipe,
+            text,
+            overlay_id=overlay_id,
+            position=position,
+            offset_x=offset_x,
+            offset_y=offset_y,
+            font_size=font_size,
+            color=color,
+        )
+    finally:
+        pipe.close()
+
+
+def clear_overlay(record_or_pid, overlay_id: int = 1000):
+    pipe = open_pipe(record_or_pid)
+    try:
+        return simkeys.overlay_clear(pipe, overlay_id=overlay_id)
+    finally:
+        pipe.close()
+
+
+def clear_all_overlays(record_or_pid):
+    pipe = open_pipe(record_or_pid)
+    try:
+        return simkeys.overlay_clear_all(pipe)
+    finally:
+        pipe.close()
+
+
 def inject_client(record: ClientRecord, dll_path: str, export_name: str = "InitSimKeys", python_path: Optional[str] = None):
     dll_path = os.path.abspath(dll_path)
     if python_path is None or os.path.abspath(python_path).lower() == os.path.abspath(sys.executable).lower():

@@ -25,6 +25,9 @@ constexpr UINT kOpSnapshotText = 3005;
 constexpr UINT kOpChatSend = 3006;
 constexpr UINT kOpChatPoll = 3007;
 constexpr UINT kOpTriggerPageSlot = 3008;
+constexpr UINT kOpOverlayText = 3009;
+constexpr UINT kOpOverlayClear = 3010;
+constexpr UINT kOpOverlayClearAll = 3011;
 
 constexpr UINT kMsgTriggerVk = WM_APP + 0x491;
 constexpr UINT kMsgSendChat = WM_APP + 0x492;
@@ -70,6 +73,20 @@ constexpr int kPendingChatCapacity = 1024;
 constexpr int kChatQueueCapacity = 1024;
 constexpr int kChatTextCapacity = 768;
 constexpr int kCharacterNameCapacity = 128;
+constexpr int kMaxOverlays = 32;
+constexpr int kOverlayTextCapacity = 4096;
+constexpr int kOverlayMaxDimension = 1024;
+constexpr int kOverlayTextPadding = 6;
+constexpr UINT kGlCullFace = 0x0B44;
+constexpr UINT kGlDepthTest = 0x0B71;
+constexpr UINT kGlTexture2D = 0x0DE1;
+constexpr UINT kGlTextureBinding2D = 0x8069;
+constexpr UINT kGlViewport = 0x0BA2;
+constexpr UINT kGlMatrixMode = 0x0BA0;
+constexpr UINT kGlProjection = 0x1701;
+constexpr UINT kGlModelview = 0x1700;
+constexpr UINT kGlUnsignedByte = 0x1401;
+constexpr UINT kGlBgraExt = 0x80E1;
 
 enum LogLevel {
   kLogError = 0,
@@ -158,6 +175,23 @@ struct ChatPollLineHeader {
   int32_t text_length;
 };
 
+struct OverlayTextRequestHeader {
+  int32_t id;
+  int32_t position;
+  int32_t offset_x;
+  int32_t offset_y;
+  int32_t font_size;
+  uint32_t color_rgb;
+  int32_t text_length;
+};
+
+struct OverlayResponse {
+  int32_t success;
+  int32_t width;
+  int32_t height;
+  int32_t last_error;
+};
+
 struct PendingChatDispatch {
   HANDLE event;
   volatile LONG busy;
@@ -172,6 +206,22 @@ struct PendingChatDispatch {
 struct ChatLineEntry {
   int32_t sequence;
   char text[kChatTextCapacity];
+};
+
+struct OverlayRecord {
+  int32_t id;
+  int32_t position;
+  int32_t offset_x;
+  int32_t offset_y;
+  int32_t width;
+  int32_t height;
+  int32_t viewport_width;
+  int32_t viewport_height;
+  float raster_x;
+  float raster_y;
+  DWORD pixel_bytes;
+  BYTE* pixels;
+  bool enabled;
 };
 
 struct PendingDispatch {
@@ -206,6 +256,8 @@ struct SimKeysState {
   bool chat_lock_ready;
   CRITICAL_SECTION log_lock;
   bool log_lock_ready;
+  CRITICAL_SECTION overlay_lock;
+  bool overlay_lock_ready;
   DWORD window_thread_id;
   PendingDispatch pending;
   PendingChatDispatch pending_chat;
@@ -221,6 +273,10 @@ struct SimKeysState {
   volatile LONG quickbar_trace_installed;
   volatile LONG quickbar_slot_trace_installed;
   volatile LONG chat_trace_installed;
+  volatile LONG overlay_hook_installed;
+  volatile LONG overlay_count;
+  volatile LONG overlay_draws;
+  volatile LONG overlay_last_error;
   volatile LONG chat_write_index;
   volatile LONG chat_count;
   volatile LONG chat_sequence;
@@ -247,6 +303,7 @@ struct SimKeysState {
   volatile LONG last_result;
   volatile LONG last_error;
   ChatLineEntry chat_lines[kChatQueueCapacity];
+  OverlayRecord overlays[kMaxOverlays];
 };
 
 SimKeysState g_state = {};
@@ -260,6 +317,36 @@ size_t g_quickbar_slot_stolen = 0;
 BYTE g_chat_log_original[32] = {};
 void* g_chat_log_gateway = nullptr;
 size_t g_chat_log_stolen = 0;
+BYTE g_wgl_swap_original[8] = {};
+void* g_wgl_swap_gateway = nullptr;
+size_t g_wgl_swap_stolen = 0;
+
+typedef BOOL (WINAPI* WglSwapLayerBuffersFn)(HDC hdc, UINT planes);
+typedef void (APIENTRY* GlDisableFn)(UINT cap);
+typedef void (APIENTRY* GlEnableFn)(UINT cap);
+typedef void (APIENTRY* GlDepthMaskFn)(BYTE flag);
+typedef void (APIENTRY* GlColor3fFn)(float red, float green, float blue);
+typedef void (APIENTRY* GlMatrixModeFn)(UINT mode);
+typedef void (APIENTRY* GlPushMatrixFn)();
+typedef void (APIENTRY* GlPopMatrixFn)();
+typedef void (APIENTRY* GlLoadIdentityFn)();
+typedef void (APIENTRY* GlGetIntegervFn)(UINT pname, int* params);
+typedef void (APIENTRY* GlBindTextureFn)(UINT target, UINT texture);
+typedef void (APIENTRY* GlRasterPos2fFn)(float x, float y);
+typedef void (APIENTRY* GlDrawPixelsFn)(int width, int height, UINT format, UINT type, const void* pixels);
+
+GlDisableFn g_glDisable = nullptr;
+GlEnableFn g_glEnable = nullptr;
+GlDepthMaskFn g_glDepthMask = nullptr;
+GlColor3fFn g_glColor3f = nullptr;
+GlMatrixModeFn g_glMatrixMode = nullptr;
+GlPushMatrixFn g_glPushMatrix = nullptr;
+GlPopMatrixFn g_glPopMatrix = nullptr;
+GlLoadIdentityFn g_glLoadIdentity = nullptr;
+GlGetIntegervFn g_glGetIntegerv = nullptr;
+GlBindTextureFn g_glBindTexture = nullptr;
+GlRasterPos2fFn g_glRasterPos2f = nullptr;
+GlDrawPixelsFn g_glDrawPixels = nullptr;
 
 LRESULT CALLBACK SimKeysWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 void LogMessage(int level, const char* format, ...);
@@ -267,6 +354,7 @@ void WriteExecutableMemory(void* destination, const void* source, SIZE_T size);
 void* MakeJmpGateway(BYTE* target, size_t stolen);
 BOOL DiscoverQuickbarPanelByScan(const char* reason);
 BOOL InstallChatWindowLogHook();
+BOOL InstallOverlayHook();
 BOOL RefreshCharacterIdentity(DWORD* out_error);
 void UpdateQuickbarItemMasksOnWindowThread();
 
@@ -1125,6 +1213,456 @@ void* MakeJmpGateway(BYTE* target, size_t stolen) {
   return gateway;
 }
 
+HMODULE ResolveOpenGlModule() {
+  HMODULE opengl = GetModuleHandleA("OPENGL32.DLL");
+  if (opengl == nullptr) {
+    opengl = LoadLibraryA("OPENGL32.DLL");
+  }
+  return opengl;
+}
+
+BOOL ResolveOpenGlFunctions() {
+  if (g_glDisable != nullptr && g_glDrawPixels != nullptr) {
+    return TRUE;
+  }
+
+  HMODULE opengl = ResolveOpenGlModule();
+  if (opengl == nullptr) {
+    SetLastError(ERROR_MOD_NOT_FOUND);
+    return FALSE;
+  }
+
+  g_glDisable = reinterpret_cast<GlDisableFn>(GetProcAddress(opengl, "glDisable"));
+  g_glEnable = reinterpret_cast<GlEnableFn>(GetProcAddress(opengl, "glEnable"));
+  g_glDepthMask = reinterpret_cast<GlDepthMaskFn>(GetProcAddress(opengl, "glDepthMask"));
+  g_glColor3f = reinterpret_cast<GlColor3fFn>(GetProcAddress(opengl, "glColor3f"));
+  g_glMatrixMode = reinterpret_cast<GlMatrixModeFn>(GetProcAddress(opengl, "glMatrixMode"));
+  g_glPushMatrix = reinterpret_cast<GlPushMatrixFn>(GetProcAddress(opengl, "glPushMatrix"));
+  g_glPopMatrix = reinterpret_cast<GlPopMatrixFn>(GetProcAddress(opengl, "glPopMatrix"));
+  g_glLoadIdentity = reinterpret_cast<GlLoadIdentityFn>(GetProcAddress(opengl, "glLoadIdentity"));
+  g_glGetIntegerv = reinterpret_cast<GlGetIntegervFn>(GetProcAddress(opengl, "glGetIntegerv"));
+  g_glBindTexture = reinterpret_cast<GlBindTextureFn>(GetProcAddress(opengl, "glBindTexture"));
+  g_glRasterPos2f = reinterpret_cast<GlRasterPos2fFn>(GetProcAddress(opengl, "glRasterPos2f"));
+  g_glDrawPixels = reinterpret_cast<GlDrawPixelsFn>(GetProcAddress(opengl, "glDrawPixels"));
+
+  if (g_glDisable == nullptr || g_glEnable == nullptr || g_glDepthMask == nullptr ||
+      g_glColor3f == nullptr || g_glMatrixMode == nullptr || g_glPushMatrix == nullptr ||
+      g_glPopMatrix == nullptr || g_glLoadIdentity == nullptr || g_glGetIntegerv == nullptr ||
+      g_glBindTexture == nullptr || g_glRasterPos2f == nullptr || g_glDrawPixels == nullptr) {
+    SetLastError(ERROR_PROC_NOT_FOUND);
+    return FALSE;
+  }
+  return TRUE;
+}
+
+void FreeOverlayPixels(OverlayRecord* record) {
+  if (record == nullptr) {
+    return;
+  }
+  if (record->pixels != nullptr) {
+    HeapFree(GetProcessHeap(), 0, record->pixels);
+  }
+  ZeroMemory(record, sizeof(*record));
+}
+
+int FindOverlayIndexLocked(int32_t id) {
+  for (int index = 0; index < kMaxOverlays; ++index) {
+    if (g_state.overlays[index].enabled && g_state.overlays[index].id == id) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+int FindFreeOverlayIndexLocked() {
+  for (int index = 0; index < kMaxOverlays; ++index) {
+    if (!g_state.overlays[index].enabled) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+LONG CountOverlaysLocked() {
+  LONG count = 0;
+  for (int index = 0; index < kMaxOverlays; ++index) {
+    if (g_state.overlays[index].enabled) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+void UpdateOverlayRasterPosition(OverlayRecord* record, int viewport_width, int viewport_height) {
+  if (record == nullptr || viewport_width <= 0 || viewport_height <= 0) {
+    return;
+  }
+
+  int x = 0;
+  int y = 0;
+  switch (record->position) {
+    case 1:
+      x = 20;
+      y = 50;
+      break;
+    case 2:
+      x = (viewport_width - record->width) / 2;
+      y = 50;
+      break;
+    case 3:
+      x = viewport_width - record->width - 90;
+      y = 50;
+      break;
+    case 4:
+      x = 20;
+      y = (viewport_height - record->height) / 2;
+      break;
+    case 5:
+      x = (viewport_width - record->width) / 2;
+      y = (viewport_height - record->height) / 2;
+      break;
+    case 6:
+      x = viewport_width - record->width - 90;
+      y = (viewport_height - record->height) / 2;
+      break;
+    case 7:
+      x = 20;
+      y = viewport_height - record->height - 70;
+      break;
+    case 8:
+      x = (viewport_width - record->width) / 2;
+      y = viewport_height - record->height - 70;
+      break;
+    case 9:
+      x = viewport_width - record->width - 90;
+      y = viewport_height - record->height - 70;
+      break;
+    case 0:
+    default:
+      x = 0;
+      y = 0;
+      break;
+  }
+
+  x += record->offset_x;
+  y += record->offset_y;
+  record->raster_x = (static_cast<float>(x) * 2.0f / static_cast<float>(viewport_width)) - 1.0f;
+  record->raster_y = 1.0f - (static_cast<float>(y + record->height) * 2.0f / static_cast<float>(viewport_height));
+  record->viewport_width = viewport_width;
+  record->viewport_height = viewport_height;
+}
+
+BOOL StoreOverlayBitmap(
+    int32_t id,
+    int32_t position,
+    int32_t offset_x,
+    int32_t offset_y,
+    int32_t width,
+    int32_t height,
+    const void* pixels,
+    DWORD pixel_bytes) {
+  if (!g_state.overlay_lock_ready || id < 0 || width <= 0 || height <= 0 ||
+      width > kOverlayMaxDimension || height > kOverlayMaxDimension || pixels == nullptr) {
+    SetLastError(ERROR_INVALID_PARAMETER);
+    return FALSE;
+  }
+
+  const uint64_t expected_bytes = static_cast<uint64_t>(width) * static_cast<uint64_t>(height) * 4u;
+  if (expected_bytes == 0 || expected_bytes > 0x7FFFFFFFu || pixel_bytes != static_cast<DWORD>(expected_bytes)) {
+    SetLastError(ERROR_INVALID_DATA);
+    return FALSE;
+  }
+
+  BYTE* copy = static_cast<BYTE*>(HeapAlloc(GetProcessHeap(), 0, static_cast<SIZE_T>(pixel_bytes)));
+  if (copy == nullptr) {
+    SetLastError(ERROR_OUTOFMEMORY);
+    return FALSE;
+  }
+  memcpy(copy, pixels, pixel_bytes);
+
+  EnterCriticalSection(&g_state.overlay_lock);
+  int index = FindOverlayIndexLocked(id);
+  if (index < 0) {
+    index = FindFreeOverlayIndexLocked();
+  }
+  if (index < 0) {
+    LeaveCriticalSection(&g_state.overlay_lock);
+    HeapFree(GetProcessHeap(), 0, copy);
+    SetLastError(ERROR_OUTOFMEMORY);
+    return FALSE;
+  }
+
+  OverlayRecord* record = &g_state.overlays[index];
+  if (record->pixels != nullptr) {
+    HeapFree(GetProcessHeap(), 0, record->pixels);
+  }
+  record->id = id;
+  record->position = position;
+  record->offset_x = offset_x;
+  record->offset_y = offset_y;
+  record->width = width;
+  record->height = height;
+  record->viewport_width = 0;
+  record->viewport_height = 0;
+  record->raster_x = 0.0f;
+  record->raster_y = 0.0f;
+  record->pixel_bytes = pixel_bytes;
+  record->pixels = copy;
+  record->enabled = true;
+  InterlockedExchange(&g_state.overlay_count, CountOverlaysLocked());
+  LeaveCriticalSection(&g_state.overlay_lock);
+  return TRUE;
+}
+
+BOOL ClearOverlayById(int32_t id) {
+  if (!g_state.overlay_lock_ready) {
+    SetLastError(ERROR_NOT_READY);
+    return FALSE;
+  }
+  EnterCriticalSection(&g_state.overlay_lock);
+  const int index = FindOverlayIndexLocked(id);
+  if (index >= 0) {
+    FreeOverlayPixels(&g_state.overlays[index]);
+  }
+  InterlockedExchange(&g_state.overlay_count, CountOverlaysLocked());
+  LeaveCriticalSection(&g_state.overlay_lock);
+  return TRUE;
+}
+
+BOOL ClearAllOverlays() {
+  if (!g_state.overlay_lock_ready) {
+    SetLastError(ERROR_NOT_READY);
+    return FALSE;
+  }
+  EnterCriticalSection(&g_state.overlay_lock);
+  for (int index = 0; index < kMaxOverlays; ++index) {
+    FreeOverlayPixels(&g_state.overlays[index]);
+  }
+  InterlockedExchange(&g_state.overlay_count, 0);
+  LeaveCriticalSection(&g_state.overlay_lock);
+  return TRUE;
+}
+
+BOOL RenderTextOverlay(
+    int32_t id,
+    int32_t position,
+    int32_t offset_x,
+    int32_t offset_y,
+    int32_t font_size,
+    uint32_t color_rgb,
+    const char* text,
+    int* out_width,
+    int* out_height) {
+  if (text == nullptr) {
+    text = "";
+  }
+  if (font_size <= 0) {
+    font_size = 16;
+  }
+  if (font_size > 72) {
+    font_size = 72;
+  }
+
+  HDC dc = CreateCompatibleDC(nullptr);
+  if (dc == nullptr) {
+    return FALSE;
+  }
+
+  HFONT font = CreateFontA(
+      -font_size,
+      0,
+      0,
+      0,
+      FW_SEMIBOLD,
+      FALSE,
+      FALSE,
+      FALSE,
+      DEFAULT_CHARSET,
+      OUT_DEFAULT_PRECIS,
+      CLIP_DEFAULT_PRECIS,
+      CLEARTYPE_QUALITY,
+      DEFAULT_PITCH | FF_DONTCARE,
+      "Segoe UI");
+  if (font == nullptr) {
+    DeleteDC(dc);
+    return FALSE;
+  }
+
+  HGDIOBJ old_font = SelectObject(dc, font);
+  RECT measure = {0, 0, kOverlayMaxDimension - (kOverlayTextPadding * 2), 0};
+  DrawTextA(dc, text, -1, &measure, DT_CALCRECT | DT_LEFT | DT_NOPREFIX);
+
+  int width = (measure.right - measure.left) + (kOverlayTextPadding * 2);
+  int height = (measure.bottom - measure.top) + (kOverlayTextPadding * 2);
+  if (width < 8) {
+    width = 8;
+  }
+  if (height < 8) {
+    height = 8;
+  }
+  if (width > kOverlayMaxDimension) {
+    width = kOverlayMaxDimension;
+  }
+  if (height > kOverlayMaxDimension) {
+    height = kOverlayMaxDimension;
+  }
+
+  BITMAPINFO bmi = {};
+  bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+  bmi.bmiHeader.biWidth = width;
+  bmi.bmiHeader.biHeight = height;
+  bmi.bmiHeader.biPlanes = 1;
+  bmi.bmiHeader.biBitCount = 32;
+  bmi.bmiHeader.biCompression = BI_RGB;
+
+  void* bits = nullptr;
+  HBITMAP bitmap = CreateDIBSection(dc, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0);
+  if (bitmap == nullptr || bits == nullptr) {
+    SelectObject(dc, old_font);
+    DeleteObject(font);
+    DeleteDC(dc);
+    return FALSE;
+  }
+
+  HGDIOBJ old_bitmap = SelectObject(dc, bitmap);
+  RECT background = {0, 0, width, height};
+  HBRUSH background_brush = CreateSolidBrush(RGB(0, 0, 0));
+  FillRect(dc, &background, background_brush);
+  DeleteObject(background_brush);
+
+  SetBkMode(dc, TRANSPARENT);
+  SetTextColor(dc, RGB((color_rgb >> 16) & 0xFF, (color_rgb >> 8) & 0xFF, color_rgb & 0xFF));
+  RECT text_rect = {kOverlayTextPadding, kOverlayTextPadding, width - kOverlayTextPadding, height - kOverlayTextPadding};
+  DrawTextA(dc, text, -1, &text_rect, DT_LEFT | DT_NOPREFIX);
+  GdiFlush();
+
+  const DWORD pixel_bytes = static_cast<DWORD>(width * height * 4);
+  const BOOL stored = StoreOverlayBitmap(id, position, offset_x, offset_y, width, height, bits, pixel_bytes);
+  if (stored) {
+    if (out_width != nullptr) {
+      *out_width = width;
+    }
+    if (out_height != nullptr) {
+      *out_height = height;
+    }
+  }
+
+  SelectObject(dc, old_bitmap);
+  DeleteObject(bitmap);
+  SelectObject(dc, old_font);
+  DeleteObject(font);
+  DeleteDC(dc);
+  return stored;
+}
+
+void RenderOverlays() {
+  if (!g_state.overlay_lock_ready || InterlockedCompareExchange(&g_state.overlay_count, 0, 0) <= 0) {
+    return;
+  }
+  if (!ResolveOpenGlFunctions()) {
+    InterlockedExchange(&g_state.overlay_last_error, static_cast<LONG>(GetLastError()));
+    return;
+  }
+
+  int viewport[4] = {};
+  int texture = 0;
+  int matrix_mode = kGlModelview;
+  g_glGetIntegerv(kGlViewport, viewport);
+  g_glGetIntegerv(kGlTextureBinding2D, &texture);
+  g_glGetIntegerv(kGlMatrixMode, &matrix_mode);
+  const int viewport_width = viewport[2];
+  const int viewport_height = viewport[3];
+  if (viewport_width <= 0 || viewport_height <= 0) {
+    return;
+  }
+
+  g_glDisable(kGlCullFace);
+  g_glDisable(kGlDepthTest);
+  g_glDepthMask(FALSE);
+  g_glColor3f(1.0f, 1.0f, 1.0f);
+  g_glMatrixMode(kGlProjection);
+  g_glPushMatrix();
+  g_glLoadIdentity();
+  g_glMatrixMode(kGlModelview);
+  g_glPushMatrix();
+  g_glLoadIdentity();
+  g_glBindTexture(kGlTexture2D, 0);
+
+  EnterCriticalSection(&g_state.overlay_lock);
+  for (int index = 0; index < kMaxOverlays; ++index) {
+    OverlayRecord* record = &g_state.overlays[index];
+    if (!record->enabled || record->pixels == nullptr || record->width <= 0 || record->height <= 0) {
+      continue;
+    }
+    if (record->viewport_width != viewport_width || record->viewport_height != viewport_height) {
+      UpdateOverlayRasterPosition(record, viewport_width, viewport_height);
+    }
+    g_glRasterPos2f(record->raster_x, record->raster_y);
+    g_glDrawPixels(record->width, record->height, kGlBgraExt, kGlUnsignedByte, record->pixels);
+  }
+  LeaveCriticalSection(&g_state.overlay_lock);
+
+  g_glBindTexture(kGlTexture2D, static_cast<UINT>(texture));
+  g_glPopMatrix();
+  g_glMatrixMode(kGlProjection);
+  g_glPopMatrix();
+  g_glMatrixMode(static_cast<UINT>(matrix_mode));
+  g_glDepthMask(TRUE);
+  g_glEnable(kGlDepthTest);
+  g_glEnable(kGlCullFace);
+  InterlockedIncrement(&g_state.overlay_draws);
+}
+
+BOOL WINAPI WglSwapLayerBuffersHook(HDC hdc, UINT planes) {
+  RenderOverlays();
+  WglSwapLayerBuffersFn original = reinterpret_cast<WglSwapLayerBuffersFn>(g_wgl_swap_gateway);
+  if (original == nullptr) {
+    SetLastError(ERROR_INVALID_FUNCTION);
+    return FALSE;
+  }
+  return original(hdc, planes);
+}
+
+BOOL InstallOverlayHook() {
+  if (InterlockedCompareExchange(&g_state.overlay_hook_installed, 0, 0) != 0) {
+    return TRUE;
+  }
+  if (!ResolveOpenGlFunctions()) {
+    return FALSE;
+  }
+
+  HMODULE opengl = ResolveOpenGlModule();
+  FARPROC proc = opengl != nullptr ? GetProcAddress(opengl, "wglSwapLayerBuffers") : nullptr;
+  if (proc == nullptr) {
+    SetLastError(ERROR_PROC_NOT_FOUND);
+    return FALSE;
+  }
+
+  BYTE* target = reinterpret_cast<BYTE*>(proc);
+  const size_t stolen = 5;
+  memcpy(g_wgl_swap_original, target, stolen);
+  g_wgl_swap_gateway = MakeJmpGateway(target, stolen);
+  if (g_wgl_swap_gateway == nullptr) {
+    SetLastError(ERROR_OUTOFMEMORY);
+    return FALSE;
+  }
+
+  BYTE patch[5] = {};
+  patch[0] = 0xE9;
+  *reinterpret_cast<int32_t*>(&patch[1]) = static_cast<int32_t>(
+      reinterpret_cast<BYTE*>(&WglSwapLayerBuffersHook) - (target + 5));
+  WriteExecutableMemory(target, patch, stolen);
+  g_wgl_swap_stolen = stolen;
+  InterlockedExchange(&g_state.overlay_hook_installed, 1);
+  LogMessage(
+      kLogInfo,
+      "installed overlay draw hook at 0x%08X stolen=%u gateway=0x%08X",
+      static_cast<unsigned int>(reinterpret_cast<uintptr_t>(target)),
+      static_cast<unsigned int>(stolen),
+      static_cast<unsigned int>(reinterpret_cast<uintptr_t>(g_wgl_swap_gateway)));
+  return TRUE;
+}
+
 bool BuildLogDirectory(const char* module_path, char* log_dir, size_t capacity) {
   if (module_path == nullptr || log_dir == nullptr || capacity == 0) {
     return false;
@@ -1388,6 +1926,11 @@ void BuildSnapshotText(const char* reason, char* out, size_t capacity) {
       InterlockedCompareExchange(&g_state.last_chat_mode, 0, 0),
       InterlockedCompareExchange(&g_state.last_chat_result, 0, 0),
       InterlockedCompareExchange(&g_state.last_chat_error, 0, 0));
+  AppendFormat(out, capacity, &offset, "overlay: hook=%ld count=%ld draws=%ld err=%ld\r\n",
+      InterlockedCompareExchange(&g_state.overlay_hook_installed, 0, 0),
+      InterlockedCompareExchange(&g_state.overlay_count, 0, 0),
+      InterlockedCompareExchange(&g_state.overlay_draws, 0, 0),
+      InterlockedCompareExchange(&g_state.overlay_last_error, 0, 0));
   AppendFormat(out, capacity, &offset, "identityPath: appObjectResolver=0x%08X currentPlayerResolver=0x%08X nameBuilder=0x%08X stringDestroy=0x%08X\r\n",
       runtime_app_object_resolver,
       runtime_current_player_resolver,
@@ -2494,6 +3037,88 @@ BOOL HandlePipeClient(HANDLE pipe) {
         break;
       }
 
+      case kOpOverlayText: {
+        OverlayResponse response = {};
+        if (header.size < sizeof(OverlayTextRequestHeader)) {
+          response.last_error = ERROR_INVALID_DATA;
+        } else {
+          OverlayTextRequestHeader request = {};
+          memcpy(&request, payload, sizeof(request));
+          const DWORD expected_size = static_cast<DWORD>(sizeof(OverlayTextRequestHeader) + (request.text_length > 0 ? request.text_length : 0));
+          if (request.text_length < 0 || request.text_length >= kOverlayTextCapacity || header.size != expected_size) {
+            response.last_error = ERROR_INVALID_DATA;
+          } else if (!InstallOverlayHook()) {
+            response.last_error = static_cast<int32_t>(GetLastError());
+          } else {
+            char text[kOverlayTextCapacity] = {};
+            if (request.text_length > 0) {
+              memcpy(text, payload + sizeof(OverlayTextRequestHeader), static_cast<size_t>(request.text_length));
+            }
+            text[request.text_length] = '\0';
+
+            int width = 0;
+            int height = 0;
+            response.success = RenderTextOverlay(
+                request.id,
+                request.position,
+                request.offset_x,
+                request.offset_y,
+                request.font_size,
+                request.color_rgb,
+                text,
+                &width,
+                &height) ? 1 : 0;
+            response.width = width;
+            response.height = height;
+            response.last_error = response.success ? ERROR_SUCCESS : static_cast<int32_t>(GetLastError());
+            InterlockedExchange(&g_state.overlay_last_error, response.last_error);
+            LogMessage(
+                kLogDebug,
+                "overlay text request id=%ld pos=%ld size=%ldx%ld success=%ld err=%ld text=%s",
+                request.id,
+                request.position,
+                response.width,
+                response.height,
+                response.success,
+                response.last_error,
+                text);
+          }
+        }
+
+        if (!WriteResponse(pipe, kOpOverlayText, &response, sizeof(response))) {
+          return FALSE;
+        }
+        break;
+      }
+
+      case kOpOverlayClear: {
+        OverlayResponse response = {};
+        if (header.size != sizeof(int32_t)) {
+          response.last_error = ERROR_INVALID_DATA;
+        } else {
+          const int32_t id = *reinterpret_cast<const int32_t*>(payload);
+          response.success = ClearOverlayById(id) ? 1 : 0;
+          response.last_error = response.success ? ERROR_SUCCESS : static_cast<int32_t>(GetLastError());
+          InterlockedExchange(&g_state.overlay_last_error, response.last_error);
+        }
+
+        if (!WriteResponse(pipe, kOpOverlayClear, &response, sizeof(response))) {
+          return FALSE;
+        }
+        break;
+      }
+
+      case kOpOverlayClearAll: {
+        OverlayResponse response = {};
+        response.success = ClearAllOverlays() ? 1 : 0;
+        response.last_error = response.success ? ERROR_SUCCESS : static_cast<int32_t>(GetLastError());
+        InterlockedExchange(&g_state.overlay_last_error, response.last_error);
+        if (!WriteResponse(pipe, kOpOverlayClearAll, &response, sizeof(response))) {
+          return FALSE;
+        }
+        break;
+      }
+
       case kOpTriggerPageSlot: {
         TriggerResponse response = {};
         if (header.size != sizeof(int32_t) * 2) {
@@ -2710,10 +3335,13 @@ SIMKEYS_API DWORD WINAPI InitSimKeys(LPVOID) {
   g_state.chat_lock_ready = true;
   InitializeCriticalSection(&g_state.log_lock);
   g_state.log_lock_ready = true;
+  InitializeCriticalSection(&g_state.overlay_lock);
+  g_state.overlay_lock_ready = true;
   g_state.log_file = nullptr;
   g_state.module_path[0] = '\0';
   g_state.log_path[0] = '\0';
   g_state.character_name[0] = '\0';
+  ZeroMemory(g_state.overlays, sizeof(g_state.overlays));
   ZeroMemory(g_state.chat_lines, sizeof(g_state.chat_lines));
   InterlockedExchange(&g_state.pipe_state, 0);
   InterlockedExchange(&g_state.pipe_thread_error, ERROR_IO_PENDING);
@@ -2724,6 +3352,8 @@ SIMKEYS_API DWORD WINAPI InitSimKeys(LPVOID) {
       CloseHandle(g_state.log_file);
       g_state.log_file = nullptr;
     }
+    g_state.overlay_lock_ready = false;
+    DeleteCriticalSection(&g_state.overlay_lock);
     g_state.log_lock_ready = false;
     DeleteCriticalSection(&g_state.log_lock);
     g_state.chat_lock_ready = false;
@@ -2742,6 +3372,8 @@ SIMKEYS_API DWORD WINAPI InitSimKeys(LPVOID) {
       CloseHandle(g_state.log_file);
       g_state.log_file = nullptr;
     }
+    g_state.overlay_lock_ready = false;
+    DeleteCriticalSection(&g_state.overlay_lock);
     g_state.log_lock_ready = false;
     DeleteCriticalSection(&g_state.log_lock);
     g_state.chat_lock_ready = false;
@@ -2762,6 +3394,8 @@ SIMKEYS_API DWORD WINAPI InitSimKeys(LPVOID) {
       CloseHandle(g_state.log_file);
       g_state.log_file = nullptr;
     }
+    g_state.overlay_lock_ready = false;
+    DeleteCriticalSection(&g_state.overlay_lock);
     g_state.log_lock_ready = false;
     DeleteCriticalSection(&g_state.log_lock);
     g_state.chat_lock_ready = false;
@@ -2784,6 +3418,8 @@ SIMKEYS_API DWORD WINAPI InitSimKeys(LPVOID) {
       CloseHandle(g_state.log_file);
       g_state.log_file = nullptr;
     }
+    g_state.overlay_lock_ready = false;
+    DeleteCriticalSection(&g_state.overlay_lock);
     g_state.log_lock_ready = false;
     DeleteCriticalSection(&g_state.log_lock);
     g_state.chat_lock_ready = false;
@@ -2809,6 +3445,8 @@ SIMKEYS_API DWORD WINAPI InitSimKeys(LPVOID) {
       CloseHandle(g_state.log_file);
       g_state.log_file = nullptr;
     }
+    g_state.overlay_lock_ready = false;
+    DeleteCriticalSection(&g_state.overlay_lock);
     g_state.log_lock_ready = false;
     DeleteCriticalSection(&g_state.log_lock);
     g_state.chat_lock_ready = false;
@@ -2835,6 +3473,9 @@ SIMKEYS_API DWORD WINAPI InitSimKeys(LPVOID) {
   InstallQuickbarTraceHook();
   InstallQuickbarSlotTraceHook();
   InstallChatWindowLogHook();
+  if (!InstallOverlayHook()) {
+    LogMessage(kLogError, "overlay hook install failed gle=%lu", GetLastError());
+  }
   DiscoverQuickbarPanelByScan("init");
   LogMessage(kLogInfo, "InitSimKeys complete");
   return 1;

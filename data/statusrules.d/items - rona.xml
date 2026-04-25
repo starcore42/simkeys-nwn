@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rules>
+	<timer
+		text="Displacement"
+		description="Efi'Eilon's Anklets - Displacement"
+		rule="^{PLAYER} uses Efi'Eilon's Anklets$"
+		duration="00:05:00"
+		disableOnDeath="true"
+		disableOnRest="true" />
+</rules>

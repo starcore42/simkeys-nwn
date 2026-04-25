@@ -9,6 +9,7 @@
 #   setlog N     -> 0=errors, 1=info, 2=debug
 #   chat-send T  -> send chat text through the in-game chat path (default mode 2)
 #   chat-poll    -> fetch captured chat/log lines from the hook ring buffer
+#   overlay-text -> render a small text overlay inside the game frame
 
 import argparse, struct, time
 import ctypes as C
@@ -129,13 +130,56 @@ class Pipe:
         except Exception:
             pass
 
-OP_QUERY=3000; OP_SLOT=3001; OP_VK=3002; OP_SETLOG=3003; OP_REPLAY=3004; OP_SNAPSHOT=3005; OP_CHAT_SEND=3006; OP_CHAT_POLL=3007; OP_SLOT_PAGE=3008
+OP_QUERY=3000; OP_SLOT=3001; OP_VK=3002; OP_SETLOG=3003; OP_REPLAY=3004; OP_SNAPSHOT=3005; OP_CHAT_SEND=3006; OP_CHAT_POLL=3007; OP_SLOT_PAGE=3008; OP_OVERLAY_TEXT=3009; OP_OVERLAY_CLEAR=3010; OP_OVERLAY_CLEAR_ALL=3011
 QUERY_STRUCT = struct.Struct("<" + ("I" * 24) + ("i" * 10) + "I" + ("i" * 2) + ("I" * 4) + f"{CHAR_NAME_CAPACITY}s")
+OVERLAY_TEXT_HEADER = struct.Struct("<iiiiiIi")
+OVERLAY_RESPONSE = struct.Struct("<iiii")
+OVERLAY_POSITIONS = {
+    "ABSOLUTE": 0,
+    "A": 0,
+    "TOPLEFT": 1,
+    "TOP_LEFT": 1,
+    "TL": 1,
+    "TOP": 2,
+    "T": 2,
+    "TOPRIGHT": 3,
+    "TOP_RIGHT": 3,
+    "TR": 3,
+    "CENTERLEFT": 4,
+    "CENTER_LEFT": 4,
+    "CL": 4,
+    "CENTER": 5,
+    "C": 5,
+    "CENTERRIGHT": 6,
+    "CENTER_RIGHT": 6,
+    "CR": 6,
+    "BOTTOMLEFT": 7,
+    "BOTTOM_LEFT": 7,
+    "BL": 7,
+    "BOTTOM": 8,
+    "B": 8,
+    "BOTTOMRIGHT": 9,
+    "BOTTOM_RIGHT": 9,
+    "BR": 9,
+}
 
 def phex(x): return f"0x{x:08X}"
 def as_int(x): 
     s = str(x).lower()
     return int(s, 16) if s.startswith("0x") else int(s)
+
+def overlay_position_value(value):
+    if isinstance(value, int):
+        if 0 <= value <= 9:
+            return value
+        raise ValueError("overlay position must be between 0 and 9")
+    key = str(value or "").strip().upper().replace("-", "_").replace(" ", "_")
+    compact = key.replace("_", "")
+    if key in OVERLAY_POSITIONS:
+        return OVERLAY_POSITIONS[key]
+    if compact in OVERLAY_POSITIONS:
+        return OVERLAY_POSITIONS[compact]
+    raise ValueError(f"unknown overlay position: {value}")
 
 def decode_cstring(b):
     return b.split(b"\x00", 1)[0].decode("utf-8", errors="replace")
@@ -303,6 +347,48 @@ def chat_poll(p, after=0, max_lines=20):
         "lines": lines,
     }
 
+def overlay_show_text(p, text, overlay_id=1000, position="TR", offset_x=0, offset_y=0, font_size=16, color=0xFFFFFF):
+    payload = str(text or "").encode("utf-8", errors="replace")
+    if len(payload) >= 4096:
+        payload = payload[:4095]
+    header = OVERLAY_TEXT_HEADER.pack(
+        int(overlay_id),
+        overlay_position_value(position),
+        int(offset_x),
+        int(offset_y),
+        int(font_size),
+        int(color) & 0xFFFFFF,
+        len(payload),
+    )
+    _, data = p.xfer(OP_OVERLAY_TEXT, header + payload)
+    success, width, height, err = OVERLAY_RESPONSE.unpack(data)
+    return {
+        "success": success,
+        "width": width,
+        "height": height,
+        "err": err,
+    }
+
+def overlay_clear(p, overlay_id=1000):
+    _, data = p.xfer(OP_OVERLAY_CLEAR, struct.pack("i", int(overlay_id)))
+    success, width, height, err = OVERLAY_RESPONSE.unpack(data)
+    return {
+        "success": success,
+        "width": width,
+        "height": height,
+        "err": err,
+    }
+
+def overlay_clear_all(p):
+    _, data = p.xfer(OP_OVERLAY_CLEAR_ALL)
+    success, width, height, err = OVERLAY_RESPONSE.unpack(data)
+    return {
+        "success": success,
+        "width": width,
+        "height": height,
+        "err": err,
+    }
+
 def cmd_chat_send(p, text, mode):
     result = chat_send(p, text, mode)
     print(f"chat-send: success={result['success']} mode={result['mode']} rc={result['rc']} err={result['err']}")
@@ -312,6 +398,27 @@ def cmd_chat_poll(p, after, max_lines):
     print(f"chat-poll: latest_seq={result['latest_seq']} count={len(result['lines'])}")
     for line in result["lines"]:
         print(f"[{line['seq']}] {line['text']}")
+
+def cmd_overlay_text(p, text, overlay_id, position, offset_x, offset_y, font_size, color):
+    result = overlay_show_text(
+        p,
+        text,
+        overlay_id=overlay_id,
+        position=position,
+        offset_x=offset_x,
+        offset_y=offset_y,
+        font_size=font_size,
+        color=as_int(color),
+    )
+    print(f"overlay-text: success={result['success']} size={result['width']}x{result['height']} err={result['err']}")
+
+def cmd_overlay_clear(p, overlay_id):
+    result = overlay_clear(p, overlay_id)
+    print(f"overlay-clear: success={result['success']} err={result['err']}")
+
+def cmd_overlay_clear_all(p):
+    result = overlay_clear_all(p)
+    print(f"overlay-clear-all: success={result['success']} err={result['err']}")
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
@@ -326,6 +433,9 @@ if __name__ == "__main__":
     s4 = sub.add_parser("setlog"); s4.add_argument("level", type=int, choices=[0,1,2])
     s5 = sub.add_parser("chat-send"); s5.add_argument("text"); s5.add_argument("--mode", type=int, default=2)
     s6 = sub.add_parser("chat-poll"); s6.add_argument("--after", type=int, default=0); s6.add_argument("--max", type=int, default=20)
+    s7 = sub.add_parser("overlay-text"); s7.add_argument("text"); s7.add_argument("--id", type=int, default=1000); s7.add_argument("--position", default="TR"); s7.add_argument("--x", type=int, default=0); s7.add_argument("--y", type=int, default=0); s7.add_argument("--font", type=int, default=16); s7.add_argument("--color", default="0xFFFFFF")
+    s8 = sub.add_parser("overlay-clear"); s8.add_argument("--id", type=int, default=1000)
+    sub.add_parser("overlay-clear-all")
     a = ap.parse_args()
 
     p = Pipe(a.pid)
@@ -339,5 +449,8 @@ if __name__ == "__main__":
         elif a.cmd == "setlog": cmd_setlog(p, a.level)
         elif a.cmd == "chat-send": cmd_chat_send(p, a.text, a.mode)
         elif a.cmd == "chat-poll": cmd_chat_poll(p, a.after, a.max)
+        elif a.cmd == "overlay-text": cmd_overlay_text(p, a.text, a.id, a.position, a.x, a.y, a.font, a.color)
+        elif a.cmd == "overlay-clear": cmd_overlay_clear(p, a.id)
+        elif a.cmd == "overlay-clear-all": cmd_overlay_clear_all(p)
     finally:
         p.close()

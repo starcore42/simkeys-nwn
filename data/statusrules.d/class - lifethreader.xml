@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rules>
+	<state
+		text="Lifethreading"
+		description="Lifethreader - Threading"
+		enableRule="^\* Lifethreading enabled \*$"
+		disableRule="^\* Lifethreading (disabled|cancelled|exhausted) \*$"
+		disableOnRest="true"
+		disableOnDeath="true" />
+	<timer
+		text="Lifethreading cooldown"
+		description="Lifethreading - Ability cooldown"
+		rule="^\* Lifethreading enabled \*$|^\* Lifethreading disabled \*$"
+		duration="00:00:06" />
+</rules>

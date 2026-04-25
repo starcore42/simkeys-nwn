@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rules>
+    <state
+        text="Infected"
+        description="Infected - Swarm master"
+        color="Red"
+        enableRule="^The swarm master plants something in your chest!$"
+		disableRule="^The infestation is destroyed!$"
+        disableOnDeath="true" />
+    <state
+        text="Infected"
+        description="Infected - Ekolid"
+        color="Red"
+        enableRule="^The ekolid drives an ovipositor into you and implants something in you!|You feel something vile hatching inside your body!$"
+		disableRule="^The infestation is destroyed!$"
+        disableOnDeath="true" />
+    <state
+        text="Infected"
+        description="Infected - Moliation Vine"
+        color="Red"
+        enableRule="^The Moliation Vine digs into your flesh, planting spores!$"
+		disableRule="^The infestation is destroyed!$"
+        disableOnDeath="true" />
+</rules>

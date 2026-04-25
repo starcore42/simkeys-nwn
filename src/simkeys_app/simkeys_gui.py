@@ -73,6 +73,13 @@ SCRIPT_CARD_LAYOUTS = {
         ],
         "advanced": ["poll_interval", "max_lines", "echo_console", "include_backlog"],
     },
+    "ingame_timers": {
+        "expanded": False,
+        "sections": [
+            ("Overlay", ["position", "offset_x", "offset_y", "font_size", "color", "max_timers"]),
+        ],
+        "advanced": ["rules_dir", "poll_interval", "max_lines", "include_backlog"],
+    },
 }
 SCRIPT_CARD_ACCENTS = {
     "autodrink": "#2c7be5",
@@ -82,6 +89,7 @@ SCRIPT_CARD_ACCENTS = {
     "auto_attack": "#d9480f",
     "always_on": "#087f5b",
     "auto_rsm": "#7950f2",
+    "ingame_timers": "#1971c2",
 }
 BANK_PAGE_TO_VALUE = {"None": 0, "Shift": 1, "Control": 2}
 BANK_VALUE_TO_PAGE = {value: label for label, value in BANK_PAGE_TO_VALUE.items()}

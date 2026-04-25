@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rules>
+	<timer
+		text="Plate of Uxan Uldorath"
+		description="Plate of Uxan Uldorath - Divine Power"
+		rule="^{PLAYER} uses Plate of Uxan Uldorath$"
+		duration="00:05:00"
+		disableOnDeath="true"
+		disableOnRest="true" />
+</rules>

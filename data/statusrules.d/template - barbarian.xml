@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+	This is a template file for barbarians. Since the duration of their abilities
+	depends on the character or caster level you will need to adjust this file.
+-->
+<rules>
+	<!--
+		Add your character name to the player attribute, e.g. change
+			player="^$"
+		to
+			player="My Uber Barbarian"
+		
+		Add the duration of the ability (in seconds) to the duration attributue,
+		e.g. change
+			duration="0"
+		to
+			duration="300"
+			
+		If you have more than one character with these abilities then simply
+		copy all the timer elements until the next comment and change the player
+		and duration.
+	-->
+	<timer
+		text="Rage"
+		description="Barbarian Rage"
+		player="^$"
+		rule="^{PLAYER} enters rage\.$"
+		duration="0"
+		disableOnDeath="true"
+		disableOnRest="true" />
+</rules>
