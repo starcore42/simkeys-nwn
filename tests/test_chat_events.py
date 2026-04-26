@@ -1,9 +1,11 @@
 import os
+import time
 import unittest
 
 from src.simkeys_app import simkeys_hgx_combat as combat
 from src.simkeys_app import simkeys_hgx_data as hgx_data
 from src.simkeys_app.simkeys_script_host import (
+    ActiveOverlayTimer,
     AutoAAScript,
     ChatLineEvent,
     ClientScriptBase,
@@ -101,6 +103,12 @@ class ChatEventTests(unittest.TestCase):
         }
         self.assertEqual(specs[_spell_key("Shadow Evade")], "Shadow Evade")
         self.assertEqual(specs[_spell_key("Aura Fear")], "Aura Fear")
+        aura = next(
+            spec
+            for spec in _load_hgx_spell_timer_specs(_default_status_rules_dir())
+            if _spell_key(spec.spell) == _spell_key("Aura Fear")
+        )
+        self.assertIn("surrounded by an aura", aura.trigger_pattern)
 
     def test_parse_combat_and_shifter_events(self):
         attack = parse_chat_line_event(1, "[CHAT WINDOW TEXT] [Sun Apr 26 12:00:00] Rapid Shot : Starcore-StormReaper [2.0] attacks Dummy : *hit*")
@@ -143,6 +151,7 @@ class ChatEventTests(unittest.TestCase):
         host.client.display_name = "Starcore-DSM [1.4]"
         host.client.character_name = "Starcore-DSM [1.4]"
         script = InGameTimersScript(host.client, {}, host)
+        script.on_start()
 
         self.assertTrue(script._handle_spell_cast_line("Starcore-DSM [1.4] is surrounded by an aura.", 100.0))
         self.assertIn(_spell_key("Aura Fear"), script.pending_effect_queries)
@@ -185,14 +194,11 @@ class ChatEventTests(unittest.TestCase):
         host.client.display_name = "Starcore-DSM [1.4]"
         host.client.character_name = "Starcore-DSM [1.4]"
         config = {
-            "spell_timers": (
-                "Death Ward=Death Ward; "
-                "Tenser's Transformation=Tenser's Transformation"
-            )
+            "spell_timers": "Death Ward=Death Ward"
         }
         script = InGameTimersScript(host.client, config, host)
         script.on_start()
-        self.assertNotIn(_spell_key("Aura Fear"), {spec.key for spec in script.spell_specs})
+        self.assertIn(_spell_key("Aura Fear"), {spec.key for spec in script.spell_specs})
         self.assertIn(_spell_key("Aura Fear"), script.spell_specs_by_effect_key)
 
         effects = (
@@ -210,6 +216,55 @@ class ChatEventTests(unittest.TestCase):
         self.assertEqual(timer.description, "Aura Fear")
         self.assertEqual(timer.duration_seconds, 281.0)
         self.assertIn("Aura Fear 4:41", host.overlays[-1][0])
+
+    def test_ingame_timers_effects_snapshot_syncs_statusrule_effects_only(self):
+        host = FakeHost()
+        script = InGameTimersScript(host.client, {}, host)
+        script.on_start()
+
+        effects = (
+            "Effects on you:\n"
+            "    #42 Divine Power [9m47s left]\n"
+            "    #369 Energy Buffer [58m5s left]\n"
+        )
+        self.assertTrue(script._handle_effect_timer_line(effects, 100.0))
+        self.assertIn("spell:storm of vengeance", script.active)
+        self.assertNotIn("spell:energy buffer", script.active)
+        timer = script.active["spell:storm of vengeance"]
+        self.assertEqual(timer.label, "Storm of Vengeance")
+        self.assertEqual(timer.description, "Divine Power")
+
+    def test_ingame_timers_effects_snapshot_removes_missing_spell_timers_only(self):
+        host = FakeHost()
+        script = InGameTimersScript(host.client, {}, host)
+        script.on_start()
+
+        first_effects = (
+            "Effects on you:\n"
+            "    #198 Aura Fear [4m41s left]\n"
+            "    #477 Shadow Evade [9m52s left]\n"
+        )
+        self.assertTrue(script._handle_effect_timer_line(first_effects, 100.0))
+        script.active["text:infected"] = ActiveOverlayTimer(
+            label="Infected",
+            description="Infected",
+            expires_at=time.monotonic() + 600.0,
+            duration_seconds=600.0,
+            color_rgb=0xFF6666,
+            disable_on_death=True,
+            disable_on_rest=False,
+            source="statusrules.xml",
+        )
+        self.assertIn("spell:shadow evade", script.active)
+
+        second_effects = (
+            "Effects on you:\n"
+            "    #198 Aura Fear [4m36s left]\n"
+        )
+        self.assertTrue(script._handle_effect_timer_line(second_effects, 105.0))
+        self.assertIn("spell:aura fear", script.active)
+        self.assertNotIn("spell:shadow evade", script.active)
+        self.assertIn("text:infected", script.active)
 
     def test_host_routes_typed_events_without_broadcasting_to_every_script(self):
         delivered = []

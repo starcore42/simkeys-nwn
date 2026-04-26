@@ -251,6 +251,7 @@ EFFECT_TIMER_LINE_RE = re.compile(
     r"^\s*#\d+\s+(?P<effect>.+?)\s+\[(?P<remaining>[^\]]+)\](?:\s+\([^\r\n]*\))?\s*$",
     re.IGNORECASE | re.MULTILINE,
 )
+EFFECTS_SNAPSHOT_RE = re.compile(r"^\s*(?:\[Server\]\s*)?Effects on you\s*:", re.IGNORECASE)
 AVERTED_DEATH_LINE_RE = re.compile(
     r"^(?P<player>.+?)\s+(?P<action>respawn|averts death)\s+:\s+(?P<method>.+?)\s+:\s+\*success\*\s*$",
     re.IGNORECASE,
@@ -267,17 +268,6 @@ PLAYER_HIDE_LINE_RE = re.compile(r"^Acquired Item:\s*Player Hide\s*$", re.IGNORE
 SPELL_EFFECT_ALIASES = {
     "storm of vengeance": "Divine Power",
 }
-
-
-def _looks_like_duration(value: object) -> bool:
-    text = str(value or "").strip().lower()
-    if not text:
-        return False
-    if ":" in text:
-        return True
-    if re.fullmatch(r"\d+(?:\.\d+)?", text):
-        return True
-    return bool(re.search(r"\d+\s*(?:h|hr|hrs|hour|hours|m|min|mins|minute|minutes|s|sec|secs|second|seconds)\b", text))
 
 
 def _parse_effect_remaining_seconds(value: object) -> float:
@@ -329,6 +319,17 @@ def _spell_key(value: str) -> str:
     return re.sub(r"\s+", " ", text)
 
 
+def _expand_spell_trigger_rule(rule: str) -> str:
+    text = str(rule or "").strip()
+    if not text:
+        return ""
+    return (
+        text
+        .replace("{CASTER}", r"(?P<caster>.+?)")
+        .replace("{caster}", r"(?P<caster>.+?)")
+    )
+
+
 def _ability_spell_trigger_from_line(line: str) -> Tuple[object, str]:
     text = str(line or "").strip()
     if not text:
@@ -363,6 +364,7 @@ class SpellTimerSpec:
     duration_seconds: float
     color_rgb: int
     source: str
+    trigger_pattern: str = ""
 
 
 @dataclass
@@ -594,8 +596,17 @@ def _load_hgx_spell_timer_specs(source_dir: str) -> Tuple[SpellTimerSpec, ...]:
 
             if tag == "spelltimer":
                 spell = str(element.get("spell") or element.get("text") or "").strip()
+                trigger_pattern = _expand_spell_trigger_rule(
+                    str(
+                        element.get("trigger")
+                        or element.get("triggerRule")
+                        or element.get("abilityRule")
+                        or ""
+                    )
+                )
             elif tag == "timer":
                 spell = _extract_cast_spell_from_timer_rule(str(element.get("rule") or ""))
+                trigger_pattern = ""
             if not spell:
                 continue
             effect = str(element.get("effect") or "").strip()
@@ -615,114 +626,23 @@ def _load_hgx_spell_timer_specs(source_dir: str) -> Tuple[SpellTimerSpec, ...]:
                 duration_seconds=duration,
                 color_rgb=color_rgb,
                 source=f"{file_name}:{index}",
+                trigger_pattern=trigger_pattern,
             )
 
     return tuple(sorted(by_spell.values(), key=lambda spec: spec.spell.lower()))
 
 
-def _format_spell_timer_config(specs: Tuple[SpellTimerSpec, ...]) -> str:
-    parts = []
+def _compile_spell_trigger_specs(specs: Tuple[SpellTimerSpec, ...]) -> Tuple[Tuple[Pattern, SpellTimerSpec], ...]:
+    triggers: List[Tuple[Pattern, SpellTimerSpec]] = []
     for spec in specs:
-        parts.append(f"{spec.spell}={spec.effect or spec.spell}")
-    return "; ".join(parts)
-
-
-def _parse_spell_timer_config(value: object, defaults: Tuple[SpellTimerSpec, ...]) -> Tuple[SpellTimerSpec, ...]:
-    default_by_key = {spec.key: spec for spec in defaults}
-    text = str(value or "").strip()
-    if not text:
-        text = _format_spell_timer_config(defaults)
-
-    specs: List[SpellTimerSpec] = []
-    seen: Set[str] = set()
-    for raw_entry in re.split(r"[;\r\n]+", text):
-        entry = raw_entry.strip()
-        if not entry:
+        raw_pattern = str(spec.trigger_pattern or "").strip()
+        if not raw_pattern:
             continue
-
-        label = ""
-        effect = ""
-        duration_text = ""
-        if "|" in entry:
-            parts = [part.strip() for part in entry.split("|")]
-            if len(parts) >= 4:
-                label, spell, effect, duration_text = parts[0], parts[1], parts[2], parts[3]
-            elif len(parts) == 3:
-                if _looks_like_duration(parts[2]):
-                    spell, effect, duration_text = parts[0], parts[1], parts[2]
-                else:
-                    label, spell, effect = parts[0], parts[1], parts[2]
-            elif len(parts) == 2:
-                spell = parts[0]
-                if _looks_like_duration(parts[1]):
-                    duration_text = parts[1]
-                else:
-                    effect = parts[1]
-            else:
-                spell = parts[0]
-        elif "=" in entry:
-            spell, right = [part.strip() for part in entry.split("=", 1)]
-            if "|" in right:
-                right_parts = [part.strip() for part in right.split("|") if part.strip()]
-                if right_parts and _looks_like_duration(right_parts[-1]):
-                    duration_text = right_parts[-1]
-                    effect = "|".join(right_parts[:-1]).strip()
-                else:
-                    effect = right
-            elif _looks_like_duration(right):
-                duration_text = right
-            else:
-                effect = right
-        else:
-            spell = entry
-
-        key = _spell_key(spell)
-        if not key or key in seen:
+        try:
+            triggers.append((re.compile(raw_pattern, re.IGNORECASE), spec))
+        except re.error:
             continue
-
-        default = default_by_key.get(key)
-        has_duration = bool(str(duration_text or "").strip())
-        duration = _parse_duration_seconds(duration_text)
-        if not has_duration and default is not None:
-            duration = default.duration_seconds
-        if not effect:
-            effect = default.effect if default is not None else SPELL_EFFECT_ALIASES.get(key, spell)
-        specs.append(SpellTimerSpec(
-            key=key,
-            spell=spell,
-            effect=effect,
-            label=label or spell,
-            duration_seconds=duration,
-            color_rgb=default.color_rgb if default is not None else 0xFFFFFF,
-            source="config",
-        ))
-        seen.add(key)
-    return tuple(specs)
-
-
-def _ability_spell_timer_specs(defaults: Tuple[SpellTimerSpec, ...]) -> Tuple[SpellTimerSpec, ...]:
-    default_by_key = {spec.key: spec for spec in defaults}
-    specs: List[SpellTimerSpec] = []
-    seen: Set[str] = set()
-    for _pattern, spell_name in ABILITY_SPELL_TRIGGER_RULES:
-        key = _spell_key(spell_name)
-        if not key or key in seen:
-            continue
-        seen.add(key)
-        default = default_by_key.get(key)
-        if default is not None:
-            specs.append(default)
-            continue
-        specs.append(SpellTimerSpec(
-            key=key,
-            spell=spell_name,
-            effect=spell_name,
-            label=spell_name,
-            duration_seconds=0.0,
-            color_rgb=0xFFFFFF,
-            source="built-in ability trigger",
-        ))
-    return tuple(specs)
+    return tuple(triggers)
 
 
 def _load_status_timer_rules(source_dir: str) -> Tuple[OverlayTimerRule, ...]:
@@ -6026,8 +5946,10 @@ class InGameTimersScript(ClientScriptBase):
         self.rules: Tuple[OverlayTimerRule, ...] = ()
         self.spell_defaults: Tuple[SpellTimerSpec, ...] = ()
         self.spell_specs: Tuple[SpellTimerSpec, ...] = ()
+        self.tracked_spell_specs: Tuple[SpellTimerSpec, ...] = ()
         self.spell_specs_by_key: Dict[str, SpellTimerSpec] = {}
         self.spell_specs_by_effect_key: Dict[str, SpellTimerSpec] = {}
+        self.spell_trigger_specs: Tuple[Tuple[Pattern, SpellTimerSpec], ...] = ()
         self.pending_effect_queries: Dict[str, PendingSpellEffectQuery] = {}
         self.limbo_actor_keys: Set[str] = set()
         self.character_db = None
@@ -6061,25 +5983,21 @@ class InGameTimersScript(ClientScriptBase):
         rules_dir = self._rules_dir()
         self.rules = _load_status_timer_rules(rules_dir)
         self.spell_defaults = _load_hgx_spell_timer_specs(rules_dir)
-        self.spell_specs = _parse_spell_timer_config(self.config.get("spell_timers", ""), self.spell_defaults)
-        ability_specs = _ability_spell_timer_specs(self.spell_defaults)
-        self.spell_specs_by_key = {spec.key: spec for spec in self.spell_specs}
+        self.spell_specs = self.spell_defaults
+        self.tracked_spell_specs = self.spell_defaults
+        self.spell_specs_by_key = {spec.key: spec for spec in self.tracked_spell_specs}
         self.spell_specs_by_effect_key = {}
-        for spec in self.spell_specs:
+        for spec in self.tracked_spell_specs:
             effect_key = _spell_key(spec.effect)
             if effect_key:
                 self.spell_specs_by_effect_key[effect_key] = spec
-        for spec in ability_specs:
-            self.spell_specs_by_key.setdefault(spec.key, spec)
-            effect_key = _spell_key(spec.effect)
-            if effect_key:
-                self.spell_specs_by_effect_key.setdefault(effect_key, spec)
-        self.set_status(f"Loaded {len(self.rules)} rules, {len(self.spell_specs)} spells")
+        self.spell_trigger_specs = _compile_spell_trigger_specs(self.tracked_spell_specs)
+        self.set_status(f"Loaded {len(self.rules)} rules, {len(self.tracked_spell_specs)} spells")
         self.host.emit(
             "info",
             (
                 f"{self.client.display_name}: In-Game Timers loaded {len(self.rules)} rules and "
-                f"{len(self.spell_specs)} self-cast spell timers from {rules_dir}; "
+                f"{len(self.tracked_spell_specs)} tracked effects from {rules_dir}; "
                 f"limbo enemy records={len(self.character_db.records) if self.character_db is not None else 0}, "
                 f"allowlist={len(self.limbo_actor_keys)}"
             ),
@@ -6352,21 +6270,44 @@ class InGameTimersScript(ClientScriptBase):
             return False
         return not self._limbo_actor_is_known_enemy(value)
 
+    def _match_configured_spell_trigger(self, line: str) -> Tuple[object, Optional[SpellTimerSpec]]:
+        text = str(line or "").strip()
+        if not text:
+            return None, None
+        for pattern, spec in self.spell_trigger_specs:
+            match = pattern.match(text)
+            if match is not None:
+                return match, spec
+        return None, None
+
+    def _spell_trigger_caster(self, match: object) -> str:
+        if match is None:
+            return ""
+        groups = match.groupdict()
+        for name in ("caster", "player", "actor"):
+            value = groups.get(name)
+            if value:
+                return str(value)
+        return ""
+
     def _handle_spell_cast_line(self, line: str, now: float) -> bool:
         match = SPELL_CAST_LINE_RE.match(line)
         if match is None:
-            match, spell_name = _ability_spell_trigger_from_line(line)
+            match, spec = self._match_configured_spell_trigger(line)
             if match is None:
+                match, spell_name = _ability_spell_trigger_from_line(line)
+                spec = self.spell_specs_by_key.get(_spell_key(spell_name)) if match is not None else None
+            if match is None or spec is None:
                 return False
+            caster = self._spell_trigger_caster(match)
         else:
             spell_name = str(match.group("spell") or "").strip()
+            spec = self.spell_specs_by_key.get(_spell_key(spell_name))
+            caster = str(match.group("caster") or "")
 
-        if not self._caster_matches_self(match.group("caster")):
+        if not self._caster_matches_self(caster):
             return False
 
-        spec = self.spell_specs_by_key.get(_spell_key(spell_name))
-        if spec is None:
-            spec = self._builtin_ability_spell_spec(spell_name)
         if spec is None:
             return False
 
@@ -6380,40 +6321,44 @@ class InGameTimersScript(ClientScriptBase):
         self.set_status(f"Checking {spec.label}")
         return True
 
-    def _builtin_ability_spell_spec(self, spell_name: str) -> Optional[SpellTimerSpec]:
-        spell_key = _spell_key(spell_name)
-        ability_keys = {_spell_key(name) for _pattern, name in ABILITY_SPELL_TRIGGER_RULES}
-        if spell_key not in ability_keys:
-            return None
-        for spec in self.spell_defaults:
-            if spec.key == spell_key:
-                return spec
-        return SpellTimerSpec(
-            key=spell_key,
-            spell=spell_name,
-            effect=spell_name,
-            label=spell_name,
-            duration_seconds=0.0,
-            color_rgb=0xFFFFFF,
-            source="built-in ability trigger",
-        )
-
     def _handle_effect_timer_line(self, line: str, now: float) -> bool:
         changed = False
         last_status = ""
-        for match in EFFECT_TIMER_LINE_RE.finditer(line):
+        authoritative = EFFECTS_SNAPSHOT_RE.search(str(line or "")) is not None
+        matches = list(EFFECT_TIMER_LINE_RE.finditer(line))
+        if not matches:
+            if authoritative:
+                removed_spell_keys = [key for key in self.active.keys() if key.startswith("spell:")]
+                for key in removed_spell_keys:
+                    self.active.pop(key, None)
+                pending_count = len(self.pending_effect_queries)
+                if pending_count:
+                    self.pending_effect_queries.clear()
+                removed_count = len(removed_spell_keys) + pending_count
+                if removed_count:
+                    self.cleared_count += removed_count
+                    self.set_status(f"{removed_count} stale effect timer{'s' if removed_count != 1 else ''} cleared")
+                    return True
+            return False
+
+        seen_spell_timer_keys: Set[str] = set()
+        seen_pending_effect_keys: Set[str] = set()
+        for match in matches:
             effect_name = match.group("effect").strip()
             remaining = _parse_effect_remaining_seconds(match.group("remaining"))
             if remaining <= 0:
                 continue
 
             effect_key = _spell_key(effect_name)
+            seen_pending_effect_keys.add(effect_key)
             pending = self.pending_effect_queries.pop(effect_key, None)
             spec = pending.spec if pending is not None else self.spell_specs_by_effect_key.get(effect_key)
             if spec is None:
                 continue
 
-            self.active[f"spell:{spec.key}"] = ActiveOverlayTimer(
+            active_key = f"spell:{spec.key}"
+            seen_spell_timer_keys.add(active_key)
+            self.active[active_key] = ActiveOverlayTimer(
                 label=spec.label,
                 description=effect_name,
                 expires_at=now + remaining,
@@ -6426,6 +6371,30 @@ class InGameTimersScript(ClientScriptBase):
             self.matched_count += 1
             last_status = f"{spec.label}: {_format_remaining(remaining)}"
             changed = True
+
+        if authoritative:
+            removed_spell_keys = [
+                key
+                for key in self.active.keys()
+                if key.startswith("spell:") and key not in seen_spell_timer_keys
+            ]
+            for key in removed_spell_keys:
+                self.active.pop(key, None)
+
+            removed_pending_keys = [
+                key
+                for key in self.pending_effect_queries.keys()
+                if key not in seen_pending_effect_keys
+            ]
+            for key in removed_pending_keys:
+                self.pending_effect_queries.pop(key, None)
+
+            removed_count = len(removed_spell_keys) + len(removed_pending_keys)
+            if removed_count:
+                self.cleared_count += removed_count
+                changed = True
+                if not last_status:
+                    last_status = f"{removed_count} stale effect timer{'s' if removed_count != 1 else ''} cleared"
 
         if last_status:
             self.set_status(last_status)
@@ -6700,7 +6669,7 @@ class InGameTimersScript(ClientScriptBase):
     def get_state_details(self) -> dict:
         return {
             "rules": len(self.rules),
-            "spell_timers": len(self.spell_specs),
+            "tracked_effects": len(self.spell_specs),
             "active": len(self.active),
             "pending_effects": len(self.pending_effect_queries),
             "matched_count": self.matched_count,
@@ -7373,7 +7342,6 @@ class ScriptManager:
         )
         self.registry[auto_rsm.script_id] = auto_rsm
 
-        default_spell_timers = _format_spell_timer_config(_load_hgx_spell_timer_specs(_default_status_rules_dir()))
         ingame_timers = ScriptDefinition(
             script_id="ingame_timers",
             name="In-Game Timers",
@@ -7385,7 +7353,6 @@ class ScriptManager:
                 ScriptField("font_size", "Font", "int", 16, minimum=8, maximum=72, step=1, width=5),
                 ScriptField("color", "Color", "choice", "White", choices=["White", "Green", "Yellow", "Red", "Cyan", "Blue", "Orange"], width=8),
                 ScriptField("max_timers", "Max", "int", 8, minimum=1, maximum=32, step=1, width=5),
-                ScriptField("spell_timers", "Spells", "text", default_spell_timers, width=72),
                 ScriptField("enable_limbo", "Limbo", "bool", True),
                 ScriptField("limbo_duration_seconds", "Duration", "float", 300.0, minimum=1.0, maximum=1800.0, step=1.0, width=6),
                 ScriptField("limbo_names", "Always Party", "text", "", width=72),

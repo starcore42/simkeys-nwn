@@ -86,7 +86,6 @@ SCRIPT_CARD_LAYOUTS = {
         "sections": [
             ("Overlay", ["position", "offset_x", "offset_y", "font_size", "color", "max_timers"]),
             ("Limbo", ["enable_limbo", "limbo_duration_seconds", "limbo_names"]),
-            ("Self-Cast Spells", ["spell_timers"]),
         ],
         "advanced": ["rules_dir", "poll_interval", "max_lines", "include_backlog"],
     },
@@ -957,6 +956,16 @@ class SimKeysDesktopApp:
     def _normalize_character_key(self, name):
         return str(name or "").strip().casefold()
 
+    def _clean_script_config(self, script_id, config):
+        if script_id not in self.script_manager.registry or not isinstance(config, dict):
+            return {}
+        allowed = set(self.script_manager.default_config(script_id).keys())
+        return {
+            key: value
+            for key, value in dict(config).items()
+            if key in allowed
+        }
+
     def _load_character_defaults_store(self):
         self.character_script_configs = {}
         self.character_script_autostart = {}
@@ -987,7 +996,7 @@ class SimKeysDesktopApp:
             for script_id, config in scripts.items():
                 if script_id not in self.script_manager.registry or not isinstance(config, dict):
                     continue
-                cleaned[script_id] = dict(config)
+                cleaned[script_id] = self._clean_script_config(script_id, config)
 
             auto_start = entry.get("auto_start", [])
             if isinstance(auto_start, dict):
@@ -1012,7 +1021,11 @@ class SimKeysDesktopApp:
         payload = {"version": 2, "characters": {}}
         character_keys = set(self.character_script_configs.keys()) | set(self.character_script_autostart.keys())
         for key in sorted(character_keys):
-            scripts = self.character_script_configs.get(key) or {}
+            scripts = {
+                script_id: self._clean_script_config(script_id, config)
+                for script_id, config in (self.character_script_configs.get(key) or {}).items()
+                if script_id in self.script_manager.registry
+            }
             auto_start = sorted(self.character_script_autostart.get(key) or set())
             if not scripts and not auto_start:
                 continue
@@ -1074,7 +1087,7 @@ class SimKeysDesktopApp:
             return False
 
         for script_id, config in scripts.items():
-            self.script_configs[(record.pid, script_id)] = dict(config)
+            self.script_configs[(record.pid, script_id)] = self._clean_script_config(script_id, config)
 
         self.log(f"{record.display_name}: loaded saved character defaults", "info")
         return True
@@ -2095,10 +2108,12 @@ class SimKeysDesktopApp:
         key = (client_pid, script_id)
         if key not in self.script_configs:
             self.script_configs[key] = self.script_manager.default_config(script_id)
-        return dict(self.script_configs[key])
+        config = self._clean_script_config(script_id, self.script_configs[key])
+        self.script_configs[key] = config
+        return dict(config)
 
     def set_script_config(self, client_pid, script_id, config):
-        self.script_configs[(client_pid, script_id)] = dict(config)
+        self.script_configs[(client_pid, script_id)] = self._clean_script_config(script_id, config)
         self._save_character_defaults_for_client(client_pid)
 
     def get_script_autostart(self, client_pid, script_id):

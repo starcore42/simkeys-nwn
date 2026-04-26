@@ -57,7 +57,7 @@
 	<timer text="Greater Sanctuary" description="Greater Sanctuary" rule="^Greater Sanctuary will be available again in 150 seconds\.$" duration="00:02:30" />
 	<timer text="Greater Sanctuary" description="Greater Sanctuary" rule="^  : \[Tell\] Greater Sanctuary is now available for use(?: again)?\.$" duration="0" />
 	<!-- Source: spell - self effects.xml -->
-	<spellTimer spell="Aura Fear" effect="Aura Fear" />
+	<spellTimer spell="Aura Fear" effect="Aura Fear" trigger="^{CASTER} is surrounded by an aura\.$" />
 	<spellTimer spell="Death Ward" effect="Death Ward" />
 	<spellTimer spell="Divine Favor" effect="Divine Favor" />
 	<spellTimer spell="Divine Might" effect="Divine Might" />
