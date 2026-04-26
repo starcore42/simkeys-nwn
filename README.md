@@ -1,6 +1,6 @@
 # HG Control Console
 
-HG Control Console (HGCC) is a Windows control and automation toolkit for **Neverwinter Nights Diamond** clients running on the **Higher Ground** server. It controls NWN clients without requiring foreground focus by injecting a small native hook into each `nwmain.exe` process and exposing a per-client named pipe to the Python GUI and CLI tools.
+HG Control Console (HGCC) is a Windows control and automation toolkit for **Neverwinter Nights Diamond** clients running on the **Higher Ground** server. It controls NWN clients without requiring foreground focus by injecting a small native hook into each `nwmain.exe` process and exposing a per-client named pipe to the Python GUI.
 
 The project is aimed at multi-client play, combat automation, damage analysis, and Higher Ground quality-of-life workflows. It is not a key-sender wrapper: quickbar activation, chat send, chat capture, overlays, player identity, and quickbar state are handled through in-process client paths.
 
@@ -31,13 +31,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_gui.ps1
 4. Press `Inject All`.
 5. Select a client and start the scripts you want from the `Automation` panel.
 
-The GUI launcher requests administrator access if needed. Most users should start here; the CLI is mainly for testing, scripting, and troubleshooting.
+The GUI launcher requests administrator access if needed.
 
 ## Requirements
 
 - Windows.
 - Neverwinter Nights Diamond, using the 32-bit `nwmain.exe` client.
-- Python for the GUI, CLI, and injector scripts. The launchers look for `python`, the `py` launcher, and common Python 3.11-3.13 install locations.
+- Python for the GUI and injector scripts. The launcher looks for `python`, the `py` launcher, and common Python 3.11-3.13 install locations.
 - Visual Studio 2022 Build Tools with the C++ workload only if rebuilding `SimKeysHook2.dll`.
 
 The repository includes a prebuilt 32-bit hook DLL at `bin\SimKeysHook2.dll`, so Visual Studio is not required for normal use.
@@ -45,96 +45,15 @@ The repository includes a prebuilt 32-bit hook DLL at `bin\SimKeysHook2.dll`, so
 ## Files
 
 - `simkeys_gui.ps1`: desktop GUI launcher.
-- `simkeys_control.ps1`: CLI launcher.
 - `bin/SimKeysHook2.dll`: bundled native hook DLL.
-- `src/simkeys_app/`: Python GUI, CLI, injector, runtime helpers, damage meter, and script host.
+- `src/simkeys_app/`: Python GUI, injector, runtime helpers, damage meter, and script host.
 - `src/native/SimKeysHook2/`: native hook source and build wrapper.
 - `data/characters.d/`: Higher Ground creature data.
 - `data/followcues.d/`: Always On follow cues.
 - `data/statusrules.d/`: In-Game Timers rules.
 - `docs/reverse-engineering/notes/`: notes for confirmed NWN client paths.
 
-Some filenames and internal identifiers still use the old SimKeys name. This is intentional for compatibility with the existing launchers, DLL, Python package, native export, and pipe name.
-
-## GUI
-
-The GUI is the normal way to use HGCC. Launch NWN, launch the GUI, press `Inject All`, then start scripts from the `Automation` panel.
-
-Useful controls:
-
-- `Start Saved`: starts scripts marked `Saved` for each injected client.
-- `Stop All Scripts`: stops running scripts without unloading the injected clients.
-- `Manual Test Controls`: quickbar and chat-send testing.
-- `Damage Meter`: calculates the current GUI session's damage logs.
-
-Per-character script settings are saved to `data\character_defaults.user.json`, which is ignored by git.
-
-## CLI Controller
-
-The CLI launcher resolves Python, sets `PYTHONPATH` to `src`, and runs `simkeys_app.simkeys_control`.
-
-List discovered clients:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 list
-```
-
-Inject the next uninjected client:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 inject-next
-```
-
-Skip one uninjected client and inject the next:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 inject-next --skip 1
-```
-
-Inject all discovered clients:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 inject-all
-```
-
-Query an injected client:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 query --client 1
-```
-
-Trigger a quickbar slot:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 slot 1 --client 1
-```
-
-Trigger a Shift or Ctrl quickbar slot:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 slot 5 --page 1 --client 1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 slot 5 --page 2 --client 1
-```
-
-Send chat or an HG command through an injected client:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 chat-send "!action rsm self" --client 1
-```
-
-Watch chat from one injected client:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 watch-chat --client 1
-```
-
-Watch chat from all injected clients, with a filter:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 watch-chat --all --filter damages
-```
-
-Client selectors accept the list ordinal, PID, exact character/window name, or a unique name fragment. If exactly one injected client is available, `--client` can be omitted for commands that operate on a single injected client.
+Some filenames and internal identifiers still use the old SimKeys name. This is intentional for compatibility with the existing launcher, DLL, Python package, native export, and pipe name.
 
 ## Automation Reference
 
@@ -380,7 +299,7 @@ The build wrapper:
 
 ## Low-Level Pipe Client
 
-`src\simkeys_app\simKeys_Client.py` is the lower-level pipe client used by the runtime helpers. It can query state, trigger slots, send chat, poll chat, and show or clear overlays when given a PID. Most users should use `simkeys_gui.ps1` or `simkeys_control.ps1`; the low-level client is mainly useful for debugging hook behavior.
+`src\simkeys_app\simKeys_Client.py` is the lower-level pipe client used by the runtime helpers. It can query state, trigger slots, send chat, poll chat, and show or clear overlays when given a PID. It is mainly useful for debugging hook behavior.
 
 The compatibility pipe name is:
 
