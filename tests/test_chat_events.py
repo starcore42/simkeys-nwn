@@ -144,6 +144,33 @@ class ChatEventTests(unittest.TestCase):
         self.assertEqual(timer.label, "Aura Fear")
         self.assertEqual(timer.duration_seconds, 279.0)
 
+    def test_ingame_timers_reads_effect_duration_with_source_suffix(self):
+        host = FakeHost()
+        host.client.display_name = "Starcore-Ranger [4.3]"
+        host.client.character_name = "Starcore-Ranger [4.3]"
+        script = InGameTimersScript(host.client, {}, host)
+        spec = next(
+            spec
+            for spec in _load_hgx_spell_timer_specs(_default_status_rules_dir())
+            if _spell_key(spec.spell) == _spell_key("Invisibility Purge")
+        )
+        script.spell_specs_by_key = {spec.key: spec}
+        script.spell_specs_by_effect_key = {_spell_key(spec.effect): spec}
+
+        self.assertTrue(script._handle_spell_cast_line("Starcore-Ranger [4.3] casts Invisibility Purge", 100.0))
+        self.assertIn(_spell_key("Invisibility Purge"), script.pending_effect_queries)
+
+        effects = (
+            "[Server] Effects on you:\n"
+            "    #91 Invisibility Purge [11m34s left] (Shaundakul's Sense)"
+        )
+        self.assertTrue(script._handle_effect_timer_line(effects, 101.0))
+        self.assertNotIn(_spell_key("Invisibility Purge"), script.pending_effect_queries)
+        timer = script.active["spell:invisibility purge"]
+        self.assertEqual(timer.label, "Invisibility Purge")
+        self.assertEqual(timer.description, "Invisibility Purge")
+        self.assertEqual(timer.duration_seconds, 694.0)
+
     def test_host_routes_typed_events_without_broadcasting_to_every_script(self):
         delivered = []
         host = ClientScriptHost(FakeClient(), delivered.append)

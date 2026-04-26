@@ -247,7 +247,10 @@ SPELL_CAST_LINE_RE = re.compile(r"^(?P<caster>.+?) casts (?P<spell>.+?)\s*$", re
 ABILITY_SPELL_TRIGGER_RULES: Tuple[Tuple[Pattern, str], ...] = (
     (re.compile(r"^(?P<caster>.+?) is surrounded by an aura\.\s*$", re.IGNORECASE), "Aura Fear"),
 )
-EFFECT_TIMER_LINE_RE = re.compile(r"^\s*#\d+\s+(?P<effect>.+?)\s+\[(?P<remaining>[^\]]+)\]\s*$", re.IGNORECASE | re.MULTILINE)
+EFFECT_TIMER_LINE_RE = re.compile(
+    r"^\s*#\d+\s+(?P<effect>.+?)\s+\[(?P<remaining>[^\]]+)\](?:\s+\([^\r\n]*\))?\s*$",
+    re.IGNORECASE | re.MULTILINE,
+)
 AVERTED_DEATH_LINE_RE = re.compile(
     r"^(?P<player>.+?)\s+(?P<action>respawn|averts death)\s+:\s+(?P<method>.+?)\s+:\s+\*success\*\s*$",
     re.IGNORECASE,
