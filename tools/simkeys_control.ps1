@@ -96,7 +96,8 @@ function Resolve-PythonInterpreter {
 $python = Resolve-PythonInterpreter -RequestedPath $PythonExe
 Write-Host "Using Python '$($python.Path)' via $($python.Source)." -ForegroundColor Cyan
 
-$srcPath = Join-Path $PSScriptRoot "src"
+$repoRoot = Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")
+$srcPath = Join-Path $repoRoot.Path "src"
 if (-not (Test-Path -LiteralPath $srcPath)) {
   throw "Could not find HGCC source directory '$srcPath'."
 }

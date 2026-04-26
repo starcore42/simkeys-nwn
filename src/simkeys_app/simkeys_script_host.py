@@ -504,7 +504,7 @@ def parse_chat_line_event(sequence: int, text: str, password_prompt_text: str = 
             kinds.add("ability_trigger")
             kinds.add("spell_cast")
 
-    effect_timer = EFFECT_TIMER_LINE_RE.match(normalized)
+    effect_timer = next(EFFECT_TIMER_LINE_RE.finditer(normalized), None)
     if effect_timer is not None:
         kinds.add("effect_timer")
 
@@ -697,6 +697,31 @@ def _parse_spell_timer_config(value: object, defaults: Tuple[SpellTimerSpec, ...
             source="config",
         ))
         seen.add(key)
+    return tuple(specs)
+
+
+def _ability_spell_timer_specs(defaults: Tuple[SpellTimerSpec, ...]) -> Tuple[SpellTimerSpec, ...]:
+    default_by_key = {spec.key: spec for spec in defaults}
+    specs: List[SpellTimerSpec] = []
+    seen: Set[str] = set()
+    for _pattern, spell_name in ABILITY_SPELL_TRIGGER_RULES:
+        key = _spell_key(spell_name)
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        default = default_by_key.get(key)
+        if default is not None:
+            specs.append(default)
+            continue
+        specs.append(SpellTimerSpec(
+            key=key,
+            spell=spell_name,
+            effect=spell_name,
+            label=spell_name,
+            duration_seconds=0.0,
+            color_rgb=0xFFFFFF,
+            source="built-in ability trigger",
+        ))
     return tuple(specs)
 
 
@@ -6037,12 +6062,18 @@ class InGameTimersScript(ClientScriptBase):
         self.rules = _load_status_timer_rules(rules_dir)
         self.spell_defaults = _load_hgx_spell_timer_specs(rules_dir)
         self.spell_specs = _parse_spell_timer_config(self.config.get("spell_timers", ""), self.spell_defaults)
+        ability_specs = _ability_spell_timer_specs(self.spell_defaults)
         self.spell_specs_by_key = {spec.key: spec for spec in self.spell_specs}
-        self.spell_specs_by_effect_key = {
-            _spell_key(spec.effect): spec
-            for spec in self.spell_specs
-            if _spell_key(spec.effect)
-        }
+        self.spell_specs_by_effect_key = {}
+        for spec in self.spell_specs:
+            effect_key = _spell_key(spec.effect)
+            if effect_key:
+                self.spell_specs_by_effect_key[effect_key] = spec
+        for spec in ability_specs:
+            self.spell_specs_by_key.setdefault(spec.key, spec)
+            effect_key = _spell_key(spec.effect)
+            if effect_key:
+                self.spell_specs_by_effect_key.setdefault(effect_key, spec)
         self.set_status(f"Loaded {len(self.rules)} rules, {len(self.spell_specs)} spells")
         self.host.emit(
             "info",

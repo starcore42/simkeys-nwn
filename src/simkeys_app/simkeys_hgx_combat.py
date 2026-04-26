@@ -133,8 +133,8 @@ def normalize_chat_line(text: str) -> str:
 
     value = CHAT_WINDOW_PREFIX_RE.sub("", value)
     value = TIMESTAMP_PREFIX_RE.sub("", value)
-    value = SERVER_PREFIX_RE.sub("", value)
     value = strip_inline_markup(value)
+    value = SERVER_PREFIX_RE.sub("", value)
     return value.strip()
 
 

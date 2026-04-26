@@ -30,6 +30,7 @@ class FakeHost:
         self.latest_sequence = 0
         self.events = []
         self.chats = []
+        self.overlays = []
         self.slots = []
         self.mask = 1 << 0
 
@@ -54,6 +55,14 @@ class FakeHost:
 
     def query_state(self):
         return {"quickbar_equipped_mask": self.mask}
+
+    def show_overlay_text(self, text, **kwargs):
+        self.overlays.append((text, kwargs))
+        return {"success": 1, "rc": 0, "err": 0}
+
+    def clear_overlay(self, overlay_id):
+        self.overlays.append(("", {"overlay_id": overlay_id}))
+        return {"success": 1, "rc": 0, "err": 0}
 
 
 class RecordingScript(ClientScriptBase):
@@ -170,6 +179,37 @@ class ChatEventTests(unittest.TestCase):
         self.assertEqual(timer.label, "Invisibility Purge")
         self.assertEqual(timer.description, "Invisibility Purge")
         self.assertEqual(timer.duration_seconds, 694.0)
+
+    def test_ingame_timers_reads_aura_fear_from_real_effects_block_shape(self):
+        host = FakeHost()
+        host.client.display_name = "Starcore-DSM [1.4]"
+        host.client.character_name = "Starcore-DSM [1.4]"
+        config = {
+            "spell_timers": (
+                "Death Ward=Death Ward; "
+                "Tenser's Transformation=Tenser's Transformation"
+            )
+        }
+        script = InGameTimersScript(host.client, config, host)
+        script.on_start()
+        self.assertNotIn(_spell_key("Aura Fear"), {spec.key for spec in script.spell_specs})
+        self.assertIn(_spell_key("Aura Fear"), script.spell_specs_by_effect_key)
+
+        effects = (
+            "<ca><cb>[Server] <cc>Effects on you:\n"
+            "<cd>    #369 <ce>Energy Buffer [58m5s left]\n"
+            "<cf>    #198 <cg>Aura Fear [4m41s left]\n"
+            "</c></c>"
+        )
+        event = parse_chat_line_event(12235, effects)
+        self.assertIn("effect_timer", event.kinds)
+
+        script.on_chat_event(event)
+        timer = script.active["spell:aura fear"]
+        self.assertEqual(timer.label, "Aura Fear")
+        self.assertEqual(timer.description, "Aura Fear")
+        self.assertEqual(timer.duration_seconds, 281.0)
+        self.assertIn("Aura Fear 4:41", host.overlays[-1][0])
 
     def test_host_routes_typed_events_without_broadcasting_to_every_script(self):
         delivered = []
