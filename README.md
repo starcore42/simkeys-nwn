@@ -2,7 +2,7 @@
 
 HG Control Console (HGCC) is a Windows control and automation toolkit for **Neverwinter Nights Diamond** clients running on the **Higher Ground** server. It controls NWN clients without requiring foreground focus by injecting a small native hook into each `nwmain.exe` process and exposing a per-client named pipe to the Python GUI.
 
-The project is aimed at multi-client play, combat automation, damage analysis, and Higher Ground quality-of-life workflows. It is not a key-sender wrapper: quickbar activation, chat send, chat capture, overlays, player identity, and quickbar state are handled through in-process client paths.
+The project is aimed at multi-client play, combat automation, damage analysis, and Higher Ground quality-of-life workflows. Each injected client exposes a named pipe that HGCC uses for quickbar activation, chat sending and capture, overlays, player identity, and quickbar state.
 
 ![HG Control Console](docs/assets/simkeys-control-center.png)
 
