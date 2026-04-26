@@ -1,12 +1,18 @@
+import os
 import unittest
 
 from src.simkeys_app import simkeys_hgx_combat as combat
+from src.simkeys_app import simkeys_hgx_data as hgx_data
 from src.simkeys_app.simkeys_script_host import (
     AutoAAScript,
     ChatLineEvent,
     ClientScriptBase,
     ClientScriptHost,
+    InGameTimersScript,
     WeaponRecommendation,
+    _default_status_rules_dir,
+    _load_hgx_spell_timer_specs,
+    _spell_key,
     parse_chat_line_event,
 )
 
@@ -69,6 +75,24 @@ class RecordingScript(ClientScriptBase):
 
 
 class ChatEventTests(unittest.TestCase):
+    def test_spell_effect_keys_ignore_apostrophes(self):
+        self.assertEqual(_spell_key("Tenser's Transformation"), _spell_key("Tensers Transformation"))
+        self.assertEqual(_spell_key("Nature's Balance"), _spell_key("Natures Balance"))
+
+    def test_default_spell_timer_rules_include_shadow_evade_and_aura_fear(self):
+        xml_files = sorted(
+            name
+            for name in os.listdir(_default_status_rules_dir())
+            if name.lower().endswith(".xml")
+        )
+        self.assertEqual(xml_files, ["statusrules.xml"])
+        specs = {
+            _spell_key(spec.spell): spec.effect
+            for spec in _load_hgx_spell_timer_specs(_default_status_rules_dir())
+        }
+        self.assertEqual(specs[_spell_key("Shadow Evade")], "Shadow Evade")
+        self.assertEqual(specs[_spell_key("Aura Fear")], "Aura Fear")
+
     def test_parse_combat_and_shifter_events(self):
         attack = parse_chat_line_event(1, "[CHAT WINDOW TEXT] [Sun Apr 26 12:00:00] Rapid Shot : Starcore-StormReaper [2.0] attacks Dummy : *hit*")
         self.assertIn("attack", attack.kinds)
@@ -93,6 +117,32 @@ class ChatEventTests(unittest.TestCase):
         player_hide = parse_chat_line_event(5, "[CHAT WINDOW TEXT] [Sun Apr 26 12:00:04] Acquired Item: Player Hide")
         self.assertTrue(player_hide.player_hide)
         self.assertIn("player_hide", player_hide.kinds)
+
+        shadow_evade = parse_chat_line_event(6, "[CHAT WINDOW TEXT] [Sun Apr 26 12:00:05] Starcore-SD [4.0] casts Shadow Evade")
+        self.assertIn("spell_cast", shadow_evade.kinds)
+        self.assertEqual(shadow_evade.spell_caster, "Starcore-SD [4.0]")
+        self.assertEqual(shadow_evade.spell_name, "Shadow Evade")
+
+        aura_fear = parse_chat_line_event(7, "[CHAT WINDOW TEXT] [Sun Apr 26 12:00:06] Starcore-DSM [1.4] is surrounded by an aura.")
+        self.assertIn("ability_trigger", aura_fear.kinds)
+        self.assertIn("spell_cast", aura_fear.kinds)
+        self.assertEqual(aura_fear.spell_caster, "Starcore-DSM [1.4]")
+        self.assertEqual(aura_fear.spell_name, "Aura Fear")
+
+    def test_ingame_timers_queries_aura_fear_and_reads_effect_duration(self):
+        host = FakeHost()
+        host.client.display_name = "Starcore-DSM [1.4]"
+        host.client.character_name = "Starcore-DSM [1.4]"
+        script = InGameTimersScript(host.client, {}, host)
+
+        self.assertTrue(script._handle_spell_cast_line("Starcore-DSM [1.4] is surrounded by an aura.", 100.0))
+        self.assertIn(_spell_key("Aura Fear"), script.pending_effect_queries)
+
+        self.assertTrue(script._handle_effect_timer_line("#198 Aura Fear [4m39s left]", 101.0))
+        self.assertNotIn(_spell_key("Aura Fear"), script.pending_effect_queries)
+        timer = script.active["spell:aura fear"]
+        self.assertEqual(timer.label, "Aura Fear")
+        self.assertEqual(timer.duration_seconds, 279.0)
 
     def test_host_routes_typed_events_without_broadcasting_to_every_script(self):
         delivered = []
@@ -182,6 +232,7 @@ class ChatEventTests(unittest.TestCase):
                 "weapon_slot_1": "F1",
                 "weapon_slot_2": "F2",
                 "shift_slot": "F9",
+                "shifter_healing_only": True,
             },
             host,
         )
@@ -226,6 +277,101 @@ class ChatEventTests(unittest.TestCase):
         script._handle_weapon_attack(attack)
         self.assertEqual(host.chats[:2], ["!lock opponent", "!cancel poly"])
 
+    def test_shifter_mode_swaps_for_large_damage_gain_by_default(self):
+        host = FakeHost()
+        script = AutoAAScript(
+            host.client,
+            {
+                "mode": AutoAAScript.MODE_SHIFTER_WEAPON_SWAP,
+                "weapon_slot_1": "F1",
+                "weapon_slot_2": "F2",
+                "shift_slot": "F9",
+            },
+            host,
+        )
+        script.on_start()
+        script.current_weapon_key = "W1"
+        script._profile_learning_complete = lambda profile: True
+        script._next_weapon_to_learn = lambda target: None
+        script.db.lookup = lambda name: True
+
+        def recommendation(binding, score, healing=()):
+            return WeaponRecommendation(
+                binding=binding,
+                expected_damage=score,
+                selection_damage=score,
+                actual_damage=None,
+                actual_observations=0,
+                matched_name="Dummy",
+                paragon_ranks=0,
+                learned_types=(3,),
+                estimated_components=((3, 100),),
+                healing_types=tuple(healing),
+                ignored_types=(),
+                special_name="",
+                signature_observations=2,
+                estimate_observations=1,
+            )
+
+        script._weapon_candidates_for_target = lambda name: [
+            recommendation(script.weapon_bindings["W1"], 20, ()),
+            recommendation(script.weapon_bindings["W2"], 100, ()),
+        ]
+
+        attack = combat.parse_attack_line("Starcore-StormReaper [2.0] attacks Dummy : *hit*")
+        script._handle_weapon_attack(attack)
+
+        self.assertEqual(host.chats[:2], ["!lock opponent", "!cancel poly"])
+
+    def test_shifter_mode_holds_when_damage_gain_is_below_threshold(self):
+        host = FakeHost()
+        script = AutoAAScript(
+            host.client,
+            {
+                "mode": AutoAAScript.MODE_SHIFTER_WEAPON_SWAP,
+                "weapon_slot_1": "F1",
+                "weapon_slot_2": "F2",
+                "shift_slot": "F9",
+                "shifter_min_swap_gain_percent": 300.0,
+            },
+            host,
+        )
+        script.on_start()
+        script.current_weapon_key = "W1"
+        script._profile_learning_complete = lambda profile: True
+        script._next_weapon_to_learn = lambda target: None
+        script.db.lookup = lambda name: True
+
+        def recommendation(binding, score):
+            return WeaponRecommendation(
+                binding=binding,
+                expected_damage=score,
+                selection_damage=score,
+                actual_damage=None,
+                actual_observations=0,
+                matched_name="Dummy",
+                paragon_ranks=0,
+                learned_types=(3,),
+                estimated_components=((3, 100),),
+                healing_types=(),
+                ignored_types=(),
+                special_name="",
+                signature_observations=2,
+                estimate_observations=1,
+            )
+
+        script._weapon_candidates_for_target = lambda name: [
+            recommendation(script.weapon_bindings["W1"], 100),
+            recommendation(script.weapon_bindings["W2"], 350),
+        ]
+
+        attack = combat.parse_attack_line("Starcore-StormReaper [2.0] attacks Dummy : *hit*")
+        script._handle_weapon_attack(attack)
+
+        self.assertEqual(host.chats, [])
+        self.assertEqual(host.slots, [])
+        self.assertIn("< 300.0", script.status_text)
+
     def test_shifter_learning_keeps_current_weapon_when_shifted_mask_is_empty(self):
         host = FakeHost()
         host.mask = 0
@@ -250,6 +396,74 @@ class ChatEventTests(unittest.TestCase):
         self.assertEqual(host.slots, [])
         self.assertEqual(script.current_weapon_key, "W1")
         self.assertIn("learning W1", script.status_text)
+
+    def test_shifter_recovers_unknown_weapon_from_outgoing_damage(self):
+        host = FakeHost()
+        host.mask = 1 << 0  # Stale shifted quickbar mask says W1.
+        script = AutoAAScript(
+            host.client,
+            {
+                "mode": AutoAAScript.MODE_SHIFTER_WEAPON_SWAP,
+                "weapon_slot_1": "F1",
+                "weapon_slot_2": "F2",
+                "shift_slot": "F9",
+            },
+            host,
+        )
+        script.on_start()
+        script.db = hgx_data.load_character_database()
+        script.shifter_shift_state = "shifted"
+        script.current_weapon_key = "Unknown"
+        script.weapon_external_unknown = True
+        script.weapon_external_unknown_feedback = "weapon equipped"
+        script.weapon_profiles["W1"].stable_signature = (4,)
+        script.weapon_profiles["W1"].stable_signature_observations = 2
+        script.weapon_profiles["W2"].stable_signature = (6,)
+        script.weapon_profiles["W2"].stable_signature_observations = 2
+
+        damage = parse_chat_line_event(
+            10,
+            "[CHAT WINDOW TEXT] [Sun Apr 26 12:00:01] Starcore-StormReaper [2.0] damages Dummy : 42 (12 fire 30 physical)",
+        )
+        script.on_chat_event(damage)
+
+        self.assertEqual(script.current_weapon_key, "W2")
+        self.assertFalse(script.weapon_external_unknown)
+        self.assertNotIn("unknown after external swap", script.status_text)
+
+    def test_shifter_damage_recovery_requires_unique_learned_signature(self):
+        host = FakeHost()
+        host.mask = 0
+        script = AutoAAScript(
+            host.client,
+            {
+                "mode": AutoAAScript.MODE_SHIFTER_WEAPON_SWAP,
+                "weapon_slot_1": "F1",
+                "weapon_slot_2": "F2",
+                "shift_slot": "F9",
+            },
+            host,
+        )
+        script.on_start()
+        script.db = hgx_data.load_character_database()
+        script.shifter_shift_state = "shifted"
+        script.current_weapon_key = "Unknown"
+        script.weapon_external_unknown = True
+        script.weapon_external_unknown_feedback = "weapon equipped"
+        script.weapon_profiles["W1"].stable_signature = (6,)
+        script.weapon_profiles["W1"].stable_signature_observations = 2
+        script.weapon_profiles["W2"].stable_signature = (6,)
+        script.weapon_profiles["W2"].stable_signature_observations = 2
+
+        damage = parse_chat_line_event(
+            10,
+            "[CHAT WINDOW TEXT] [Sun Apr 26 12:00:01] Starcore-StormReaper [2.0] damages Dummy : 42 (12 fire 30 physical)",
+        )
+        script.on_chat_event(damage)
+
+        self.assertEqual(script.current_weapon_key, "Unknown")
+        self.assertTrue(script.weapon_external_unknown)
+        self.assertIn("unknown after external swap", script.status_text)
 
     def test_weapon_swap_rejects_shift_ctrl_weapon_slots(self):
         host = FakeHost()

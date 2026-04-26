@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rules>
+	<!-- Source: StarcoreTimers.xml -->
+	<timer text="Rage" description="Rage" rule="^Starcore-Shifter \[3\.1\] enters rage\.$" duration="00:06:00" />
+	<timer text="Song" description="Song" rule="^Starcore-Bard \[4\.1\] sings\.$" duration="00:16:00" />
+	<timer text="Neg Wep" description="Neg Wep" rule="^Starcore-SD \[3\.0\] uses Shadow Rift$" duration="00:10:00" />
+	<!-- Source: artifact - breath of the beast.xml -->
+	<timer text="Breath of the Beast" descdription="Breath of the Beast" rule="^Breath of the Beast will be available again in 300 seconds\.$" duration="00:05:00" />
+	<timer text="Breath of the Beast" description="Breath of the Beast" rule="^  : \[Tell\] Breath of the Beast is now available for use(?: again)?\.$" duration="0" />
+	<!-- Source: class - death arrow.xml -->
+	<timer text="Death Arrow" description="Death Arrow" rule="^Death Arrow will be available again in 240 seconds\.$" duration="00:04:00" />
+	<timer text="Death Arrow" description="Death Arrow" rule="^  : \[Tell\] Death Arrow is now available for use(?: again)?\.$" duration="0" />
+	<!-- Source: class - dragon breath.xml -->
+	<varTimer text="Dragon Breath" description="Dragon Breath" rule="^Dragon Breath will be available again in {SECONDS} seconds\.|You cannot use Dragon Breath again for another {SECONDS} seconds!$" />
+	<timer text="Dragon Breath" description="Dragon Breath" rule="^  : \[Tell\] Dragon Breath is now available for use(?: again)?\.$" duration="0" />
+	<!-- Source: class - greater smite.xml -->
+	<varTimer text="Greater Smite" description="Greater Smite" rule="^Greater Smite will be available again in {SECONDS} seconds\.|You cannot use Greater Smite again for another {SECONDS} seconds!$" />
+	<varTimer text="Greater Smite" description="Greater Smite" rule="^Greater Smite will be available again in {MINUTES} minutes\.$" />
+	<timer text="Greater Smite" description="Greater Smite" rule="^  : \[Tell\] Greater Smite is now available for use(?: again)?\.$" duration="0" />
+	<!-- Source: class - lifethreader.xml -->
+	<state text="Lifethreading" description="Lifethreader - Threading" enableRule="^\* Lifethreading enabled \*$" disableRule="^\* Lifethreading (disabled|cancelled|exhausted) \*$" disableOnRest="true" disableOnDeath="true" />
+	<timer text="Lifethreading cooldown" description="Lifethreading - Ability cooldown" rule="^\* Lifethreading enabled \*$|^\* Lifethreading disabled \*$" duration="00:00:06" />
+	<!-- Source: class - nimbus of victory.xml -->
+	<varTimer text="Nimbus of Victory" description="Nimbus of Victory" rule="^Nimbus of Victory will be available again in {SECONDS} seconds\.|You cannot use Nimbus of Victory again for another {SECONDS} seconds!$" />
+	<varTimer text="Nimbus of Victory" description="Nimbus of Victory" rule="^Nimbus of Victory will be available again in {MINUTES} minutes\.$" />
+	<timer text="Nimbus of Victory" description="Nimbus of Victory" rule="^  : \[Tell\] Nimbus of Victory is now available for use(?: again)?\.$" duration="0" />
+	<!-- Source: effect - amnesia.xml -->
+	<state text="Amnesia" description="Amnesia - Amnizu" enableRule="^The Amnizu has stricken you with amnesia!$" color="Red" disableOnRest="true" />
+	<state text="Amnesia" description="Amnesia - Laghathti" enableRule="^The sight of the laghathti drains your memories!$" color="Red" disableOnRest="true" />
+	<state text="Amnesia" description="Amnesia - River of Styx" enableRule="^The Styx has stricken you with amnesia!$" color="Red" disableOnRest="true" />
+	<!-- Source: effect - infections.xml -->
+	<state text="Infected" description="Infected - Swarm master" color="Red" enableRule="^The swarm master plants something in your chest!$" disableRule="^The infestation is destroyed!$" disableOnDeath="true" />
+	<state text="Infected" description="Infected - Ekolid" color="Red" enableRule="^The ekolid drives an ovipositor into you and implants something in you!|You feel something vile hatching inside your body!$" disableRule="^The infestation is destroyed!$" disableOnDeath="true" />
+	<state text="Infected" description="Infected - Moliation Vine" color="Red" enableRule="^The Moliation Vine digs into your flesh, planting spores!$" disableRule="^The infestation is destroyed!$" disableOnDeath="true" />
+	<!-- Source: epic - immutable force.xml -->
+	<timer text="Immutable Force" description="Immutable Force" rule="^Immutable Force will be available again in 120 seconds\.$" duration="00:02:00" />
+	<!-- Source: epic - miracle.xml -->
+	<timer text="Miracle" description="Miracle" rule="^Miracle will be available again in 60 seconds\.$" duration="00:01:00" disableOnRest="true" />
+	<!-- Source: epic_-_death-of-magic.xml -->
+	<timer text="Death of Magic" description="Death of Magic" rule="The Weave has been suppressed, deadening magic in the area" duration="00:00:18" />
+	<!-- Source: items - aboleth.xml -->
+	<timer text="Gnomish Exploration Goggles" description="Gnomish Exploration Goggles" rule="^{PLAYER} uses Gnomish Exploration Goggles$" duration="00:03:00" disableOnDeath="true" disableOnRest="true" />
+	<timer text="Nightglass Crown - Displacement" description="Nightglass Crown - Displacement" rule="^{PLAYER} uses Nightglass Crown$" duration="00:03:00" disableOnDeath="true" disableOnRest="true" />
+	<!-- Source: items - abyss.xml -->
+	<timer text="Wrap of the Dark Prince" description="Wrap of the Dark Prince - Divine Power" rule="^{PLAYER} uses Wrap of the Dark Prince$" duration="00:05:00" disableOnDeath="true" disableOnRest="true" />
+	<!-- Source: items - class secrets.xml -->
+	<timer text="Boots of the Wanderer" description="Boots of the Wanderer" rule="^{PLAYER} uses (?:Moliated )?Boots of the Wanderer$" duration="00:05:00" disableOnDeath="true" disableOnRest="true" />
+	<timer text="Guildmaster's Glint" description="Moliated Guildmaster's Glint - Locate Object" rule="^Locate Object will be available again in 600 seconds\.$" duration="00:10:00" />
+	<!-- Source: items - rona.xml -->
+	<timer text="Displacement" description="Efi'Eilon's Anklets - Displacement" rule="^{PLAYER} uses Efi'Eilon's Anklets$" duration="00:05:00" disableOnDeath="true" disableOnRest="true" />
+	<!-- Source: items - ultra rares.xml -->
+	<timer text="Plate of Uxan Uldorath" description="Plate of Uxan Uldorath - Divine Power" rule="^{PLAYER} uses Plate of Uxan Uldorath$" duration="00:05:00" disableOnDeath="true" disableOnRest="true" />
+	<!-- Source: items - vestiges.xml -->
+	<timer text="Crown of Corruption" description="Crown of Corruption - Battletide" rule="^{PLAYER} uses Crown of Corruption$" duration="00:05:30" disableOnDeath="true" disableOnRest="true" />
+	<timer text="Crown of Corruption" description="Crown of Corruption - Battletide" rule="^{PLAYER} : Cancel Battletide$" duration="0" />
+	<!-- Source: spell - greater sanctuary.xml -->
+	<timer text="Greater Sanctuary" description="Greater Sanctuary" rule="^Greater Sanctuary will be available again in 150 seconds\.$" duration="00:02:30" />
+	<timer text="Greater Sanctuary" description="Greater Sanctuary" rule="^  : \[Tell\] Greater Sanctuary is now available for use(?: again)?\.$" duration="0" />
+	<!-- Source: spell - self effects.xml -->
+	<spellTimer spell="Aura Fear" effect="Aura Fear" />
+	<spellTimer spell="Death Ward" effect="Death Ward" />
+	<spellTimer spell="Divine Favor" effect="Divine Favor" />
+	<spellTimer spell="Divine Might" effect="Divine Might" />
+	<spellTimer spell="Divine Shield" effect="Divine Shield" />
+	<spellTimer spell="Divine Wrath" effect="Divine Wrath" />
+	<spellTimer spell="Energy Drain" effect="Energy Drain" />
+	<spellTimer spell="Globe of Invulnerability" effect="Globe of Invulnerability" />
+	<spellTimer spell="Improved Heroism" effect="Improved Heroism" />
+	<spellTimer spell="Invisibility Purge" effect="Invisibility Purge" />
+	<spellTimer spell="Lay on Hands" effect="Lay on Hands" />
+	<spellTimer spell="Nature's Balance" effect="Nature's Balance" />
+	<spellTimer spell="Shadow Evade" effect="Shadow Evade" />
+	<spellTimer spell="Storm of Vengeance" effect="Divine Power" />
+	<spellTimer spell="Tenser's Transformation" effect="Tensers Transformation" />
+	<spellTimer spell="True Strike" effect="True Strike" />
+	<!-- Source: spell - time stop.xml -->
+	<timer text="Time Stop" description="Time Stop" rule="^Time Stop will be available again in 30 seconds\.$" duration="00:00:30" />
+	<!-- Source: template - barbarian.xml -->
+	<timer text="Rage" description="Barbarian Rage" player="^$" rule="^{PLAYER} enters rage\.$" duration="0" disableOnDeath="true" disableOnRest="true" />
+	<!-- Source: template - divine fighters.xml -->
+	<spellTimer spell="Divine Might" effect="Divine Might" />
+	<spellTimer spell="Divine Shield" effect="Divine Shield" />
+	<spellTimer spell="Divine Favor" effect="Divine Favor" />
+	<spellTimer spell="Death Ward" effect="Death Ward" />
+	<spellTimer spell="Lay on Hands" effect="Lay on Hands" />
+	<spellTimer spell="Divine Wrath" effect="Divine Wrath" />
+	<!-- Source: template - stormlord.xml -->
+	<spellTimer spell="Storm of Vengeance" effect="Divine Power" />
+	<spellTimer spell="Nature's Balance" effect="Nature's Balance" />
+</rules>

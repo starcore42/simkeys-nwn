@@ -156,7 +156,7 @@ Tick `Saved` beside any script you normally run for that character. Those choice
 
 - **Auto Attack**
   - Runs a cooldown loop that repeatedly sends `!action attack lead:opponent`.
-  - Before enabling it, set the lead role in game with `!role lead`; the repeated command expects that role to exist so `lead:opponent` resolves to the right target.
+  - Use the Auto Attack card's `Set Selected as Lead` button with the lead client selected to stop Auto Attack on the lead and assign that lead target on every other injected client using `!role lead` then `/tell "<lead>" !target`.
   - This matches the old HGXLE `autoAttack.py` behavior and is useful for keeping an unfocused client attacking the lead opponent without foreground key presses.
   - It does not parse combat chat; the only runtime setting is the repeat cooldown.
 

@@ -244,6 +244,9 @@ def _build_var_timer_regex(rule: str) -> Pattern:
 
 
 SPELL_CAST_LINE_RE = re.compile(r"^(?P<caster>.+?) casts (?P<spell>.+?)\s*$", re.IGNORECASE)
+ABILITY_SPELL_TRIGGER_RULES: Tuple[Tuple[Pattern, str], ...] = (
+    (re.compile(r"^(?P<caster>.+?) is surrounded by an aura\.\s*$", re.IGNORECASE), "Aura Fear"),
+)
 EFFECT_TIMER_LINE_RE = re.compile(r"^\s*#\d+\s+(?P<effect>.+?)\s+\[(?P<remaining>[^\]]+)\]\s*$", re.IGNORECASE | re.MULTILINE)
 AVERTED_DEATH_LINE_RE = re.compile(
     r"^(?P<player>.+?)\s+(?P<action>respawn|averts death)\s+:\s+(?P<method>.+?)\s+:\s+\*success\*\s*$",
@@ -318,7 +321,20 @@ def _extract_cast_spell_from_timer_rule(rule: str) -> str:
 
 
 def _spell_key(value: str) -> str:
-    return re.sub(r"\s+", " ", str(value or "").strip()).lower()
+    text = str(value or "").strip().lower()
+    text = re.sub(r"['`\u00b4\u2019]", "", text)
+    return re.sub(r"\s+", " ", text)
+
+
+def _ability_spell_trigger_from_line(line: str) -> Tuple[object, str]:
+    text = str(line or "").strip()
+    if not text:
+        return None, ""
+    for pattern, spell_name in ABILITY_SPELL_TRIGGER_RULES:
+        match = pattern.match(text)
+        if match is not None:
+            return match, spell_name
+    return None, ""
 
 
 @dataclass(frozen=True)
@@ -382,6 +398,9 @@ class ChatLineEvent:
     breach: object = None
     target_blind: bool = False
     spell_cast: object = None
+    ability_trigger: object = None
+    spell_caster: str = ""
+    spell_name: str = ""
     effect_timer: object = None
     shifter_shift_actor: str = ""
     shifter_essence_current: int = 0
@@ -410,6 +429,9 @@ def parse_chat_line_event(sequence: int, text: str, password_prompt_text: str = 
     breach = None
     target_blind = False
     spell_cast = None
+    ability_trigger = None
+    spell_caster = ""
+    spell_name = ""
     effect_timer = None
     shifter_shift_actor = ""
     shifter_essence_current = 0
@@ -469,7 +491,15 @@ def parse_chat_line_event(sequence: int, text: str, password_prompt_text: str = 
 
     spell_cast = SPELL_CAST_LINE_RE.match(normalized)
     if spell_cast is not None:
+        spell_caster = hgx_combat.normalize_actor_name(spell_cast.group("caster"))
+        spell_name = str(spell_cast.group("spell") or "").strip()
         kinds.add("spell_cast")
+    else:
+        ability_trigger, spell_name = _ability_spell_trigger_from_line(normalized)
+        if ability_trigger is not None:
+            spell_caster = hgx_combat.normalize_actor_name(ability_trigger.group("caster"))
+            kinds.add("ability_trigger")
+            kinds.add("spell_cast")
 
     effect_timer = EFFECT_TIMER_LINE_RE.match(normalized)
     if effect_timer is not None:
@@ -522,6 +552,9 @@ def parse_chat_line_event(sequence: int, text: str, password_prompt_text: str = 
         breach=breach,
         target_blind=target_blind,
         spell_cast=spell_cast,
+        ability_trigger=ability_trigger,
+        spell_caster=spell_caster,
+        spell_name=spell_name,
         effect_timer=effect_timer,
         shifter_shift_actor=shifter_shift_actor,
         shifter_essence_current=shifter_essence_current,
@@ -2513,9 +2546,9 @@ class AutoAAScript(ClientScriptBase):
         return binding_key
 
     def _equipped_mask_confirms_binding(self, binding_key: str, force: bool = False) -> Optional[bool]:
-        matches = self._query_equipped_binding_keys(force=force)
         if not self._shifter_equipped_mask_is_authoritative():
-            return True if binding_key in matches else None
+            return None
+        matches = self._query_equipped_binding_keys(force=force)
         if matches:
             return binding_key in matches
         if self.weapon_equipped_probe_at > 0.0 and not self.weapon_equipped_probe_error:
@@ -2567,11 +2600,16 @@ class AutoAAScript(ClientScriptBase):
         if not signature:
             return None
 
-        for profile in self.weapon_profiles.values():
-            if profile.binding.key == exclude_key:
-                continue
-            if tuple(profile.stable_signature) == signature:
-                return profile
+        stable_matches = [
+            profile
+            for profile in self.weapon_profiles.values()
+            if profile.binding.key != exclude_key
+            and tuple(profile.stable_signature) == signature
+        ]
+        if len(stable_matches) == 1:
+            return stable_matches[0]
+        if stable_matches:
+            return None
 
         if self._is_shifter_weapon_mode():
             return None
@@ -3388,10 +3426,16 @@ class AutoAAScript(ClientScriptBase):
             and pending_can_accept
             and self.weapon_equipped_probe_at < self.pending_weapon_ready_at
         )
-        equipped_keys = self._query_equipped_binding_keys(
-            force=force_equipped_probe
+        equipped_keys = (
+            self._query_equipped_binding_keys(force=force_equipped_probe)
+            if self._shifter_equipped_mask_is_authoritative()
+            else ()
         )
-        equipped_key = equipped_keys[0] if len(equipped_keys) == 1 else ""
+        equipped_key = (
+            equipped_keys[0]
+            if len(equipped_keys) == 1
+            else ""
+        )
 
         current_profile = self.weapon_profiles.get(self.current_weapon_key)
         if not self.pending_weapon_key:
@@ -3827,11 +3871,15 @@ class AutoAAScript(ClientScriptBase):
         attack_result = self._consume_pending_weapon_attack_result(damage_line.defender)
 
         now = time.monotonic()
-        if self.weapon_external_unknown and not self.pending_weapon_key:
-            self.set_status("Weapon state unknown after external swap")
-            return
-
         observed_types = self._observed_weapon_damage_types(damage_line)
+        profile = None
+        if self.weapon_external_unknown and not self.pending_weapon_key:
+            if observed_types:
+                profile = self._profile_for_observed_damage(observed_types, now, damage_line.defender)
+            if profile is None:
+                self.set_status("Weapon state unknown after external swap")
+                return
+
         if not observed_types and self._damage_line_is_physical_only(damage_line):
             if self.pending_weapon_key and not self._pending_weapon_can_accept_damage(now):
                 self._note_pending_damage_ignored(damage_line.defender, set())
@@ -3843,7 +3891,8 @@ class AutoAAScript(ClientScriptBase):
         if not observed_types:
             return
 
-        profile = self._profile_for_observed_damage(observed_types, now, damage_line.defender)
+        if profile is None:
+            profile = self._profile_for_observed_damage(observed_types, now, damage_line.defender)
         if profile is None:
             return
 
@@ -4327,7 +4376,11 @@ class AutoAAScript(ClientScriptBase):
             self.host.notify_state_changed()
             return True
 
-        equipped_keys = self._query_equipped_binding_keys(force=True)
+        equipped_keys = (
+            self._query_equipped_binding_keys(force=True)
+            if self._shifter_equipped_mask_is_authoritative()
+            else ()
+        )
         source_key = ""
         if len(equipped_keys) == 1:
             source_key = equipped_keys[0]
@@ -4421,13 +4474,14 @@ class AutoAAScript(ClientScriptBase):
         return ", ".join(parts) if parts else "Unknown"
 
     def _request_shifter_weapon_swap(self, binding: WeaponBinding, target_name: str, reason: str) -> bool:
-        equipped_keys = self._query_equipped_binding_keys(force=True)
-        if binding.key in equipped_keys:
-            self._cancel_pending_weapon(f"{self._binding_display(binding.key)} is already equipped")
-            self._set_current_weapon_from_equipped_key(binding.key, "already equipped before shifter swap")
-            self.set_status(f"{target_name}: already using {self._binding_display(binding.key)}")
-            self.host.notify_state_changed()
-            return True
+        if self._shifter_equipped_mask_is_authoritative():
+            equipped_keys = self._query_equipped_binding_keys(force=True)
+            if binding.key in equipped_keys:
+                self._cancel_pending_weapon(f"{self._binding_display(binding.key)} is already equipped")
+                self._set_current_weapon_from_equipped_key(binding.key, "already equipped before shifter swap")
+                self.set_status(f"{target_name}: already using {self._binding_display(binding.key)}")
+                self.host.notify_state_changed()
+                return True
         return self._begin_shifter_sequence(binding, target_name, reason, unarm=False)
 
     def _target_stat_entries(self, values: Tuple[int, ...], include_values: bool = True) -> List[dict]:
@@ -6267,12 +6321,18 @@ class InGameTimersScript(ClientScriptBase):
     def _handle_spell_cast_line(self, line: str, now: float) -> bool:
         match = SPELL_CAST_LINE_RE.match(line)
         if match is None:
-            return False
+            match, spell_name = _ability_spell_trigger_from_line(line)
+            if match is None:
+                return False
+        else:
+            spell_name = str(match.group("spell") or "").strip()
+
         if not self._caster_matches_self(match.group("caster")):
             return False
 
-        spell_name = match.group("spell").strip()
         spec = self.spell_specs_by_key.get(_spell_key(spell_name))
+        if spec is None:
+            spec = self._builtin_ability_spell_spec(spell_name)
         if spec is None:
             return False
 
@@ -6285,6 +6345,24 @@ class InGameTimersScript(ClientScriptBase):
         )
         self.set_status(f"Checking {spec.label}")
         return True
+
+    def _builtin_ability_spell_spec(self, spell_name: str) -> Optional[SpellTimerSpec]:
+        spell_key = _spell_key(spell_name)
+        ability_keys = {_spell_key(name) for _pattern, name in ABILITY_SPELL_TRIGGER_RULES}
+        if spell_key not in ability_keys:
+            return None
+        for spec in self.spell_defaults:
+            if spec.key == spell_key:
+                return spec
+        return SpellTimerSpec(
+            key=spell_key,
+            spell=spell_name,
+            effect=spell_name,
+            label=spell_name,
+            duration_seconds=0.0,
+            color_rgb=0xFFFFFF,
+            source="built-in ability trigger",
+        )
 
     def _handle_effect_timer_line(self, line: str, now: float) -> bool:
         changed = False

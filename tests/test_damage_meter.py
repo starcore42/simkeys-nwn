@@ -174,6 +174,40 @@ class DamageMeterTests(unittest.TestCase):
         self.assertTrue(any("Damage elements:" in line for line in breakdown_lines))
         self.assertTrue(all(len(line) <= meter.MAX_CHAT_LINE_LENGTH for line in net_lines + healing_lines + breakdown_lines))
 
+    def test_default_character_data_sbikta_heals_on_cold(self):
+        db = hgx_data.load_character_database(hgx_data.default_character_data_dir())
+        profile = db._resolve_combat_profile("Sbikta")
+        cold_type = hgx_data.DAMAGE_TYPE_NAME_TO_ID["cold"]
+
+        self.assertIsNotNone(profile)
+        self.assertEqual(profile.healing[cold_type], 4)
+
+        summary = meter.analyze_chat_records(
+            ["Alice damages Sbikta : 10 (10 cold)"],
+            character_db=db,
+        )
+
+        self.assertEqual(summary.raw_damage, 0)
+        self.assertEqual(summary.raw_healing, 40)
+        self.assertEqual(summary.healing_by_type, {"Cold": 40})
+
+    def test_default_character_data_beshi_bak_heals_on_electric(self):
+        db = hgx_data.load_character_database(hgx_data.default_character_data_dir())
+        profile = db._resolve_combat_profile("Beshi'bak")
+        electric_type = hgx_data.DAMAGE_TYPE_NAME_TO_ID["electrical"]
+
+        self.assertIsNotNone(profile)
+        self.assertEqual(profile.healing[electric_type], 4)
+
+        summary = meter.analyze_chat_records(
+            ["Alice damages Beshi'bak : 10 (10 electrical)"],
+            character_db=db,
+        )
+
+        self.assertEqual(summary.raw_damage, 0)
+        self.assertEqual(summary.raw_healing, 40)
+        self.assertEqual(summary.healing_by_type, {"Electrical": 40})
+
 
 if __name__ == "__main__":
     unittest.main()

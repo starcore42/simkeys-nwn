@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from types import SimpleNamespace
 
+from src.simkeys_app import simkeys_gui
 from src.simkeys_app.simkeys_gui import SimKeysDesktopApp
 from src.simkeys_app.simkeys_script_host import ScriptManager
 
@@ -32,18 +33,21 @@ class FakeScriptManager:
         self.hosts = {}
         self.started = []
         self.stopped = []
+        self.running = {}
 
     def default_config(self, script_id):
         return {"script_id": script_id}
 
-    def get_state(self, _client_pid, _script_id):
-        return {"running": False}
+    def get_state(self, client_pid, script_id):
+        running = bool(self.running.get((client_pid, script_id)))
+        return {"running": running, "status": "Running" if running else "Stopped"}
 
     def start_script(self, client, script_id, config):
         self.started.append((client.pid, script_id, dict(config)))
 
     def stop_script(self, client_pid, script_id):
         self.stopped.append((client_pid, script_id))
+        self.running[(client_pid, script_id)] = False
 
 
 def make_bulk_app():
@@ -121,6 +125,38 @@ class GuiSavedScriptsTests(unittest.TestCase):
 
         self.assertEqual(app.script_manager.stopped, [(1, "always_on"), (2, "auto_attack")])
         self.assertEqual(app.last_background[0], "Stop All Scripts")
+
+    def test_assign_auto_attack_lead_targets_selected_lead_from_all_other_clients(self):
+        app = make_bulk_app()
+        lead = SimpleNamespace(pid=1, injected=True, display_name="Lead [1.0]", character_name="Lead [1.0]")
+        follower = SimpleNamespace(pid=2, injected=True, display_name="Follower [1.0]", character_name="Follower [1.0]")
+        offline = SimpleNamespace(pid=3, injected=False, display_name="Offline [1.0]", character_name="Offline [1.0]")
+        app.clients = [lead, follower, offline]
+        app.clients_by_pid = {record.pid: record for record in app.clients}
+        app.selected_pid = lead.pid
+        app.script_manager.running[(lead.pid, "auto_attack")] = True
+        sent = []
+
+        original_send_chat = simkeys_gui.runtime.send_chat
+        try:
+            simkeys_gui.runtime.send_chat = lambda client, text, mode=2: sent.append((client.pid, text, mode)) or {
+                "success": 1,
+                "rc": 0,
+                "err": 0,
+            }
+            app.assign_auto_attack_lead_async()
+        finally:
+            simkeys_gui.runtime.send_chat = original_send_chat
+
+        self.assertEqual(app.script_manager.stopped, [(lead.pid, "auto_attack")])
+        self.assertEqual(
+            sent,
+            [
+                (follower.pid, "!role lead", 2),
+                (follower.pid, '/tell "Lead [1.0]" !target', 2),
+            ],
+        )
+        self.assertEqual(app.last_background[0], "Assign Auto Attack Lead")
 
 
 if __name__ == "__main__":

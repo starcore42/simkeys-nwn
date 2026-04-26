@@ -227,6 +227,17 @@ class ScriptCard:
             self._create_header_mode_control(header, next_column)
             next_column += 2
 
+        if self.definition.script_id == "auto_attack":
+            self.lead_button = ttk.Button(
+                header,
+                text="Set Selected as Lead",
+                command=self.on_assign_lead,
+                width=20,
+            )
+            self.lead_button.grid(row=0, column=next_column, padx=(0, 8), sticky="e")
+            self.extra_controls.append(("button", self.lead_button))
+            next_column += 1
+
         self.expand_button = ttk.Button(header, text="", command=self.on_expand_toggle, width=12)
         self.expand_button.grid(row=0, column=next_column, padx=(0, 8), sticky="e")
         next_column += 1
@@ -871,6 +882,9 @@ class ScriptCard:
             messagebox.showerror("SimKeys", str(exc))
             return
         self.app.toggle_script(self.definition.script_id, config)
+
+    def on_assign_lead(self):
+        self.app.assign_auto_attack_lead_async()
 
 
 class SimKeysDesktopApp:
@@ -2128,6 +2142,74 @@ class SimKeysDesktopApp:
             return "Stopped " + ", ".join(stopped)
 
         self.run_background("Stop All Scripts", action)
+
+    def assign_auto_attack_lead_async(self):
+        lead = self.selected_client()
+        if lead is None:
+            messagebox.showwarning("SimKeys", "Select the lead client first.")
+            return
+
+        lead_name = str(getattr(lead, "character_name", "") or getattr(lead, "display_name", "") or "").strip()
+        if not lead_name:
+            messagebox.showwarning("SimKeys", "The selected client does not have a known character name yet.")
+            return
+
+        followers = [
+            record
+            for record in self.clients
+            if getattr(record, "injected", False) and getattr(record, "pid", None) != lead.pid
+        ]
+        if not followers and not getattr(lead, "injected", False):
+            messagebox.showwarning("SimKeys", "No injected clients are available for lead assignment.")
+            return
+
+        self.persist_loaded_configs(self.selected_pid)
+
+        def action():
+            parts = []
+            errors = []
+            if getattr(lead, "injected", False):
+                state = self.script_manager.get_state(lead.pid, "auto_attack")
+                if state.get("running"):
+                    self.script_manager.stop_script(lead.pid, "auto_attack")
+                    parts.append(f"{lead.display_name}: Auto Attack off")
+                else:
+                    parts.append(f"{lead.display_name}: Auto Attack already off")
+
+            assigned = []
+            for follower in followers:
+                try:
+                    role_result = runtime.send_chat(follower, "!role lead", 2)
+                    target_result = runtime.send_chat(follower, f'/tell "{lead_name}" !target', 2)
+                    success = bool(role_result.get("success") and target_result.get("success"))
+                except Exception as exc:
+                    errors.append(f"{follower.display_name}: {exc}")
+                    continue
+
+                if success:
+                    assigned.append(follower.display_name)
+                else:
+                    errors.append(
+                        (
+                            f"{follower.display_name}: role success={role_result.get('success')} "
+                            f"rc={role_result.get('rc')} err={role_result.get('err')}; "
+                            f"target success={target_result.get('success')} "
+                            f"rc={target_result.get('rc')} err={target_result.get('err')}"
+                        )
+                    )
+
+            if assigned:
+                parts.append(f"assigned lead {lead_name} for " + ", ".join(assigned))
+            elif followers:
+                parts.append(f"no followers assigned to {lead_name}")
+            else:
+                parts.append("no other injected clients")
+
+            if errors:
+                parts.append("Errors: " + " | ".join(errors))
+            return "; ".join(parts)
+
+        self.run_background("Assign Auto Attack Lead", action)
 
     def trigger_slot_async(self, slot, page=0, bank_label="Base"):
         client = self.selected_client()
