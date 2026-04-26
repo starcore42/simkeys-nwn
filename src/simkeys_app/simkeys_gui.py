@@ -879,7 +879,7 @@ class ScriptCard:
         try:
             config = self.parse_config()
         except Exception as exc:
-            messagebox.showerror("SimKeys", str(exc))
+            messagebox.showerror("HGCC", str(exc))
             return
         self.app.toggle_script(self.definition.script_id, config)
 
@@ -891,7 +891,7 @@ class SimKeysDesktopApp:
     def __init__(self, root, args):
         self.root = root
         self.args = args
-        self.root.title("SimKeys Control Center")
+        self.root.title("HG Control Console")
         self.root.geometry("1500x930")
         self.root.minsize(1240, 780)
 
@@ -927,11 +927,17 @@ class SimKeysDesktopApp:
         self.damage_meter_expanded = False
         self.damage_meter_toggle_var = tk.StringVar(value="Show Damage Meter")
         self.damage_meter_status_var = tk.StringVar(value="No damage calculated.")
+        self.damage_meter_progress_var = tk.DoubleVar(value=0.0)
+        self.damage_meter_running = False
+        self.damage_meter_run_id = 0
         self.damage_meter_summary = None
         self.activity_log_expanded = False
         self.activity_log_toggle_var = tk.StringVar(value="Show Activity Log")
         self.target_analysis_text = None
         self.damage_meter_text = None
+        self.damage_meter_progress_frame = None
+        self.damage_meter_progress = None
+        self.damage_meter_calculate_button = None
         self.log_text = None
         self.analysis_paned = None
         self.target_analysis_frame = None
@@ -1220,7 +1226,13 @@ class SimKeysDesktopApp:
         damage_header.grid(row=0, column=0, sticky="ew", pady=(0, 6))
         damage_header.columnconfigure(0, weight=1)
         ttk.Label(damage_header, textvariable=self.damage_meter_status_var).grid(row=0, column=0, sticky="w")
-        ttk.Button(damage_header, text="Calculate", command=self.calculate_damage_meter_async, width=12).grid(row=0, column=1, padx=(8, 0))
+        self.damage_meter_calculate_button = ttk.Button(
+            damage_header,
+            text="Calculate",
+            command=self.calculate_damage_meter_async,
+            width=12,
+        )
+        self.damage_meter_calculate_button.grid(row=0, column=1, padx=(8, 0))
         ttk.Button(damage_header, text="Post Net", command=lambda: self.post_damage_meter_async("net"), width=10).grid(row=0, column=2, padx=(6, 0))
         ttk.Button(damage_header, text="Post Raw", command=lambda: self.post_damage_meter_async("raw"), width=10).grid(row=0, column=3, padx=(6, 0))
         ttk.Button(damage_header, text="Post Healing", command=lambda: self.post_damage_meter_async("healing"), width=12).grid(row=0, column=4, padx=(6, 0))
@@ -1231,10 +1243,21 @@ class SimKeysDesktopApp:
             command=self.toggle_damage_meter,
             width=18,
         ).grid(row=0, column=6, padx=(12, 0), sticky="e")
+        self.damage_meter_progress_frame = ttk.Frame(damage_frame)
+        self.damage_meter_progress_frame.grid(row=1, column=0, sticky="ew", pady=(0, 6))
+        self.damage_meter_progress_frame.columnconfigure(0, weight=1)
+        self.damage_meter_progress = ttk.Progressbar(
+            self.damage_meter_progress_frame,
+            variable=self.damage_meter_progress_var,
+            maximum=100.0,
+            mode="determinate",
+        )
+        self.damage_meter_progress.grid(row=0, column=0, sticky="ew")
+        self.damage_meter_progress_frame.grid_remove()
         self.damage_meter_text = ScrolledText(damage_frame, wrap="word", height=9, font=("Consolas", 9))
-        self.damage_meter_text.grid(row=1, column=0, sticky="ew")
+        self.damage_meter_text.grid(row=2, column=0, sticky="ew")
         self.damage_meter_text.configure(state="disabled")
-        self._set_damage_meter_text("Press Calculate to summarize this SimKeys GUI session.")
+        self._set_damage_meter_text("Press Calculate to summarize this HGCC GUI session.")
         self._apply_damage_meter_state()
 
         analysis_paned = ttk.Panedwindow(right, orient="vertical")
@@ -1339,32 +1362,82 @@ class SimKeysDesktopApp:
         self.damage_meter_text.configure(state="disabled")
 
     def calculate_damage_meter_async(self):
+        if self.damage_meter_running:
+            return
+        self.damage_meter_run_id += 1
+        run_id = self.damage_meter_run_id
+        self.damage_meter_summary = None
+        self._set_damage_meter_calculating(True)
         self.damage_meter_status_var.set("Calculating damage...")
+        self._set_damage_meter_text("Calculating damage meter. Long sessions may take a little while.")
 
         def worker():
+            def progress(payload):
+                event = dict(payload or {})
+                event["type"] = "damage-meter-progress"
+                event["run_id"] = run_id
+                self.enqueue_event(event)
+
             try:
-                summary = damage_meter.analyze_session_logs(self.damage_meter_log_dir)
+                summary = damage_meter.analyze_session_logs(
+                    self.damage_meter_log_dir,
+                    progress_callback=progress,
+                )
                 text = damage_meter.format_summary_text(summary)
                 self.enqueue_event({
                     "type": "damage-meter-result",
+                    "run_id": run_id,
                     "summary": summary,
                     "text": text,
                 })
             except Exception as exc:
                 self.enqueue_event({
                     "type": "damage-meter-error",
+                    "run_id": run_id,
                     "message": f"Damage meter failed: {exc}",
                 })
 
         threading.Thread(target=worker, name="SimKeysDamageMeter", daemon=True).start()
 
+    def _set_damage_meter_calculating(self, calculating):
+        self.damage_meter_running = bool(calculating)
+        if self.damage_meter_calculate_button is not None:
+            self.damage_meter_calculate_button.configure(state="disabled" if calculating else "normal")
+        if self.damage_meter_progress_frame is not None:
+            if calculating:
+                self.damage_meter_progress_frame.grid()
+            else:
+                self.damage_meter_progress_frame.grid_remove()
+        if calculating:
+            self.damage_meter_progress_var.set(0.0)
+
+    def _handle_damage_meter_progress(self, event):
+        if int(event.get("run_id") or 0) != self.damage_meter_run_id:
+            return
+        percent = event.get("percent")
+        if percent is not None:
+            try:
+                self.damage_meter_progress_var.set(min(max(float(percent), 0.0), 100.0))
+            except (TypeError, ValueError):
+                pass
+
+        phase = str(event.get("phase") or "Calculating damage")
+        current = int(event.get("current") or 0)
+        total = int(event.get("total") or 0)
+        if total > 0:
+            self.damage_meter_status_var.set(f"{phase}: {current:,}/{total:,}")
+        elif current > 0:
+            self.damage_meter_status_var.set(f"{phase}: {current:,}")
+        else:
+            self.damage_meter_status_var.set(phase)
+
     def post_damage_meter_async(self, report_type):
         client = self.selected_client()
         if client is None or not client.injected:
-            messagebox.showwarning("SimKeys", "Select an injected client first.")
+            messagebox.showwarning("HGCC", "Select an injected client first.")
             return
         if self.damage_meter_summary is None:
-            messagebox.showwarning("SimKeys", "Calculate the damage meter first.")
+            messagebox.showwarning("HGCC", "Calculate the damage meter first.")
             return
 
         lines = damage_meter.chat_report_lines(self.damage_meter_summary, report_type)
@@ -1555,7 +1628,13 @@ class SimKeysDesktopApp:
         if event_type == "overlay-script-toggle":
             self.handle_overlay_script_toggle(event)
             return
+        if event_type == "damage-meter-progress":
+            self._handle_damage_meter_progress(event)
+            return
         if event_type == "damage-meter-result":
+            if int(event.get("run_id") or 0) != self.damage_meter_run_id:
+                return
+            self._set_damage_meter_calculating(False)
             self.damage_meter_summary = event.get("summary")
             self._set_damage_meter_text(event.get("text", ""))
             if self.damage_meter_summary is not None:
@@ -1566,6 +1645,9 @@ class SimKeysDesktopApp:
             self._apply_damage_meter_state()
             return
         if event_type == "damage-meter-error":
+            if int(event.get("run_id") or 0) != self.damage_meter_run_id:
+                return
+            self._set_damage_meter_calculating(False)
             message = event.get("message", "Damage meter failed.")
             self.damage_meter_status_var.set(message)
             self.append_log(message, "error")
@@ -2081,7 +2163,7 @@ class SimKeysDesktopApp:
         self.persist_loaded_configs(self.selected_pid)
         clients = [record for record in self.clients if record.injected]
         if not clients:
-            messagebox.showwarning("SimKeys", "No injected clients are available.")
+            messagebox.showwarning("HGCC", "No injected clients are available.")
             return
 
         def action():
@@ -2146,12 +2228,12 @@ class SimKeysDesktopApp:
     def assign_auto_attack_lead_async(self):
         lead = self.selected_client()
         if lead is None:
-            messagebox.showwarning("SimKeys", "Select the lead client first.")
+            messagebox.showwarning("HGCC", "Select the lead client first.")
             return
 
         lead_name = str(getattr(lead, "character_name", "") or getattr(lead, "display_name", "") or "").strip()
         if not lead_name:
-            messagebox.showwarning("SimKeys", "The selected client does not have a known character name yet.")
+            messagebox.showwarning("HGCC", "The selected client does not have a known character name yet.")
             return
 
         followers = [
@@ -2160,7 +2242,7 @@ class SimKeysDesktopApp:
             if getattr(record, "injected", False) and getattr(record, "pid", None) != lead.pid
         ]
         if not followers and not getattr(lead, "injected", False):
-            messagebox.showwarning("SimKeys", "No injected clients are available for lead assignment.")
+            messagebox.showwarning("HGCC", "No injected clients are available for lead assignment.")
             return
 
         self.persist_loaded_configs(self.selected_pid)
@@ -2214,7 +2296,7 @@ class SimKeysDesktopApp:
     def trigger_slot_async(self, slot, page=0, bank_label="Base"):
         client = self.selected_client()
         if client is None or not client.injected:
-            messagebox.showwarning("SimKeys", "Select an injected client first.")
+            messagebox.showwarning("HGCC", "Select an injected client first.")
             return
 
         def action():
@@ -2235,10 +2317,10 @@ class SimKeysDesktopApp:
         client = self.selected_client()
         text = self.chat_entry_var.get().strip()
         if client is None or not client.injected:
-            messagebox.showwarning("SimKeys", "Select an injected client first.")
+            messagebox.showwarning("HGCC", "Select an injected client first.")
             return
         if not text:
-            messagebox.showwarning("SimKeys", "Enter some chat text first.")
+            messagebox.showwarning("HGCC", "Enter some chat text first.")
             return
 
         def action():
@@ -2254,7 +2336,7 @@ class SimKeysDesktopApp:
     def toggle_script(self, script_id, config):
         client = self.selected_client()
         if client is None or not client.injected:
-            messagebox.showwarning("SimKeys", "Select an injected client first.")
+            messagebox.showwarning("HGCC", "Select an injected client first.")
             return
 
         self.toggle_script_for_client(client, script_id, config, source="GUI")
@@ -2269,7 +2351,7 @@ class SimKeysDesktopApp:
         if toggle_key in self.script_toggles_in_progress:
             self.log(f"{client.display_name}: {script_id} is already changing state", "info")
             if source == "Overlay":
-                self._send_ingame_echo(client, "SimKeys: script is already changing")
+                self._send_ingame_echo(client, "HGCC: script is already changing")
             return
 
         state = self.script_manager.get_state(client.pid, script_id)
@@ -2288,12 +2370,12 @@ class SimKeysDesktopApp:
                 if current_state["running"]:
                     self.script_manager.stop_script(client.pid, script_id)
                     if source == "Overlay":
-                        self._send_ingame_echo(client, f"SimKeys: {script_name} off")
+                        self._send_ingame_echo(client, f"HGCC: {script_name} off")
                     return f"{client.display_name}: stopped {script_id}"
 
                 self.script_manager.start_script(client, script_id, config)
                 if source == "Overlay":
-                    self._send_ingame_echo(client, f"SimKeys: {script_name} on")
+                    self._send_ingame_echo(client, f"HGCC: {script_name} on")
                 return f"{client.display_name}: started {script_id}"
             finally:
                 self.enqueue_event({
@@ -2330,7 +2412,7 @@ class SimKeysDesktopApp:
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(description="Desktop SimKeys control client.")
+    parser = argparse.ArgumentParser(description="Desktop HGCC control client.")
     parser.add_argument("--process-name", default="nwmain.exe", help="Process image name to discover. Default: nwmain.exe")
     parser.add_argument("--dll", default=runtime.default_dll_path())
     parser.add_argument("--export", default="InitSimKeys")

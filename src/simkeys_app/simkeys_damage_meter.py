@@ -5,7 +5,7 @@ import shutil
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 from . import simkeys_hgx_combat as hgx_combat
 from . import simkeys_hgx_data as hgx_data
@@ -16,6 +16,7 @@ DAMAGE_METER_LOG_PATTERN = re.compile(r"^chat_\d+\.jsonl$", re.IGNORECASE)
 MAX_CHAT_LINE_LENGTH = 230
 MERGE_TIME_WINDOW_SECONDS = 1.25
 UNKNOWN_ACTOR_LABEL = "Unknown"
+PROGRESS_EMIT_INTERVAL = 1000
 CHAT_TIMESTAMP_RE = re.compile(
     r"^\[CHAT WINDOW TEXT\]\s*\[(?P<stamp>[A-Z][a-z]{2}\s+[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\]",
     re.IGNORECASE,
@@ -233,19 +234,87 @@ def reset_session_logs(log_dir: Optional[str] = None) -> str:
     return directory
 
 
-def iter_saved_chat_records(log_dir: Optional[str] = None) -> Iterable[SavedChatRecord]:
-    directory = os.path.abspath(log_dir or session_log_dir())
-    if not os.path.isdir(directory):
+ProgressCallback = Optional[Callable[[dict], None]]
+
+
+def _emit_progress(
+    progress_callback: ProgressCallback,
+    phase: str,
+    current: int = 0,
+    total: int = 0,
+    percent: Optional[float] = None,
+):
+    if progress_callback is None:
         return
 
-    for name in sorted(os.listdir(directory)):
-        if not DAMAGE_METER_LOG_PATTERN.match(name):
-            continue
-        path = os.path.join(directory, name)
-        if not os.path.isfile(path):
-            continue
+    total_value = max(int(total or 0), 0)
+    current_value = max(int(current or 0), 0)
+    if percent is None and total_value > 0:
+        percent = (float(current_value) / float(total_value)) * 100.0
+    if percent is not None:
+        percent = min(max(float(percent), 0.0), 100.0)
+    progress_callback({
+        "phase": str(phase or ""),
+        "current": current_value,
+        "total": total_value,
+        "percent": percent,
+    })
+
+
+def _scale_progress_event(event: dict, start_percent: float, end_percent: float) -> dict:
+    total = int(event.get("total") or 0)
+    current = int(event.get("current") or 0)
+    percent = event.get("percent")
+    if total > 0:
+        fraction = float(current) / float(total)
+    elif percent is not None:
+        fraction = float(percent) / 100.0
+    else:
+        fraction = 0.0
+    scaled = dict(event)
+    scaled["percent"] = float(start_percent) + ((float(end_percent) - float(start_percent)) * min(max(fraction, 0.0), 1.0))
+    return scaled
+
+
+def _saved_chat_log_paths(directory: str) -> List[str]:
+    if not os.path.isdir(directory):
+        return []
+    return [
+        os.path.join(directory, name)
+        for name in sorted(os.listdir(directory))
+        if DAMAGE_METER_LOG_PATTERN.match(name) and os.path.isfile(os.path.join(directory, name))
+    ]
+
+
+def _count_saved_chat_log_lines(paths: List[str], progress_callback: ProgressCallback = None) -> int:
+    total = 0
+    file_count = len(paths)
+    _emit_progress(progress_callback, "Counting logs", 0, file_count)
+    for index, path in enumerate(paths, start=1):
+        with open(path, "rb") as handle:
+            for _line in handle:
+                total += 1
+        _emit_progress(progress_callback, "Counting logs", index, file_count)
+    return total
+
+
+def iter_saved_chat_records(log_dir: Optional[str] = None) -> Iterable[SavedChatRecord]:
+    directory = os.path.abspath(log_dir or session_log_dir())
+    yield from _iter_saved_chat_records_from_paths(_saved_chat_log_paths(directory))
+
+def _iter_saved_chat_records_from_paths(
+    paths: List[str],
+    progress_callback: ProgressCallback = None,
+    total_lines: int = 0,
+) -> Iterable[SavedChatRecord]:
+    lines_read = 0
+    _emit_progress(progress_callback, "Reading logs", 0, total_lines)
+    for path in paths:
         with open(path, "r", encoding="utf-8", errors="replace") as handle:
             for line_number, raw_line in enumerate(handle, start=1):
+                lines_read += 1
+                if lines_read == 1 or lines_read % PROGRESS_EMIT_INTERVAL == 0:
+                    _emit_progress(progress_callback, "Reading logs", lines_read, total_lines)
                 line = raw_line.rstrip("\r\n")
                 if not line:
                     continue
@@ -264,22 +333,75 @@ def iter_saved_chat_records(log_dir: Optional[str] = None) -> Iterable[SavedChat
                     client_name=str(payload.get("client") or ""),
                     captured_at=float(payload.get("time") or 0.0),
                 )
+    _emit_progress(progress_callback, "Reading logs", lines_read, total_lines)
 
 
-def analyze_session_logs(log_dir: Optional[str] = None, character_db=None) -> DamageMeterSummary:
+def analyze_session_logs(
+    log_dir: Optional[str] = None,
+    character_db=None,
+    progress_callback: ProgressCallback = None,
+) -> DamageMeterSummary:
     directory = os.path.abspath(log_dir or session_log_dir())
-    return analyze_chat_records(iter_saved_chat_records(directory), character_db=character_db, log_dir=directory)
+    paths = _saved_chat_log_paths(directory)
+
+    def counting_progress(event: dict):
+        _emit_progress(
+            progress_callback,
+            event.get("phase", "Counting logs"),
+            event.get("current", 0),
+            event.get("total", 0),
+            _scale_progress_event(event, 0.0, 8.0).get("percent"),
+        )
+
+    def reading_progress(event: dict):
+        _emit_progress(
+            progress_callback,
+            event.get("phase", "Reading logs"),
+            event.get("current", 0),
+            event.get("total", 0),
+            _scale_progress_event(event, 8.0, 45.0).get("percent"),
+        )
+
+    def analysis_progress(event: dict):
+        phase = str(event.get("phase") or "")
+        if phase == "Merging duplicate views":
+            scaled = _scale_progress_event(event, 45.0, 75.0)
+        elif phase == "Classifying damage":
+            scaled = _scale_progress_event(event, 75.0, 98.0)
+        else:
+            scaled = event
+        _emit_progress(
+            progress_callback,
+            scaled.get("phase", phase),
+            scaled.get("current", 0),
+            scaled.get("total", 0),
+            scaled.get("percent"),
+        )
+
+    total_lines = _count_saved_chat_log_lines(paths, counting_progress)
+    records = _iter_saved_chat_records_from_paths(paths, reading_progress, total_lines)
+    summary = analyze_chat_records(
+        records,
+        character_db=character_db,
+        log_dir=directory,
+        progress_callback=analysis_progress,
+    )
+    _emit_progress(progress_callback, "Done", 1, 1, 100.0)
+    return summary
 
 
 def analyze_chat_records(
     records: Iterable[object],
     character_db=None,
     log_dir: str = "",
+    progress_callback: ProgressCallback = None,
 ) -> DamageMeterSummary:
     db = character_db or hgx_data.load_default_database()
     summary = DamageMeterSummary(log_dir=os.path.abspath(log_dir) if log_dir else "")
     observations = []
     for index, record in enumerate(records, start=1):
+        if index == 1 or index % PROGRESS_EMIT_INTERVAL == 0:
+            _emit_progress(progress_callback, "Parsing damage lines", index, 0)
         sequence, text, pid, client_name, captured_at = _record_parts(record, index)
         if not text:
             continue
@@ -306,9 +428,14 @@ def analyze_chat_records(
         if observation.has_ambiguous_actor:
             summary.ambiguous_observations += 1
 
-    clusters = _merge_damage_observations(observations)
+    _emit_progress(progress_callback, "Parsing damage lines", summary.lines_seen, summary.lines_seen)
+    clusters = _merge_damage_observations(observations, progress_callback=progress_callback)
     summary.merged_observations = max(len(observations) - len(clusters), 0)
-    for cluster in clusters:
+    total_clusters = len(clusters)
+    _emit_progress(progress_callback, "Classifying damage", 0, total_clusters)
+    for cluster_index, cluster in enumerate(clusters, start=1):
+        if cluster_index == 1 or cluster_index % PROGRESS_EMIT_INTERVAL == 0 or cluster_index == total_clusters:
+            _emit_progress(progress_callback, "Classifying damage", cluster_index, total_clusters)
         damage = cluster.representative.damage
         attacker = cluster.attacker
         defender = cluster.defender
@@ -396,7 +523,7 @@ def format_summary_text(summary: DamageMeterSummary, actor_limit: int = 18) -> s
 def chat_report_lines(summary: DamageMeterSummary, report_type: str, actor_limit: int = 8) -> List[str]:
     report_type = str(report_type or "").strip().lower()
     if not summary or not summary.actors:
-        return ["SimKeys damage: no party damage against enemies recorded this session."]
+        return ["HGCC damage: no party damage against enemies recorded this session."]
 
     if report_type == "raw":
         return [_limited_line("Raw damage", summary.raw_damage, _actor_fragments(summary.sorted_actors("raw"), "raw_damage", actor_limit))]
@@ -480,7 +607,10 @@ def _classify_damage_line(damage, db, defender_name: Optional[str] = None):
     return raw_damage, raw_healing, damage_by_type, healing_by_type, unknown_types
 
 
-def _merge_damage_observations(observations: List[DamageObservation]) -> List[DamageEventCluster]:
+def _merge_damage_observations(
+    observations: List[DamageObservation],
+    progress_callback: ProgressCallback = None,
+) -> List[DamageEventCluster]:
     clusters: List[DamageEventCluster] = []
     ordered = sorted(
         observations,
@@ -489,13 +619,61 @@ def _merge_damage_observations(observations: List[DamageObservation]) -> List[Da
             observation.index,
         ),
     )
-    for observation in ordered:
-        cluster = _find_matching_cluster(clusters, observation)
+
+    timed_clusters_by_signature: Dict[Tuple[int, Tuple[Tuple[int, object], ...]], List[DamageEventCluster]] = {}
+    timed_clusters_by_text: Dict[Tuple[int, Tuple[Tuple[int, object], ...], str], List[DamageEventCluster]] = {}
+    untimed_clusters_by_text: Dict[Tuple[int, Tuple[Tuple[int, object], ...], str], List[DamageEventCluster]] = {}
+    total = len(ordered)
+    _emit_progress(progress_callback, "Merging duplicate views", 0, total)
+    for index, observation in enumerate(ordered, start=1):
+        if index == 1 or index % PROGRESS_EMIT_INTERVAL == 0 or index == total:
+            _emit_progress(progress_callback, "Merging duplicate views", index, total)
+
+        signature_key = _observation_merge_signature_key(observation)
+        text_key = (signature_key[0], signature_key[1], observation.normalized_text)
+        if observation.event_time is None:
+            candidates = list(untimed_clusters_by_text.get(text_key, ()))
+            candidates.extend(timed_clusters_by_text.get(text_key, ()))
+        else:
+            candidates = timed_clusters_by_signature.get(signature_key, [])
+            _prune_timed_cluster_candidates(candidates, observation.event_time)
+
+        cluster = _find_matching_cluster(candidates, observation)
         if cluster is None:
-            clusters.append(DamageEventCluster(observations=[observation]))
+            cluster = DamageEventCluster(observations=[observation])
+            clusters.append(cluster)
+            if observation.event_time is None:
+                untimed_clusters_by_text.setdefault(text_key, []).append(cluster)
+            else:
+                timed_clusters_by_signature.setdefault(signature_key, []).append(cluster)
+                timed_clusters_by_text.setdefault(text_key, []).append(cluster)
         else:
             cluster.observations.append(observation)
     return clusters
+
+
+def _observation_merge_signature_key(observation: DamageObservation) -> Tuple[int, Tuple[Tuple[int, object], ...]]:
+    return int(observation.damage.total), observation.component_signature
+
+
+def _cluster_latest_time(cluster: DamageEventCluster) -> Optional[float]:
+    times = [
+        float(observation.event_time)
+        for observation in cluster.observations
+        if observation.event_time is not None
+    ]
+    if not times:
+        return None
+    return max(times)
+
+
+def _prune_timed_cluster_candidates(candidates: List[DamageEventCluster], event_time: float):
+    minimum_time = float(event_time) - MERGE_TIME_WINDOW_SECONDS
+    candidates[:] = [
+        cluster
+        for cluster in candidates
+        if (_cluster_latest_time(cluster) is None or float(_cluster_latest_time(cluster)) >= minimum_time)
+    ]
 
 
 def _find_matching_cluster(clusters: List[DamageEventCluster], observation: DamageObservation) -> Optional[DamageEventCluster]:

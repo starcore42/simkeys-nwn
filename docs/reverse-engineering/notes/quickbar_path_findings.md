@@ -2,7 +2,7 @@
 
 Date: 2026-04-23
 
-This note records the real working quickbar activation path now used by the current SimKeys hook. It keeps the addresses and behavior that matter if another developer wants to verify the same chain in their own decompile.
+This note records the real working quickbar activation path now used by the current HGCC hook. It keeps the addresses and behavior that matter if another developer wants to verify the same chain in their own decompile.
 
 ## Confirmed working quickbar paths
 
@@ -12,7 +12,7 @@ The live quickbar trigger path is now:
 2. Run the quickbar call on the NWN window thread through the injected window procedure.
 3. For base-bank slots, call `sub_51FAA0(panel, slotIndex)` directly.
 4. For Shift/Ctrl banks, call `sub_51FD10(panel, pageIndex)`, then `sub_51FAA0(panel, slotIndex)`, then restore the original page.
-5. Return the result over the SimKeys pipe so higher-level Python tooling can treat it as a normal action request.
+5. Return the result over the legacy `simkeys_<pid>` pipe so higher-level Python tooling can treat it as a normal action request.
 
 In the current hook implementation that maps to:
 
@@ -23,7 +23,7 @@ In the current hook implementation that maps to:
 - pipe op `3001` -> base-bank slot trigger
 - pipe op `3008` -> explicit page+slot trigger
 
-This is no longer just a promising narrow candidate. It is the path SimKeys now uses for quickbar activation.
+This is no longer just a promising narrow candidate. It is the path HGCC now uses for quickbar activation.
 
 ## Narrow engine chain still matches the live implementation
 
@@ -87,7 +87,7 @@ The important addresses:
 - `0x00407870` - current player object id accessor
 - `0x004E9B50` - item equipped-owner resolver
 
-SimKeys now mirrors this condition in the hook query response as quickbar item/equipped bitmasks.
+HGCC now mirrors this condition in the hook query response as quickbar item/equipped bitmasks.
 Bit index is `page * 12 + slotIndex`, where `slotIndex` is zero-based:
 
 - bits `0..11` = Base quickbar

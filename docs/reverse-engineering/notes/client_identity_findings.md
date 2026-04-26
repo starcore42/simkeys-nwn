@@ -2,7 +2,7 @@
 
 Date: 2026-04-23
 
-This note records the player-identity lookup chain that moved from HGX reverse engineering into the current working SimKeys path.
+This note records the player-identity lookup chain that moved from HGX reverse engineering into the current working HGCC path.
 
 ## HGX `DetectCharacter`
 
@@ -28,7 +28,7 @@ The meaning of that chain is:
 4. Build the player name string with `0x004CEF20`.
 5. Destroy the temporary NWN string wrapper with `0x005BA420`.
 
-That exact chain is now the live SimKeys identity path as well.
+That exact chain is now the live HGCC identity path as well.
 
 ## Relevant NWN behavior
 
@@ -39,13 +39,13 @@ That exact chain is now the live SimKeys identity path as well.
 
 The extra `0x00405160` hop still matters. Calling `0x00407850` directly on the global slot value skips one dereference and produces bad identity reads.
 
-## Current SimKeys path
+## Current HGCC path
 
 The current hook refreshes identity by posting a request back onto the NWN window thread and then running the same chain there.
 
 Operationally that means:
 
-1. SimKeys posts `kMsgRefreshIdentity` to the injected window procedure.
+1. The HGCC hook posts `kMsgRefreshIdentity` to the injected window procedure.
 2. On the window thread it runs:
    - app-holder read
    - app-object resolve
@@ -61,7 +61,7 @@ Operationally that means:
 
 So character identity no longer needs to be guessed from chat text or window titles. The current code asks NWN for the same name HGX used to return.
 
-## Practical SimKeys result
+## Practical HGCC result
 
 This identity path is now the authoritative source for higher-level tooling:
 

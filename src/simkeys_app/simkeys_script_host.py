@@ -1159,7 +1159,7 @@ class AutoDrinkScript(ClientScriptBase):
         )
         if bool(self.config.get("echo_console", True)):
             self.host.send_console(
-                f"SimKeys autodrink {current_hp}/{max_hp} ({percent:.1f}%) -> {trigger_name} rc={result['rc']} err={result['err']}"
+                f"HGCC autodrink {current_hp}/{max_hp} ({percent:.1f}%) -> {trigger_name} rc={result['rc']} err={result['err']}"
             )
 
     def _close_process_handle(self):
@@ -1405,7 +1405,7 @@ class StopHittingScript(ClientScriptBase):
         )
         if bool(self.config.get("echo_console", True)):
             self.host.send_console(
-                f"SimKeys stop-hitting {record.name}: drank {trigger_name} after {self.last_damage_summary}"
+                f"HGCC stop-hitting {record.name}: drank {trigger_name} after {self.last_damage_summary}"
             )
 
     def _character_name(self) -> str:
@@ -1863,7 +1863,7 @@ class AutoAAScript(ClientScriptBase):
         if bool(self.config.get("echo_console", False)):
             self.host.send_console(
                 (
-                    f"SimKeys {self._mode_label()} {attack.defender} -> {recommendation.selection_name} "
+                    f"HGCC {self._mode_label()} {attack.defender} -> {recommendation.selection_name} "
                     f"({recommendation.command}) rc={result['rc']} err={result['err']}"
                 )
             )
@@ -2420,7 +2420,7 @@ class AutoAAScript(ClientScriptBase):
                 "info",
                 (
                     f"{self.host.client.display_name}: {self._mode_label()} detected external weapon swap "
-                    f"({detail}); current weapon changed from {previous} to {WEAPON_CURRENT_UNKNOWN} until SimKeys re-establishes control"
+                    f"({detail}); current weapon changed from {previous} to {WEAPON_CURRENT_UNKNOWN} until HGCC re-establishes control"
                 ),
                 script_id=self.script_id,
             )
@@ -4863,7 +4863,7 @@ class AutoAAScript(ClientScriptBase):
         if bool(self.config.get("echo_console", False)):
             self.host.send_console(
                 (
-                    f"SimKeys {self._mode_label()} {attack.defender} -> {self._binding_display(recommendation.binding.key)} "
+                    f"HGCC {self._mode_label()} {attack.defender} -> {self._binding_display(recommendation.binding.key)} "
                     f"profile={selection_summary}"
                 )
             )
@@ -5230,7 +5230,7 @@ class AutoAAScript(ClientScriptBase):
         if bool(self.config.get("echo_console", False)):
             self.host.send_console(
                 (
-                    f"SimKeys Divine Slinger {target_name} -> {action_label} "
+                    f"HGCC Divine Slinger {target_name} -> {action_label} "
                     f"({command}, base {recommendation.selection_name}) rc={result['rc']} err={result['err']}"
                 )
             )
@@ -5555,7 +5555,7 @@ class AutoFollowScript(ClientScriptBase):
             script_id=self.script_id,
         )
         if success and bool(self.config.get("echo_console", False)):
-            self.host.send_console(f"SimKeys {self.script_label} -> {speaker}")
+            self.host.send_console(f"HGCC {self.script_label} -> {speaker}")
         self.host.notify_state_changed()
         return True
 
@@ -5851,7 +5851,7 @@ class AutoCombatModeScript(ClientScriptBase):
         )
         if bool(self.config.get("echo_console", False)):
             self.host.send_console(
-                f"SimKeys Auto Combat Mode {mode} -> {command} rc={result['rc']} err={result['err']}"
+                f"HGCC Auto Combat Mode {mode} -> {command} rc={result['rc']} err={result['err']}"
             )
 
     def _mode_label(self) -> str:

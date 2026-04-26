@@ -2,7 +2,7 @@
 
 Date: 2026-04-23
 
-This note records the chat paths that moved from reverse-engineered candidates into real working SimKeys paths.
+This note records the chat paths that moved from reverse-engineered candidates into real working HGCC paths.
 
 ## Confirmed working outbound chat path
 
@@ -10,15 +10,15 @@ This note records the chat paths that moved from reverse-engineered candidates i
 - That request is dispatched by `sub_100074E0`.
 - `sub_100074E0` copies the payload into the server's local string wrapper, reads the HGX chat mode from `[request+0x0C]`, and calls the NWN function pointer resolved at `0x0057C9F0`.
 
-That NWN target is now the live SimKeys send path as well:
+That NWN target is now the live HGCC send path as well:
 
 - address: `0x0057C9F0`
-- call shape observed from HGX and used by SimKeys: pointer-to-string-object plus `mode`
-- wrapper used by SimKeys: `{ char* text; int32_t length; }`
+- call shape observed from HGX and used by HGCC: pointer-to-string-object plus `mode`
+- wrapper used by HGCC: `{ char* text; int32_t length; }`
 
 The current hook path is:
 
-1. Queue a send request over the SimKeys pipe with op `3006`.
+1. Queue a send request over the legacy `simkeys_<pid>` pipe with op `3006`.
 2. Post `kMsgSendChat` to the NWN window thread.
 3. On that thread, build the lightweight NWN string wrapper and call `0x0057C9F0` directly.
 4. Return `success`, `mode`, `rc`, and `err` to the caller.
@@ -49,7 +49,7 @@ That matters because the current hook is not inventing a parallel chat system. I
   - `0x10007A40` for response type `0x7D1` (`2001`)
   - `0x100076E0` for response type `0x7D2` (`2002`)
 
-Recreating HGX's whole server-side event system is still unnecessary for SimKeys because the local hook now captures the rendered NWN chat/log output directly inside the client.
+Recreating HGX's whole server-side event system is still unnecessary for HGCC because the local hook now captures the rendered NWN chat/log output directly inside the client.
 
 ## Confirmed working inbound capture path
 
@@ -73,13 +73,13 @@ So the current live read-side API is:
 
 This is the feed consumed by the script host, which means the automation scripts are now driven by the same rendered text the player sees in the in-game chat window.
 
-## Practical SimKeys result
+## Practical HGCC result
 
 The reverse-engineering conclusion is now operational:
 
 - outbound chat uses `0x0057C9F0` on the real NWN window thread
 - inbound chat/log capture uses `0x00493BD0`
-- both are exposed over the per-process SimKeys pipe
+- both are exposed over the per-process `\\.\pipe\simkeys_<pid>` compatibility pipe
 - the higher-level Python tooling already treats those as the authoritative chat paths
 
 That makes chat one of the areas where the notes should now be read as "confirmed working hook path" rather than "future integration idea".

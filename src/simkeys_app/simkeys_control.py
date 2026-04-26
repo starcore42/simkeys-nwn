@@ -185,7 +185,7 @@ def cmd_watch_chat(args):
 
 
 def build_parser():
-    ap = argparse.ArgumentParser(description="Central SimKeys controller for multi-client NWN injection and control.")
+    ap = argparse.ArgumentParser(description="Central HGCC controller for multi-client NWN injection and control.")
     ap.add_argument("--process-name", default="nwmain", help="Process image name to discover. Default: nwmain")
     sub = ap.add_subparsers(dest="cmd", required=True)
 

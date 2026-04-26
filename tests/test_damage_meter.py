@@ -81,6 +81,30 @@ class DamageMeterTests(unittest.TestCase):
         self.assertEqual(summary.raw_healing, 30)
         self.assertEqual(summary.net, -20)
 
+    def test_session_log_analysis_reports_progress(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_dir = os.path.join(tmpdir, "chars")
+            log_dir = os.path.join(tmpdir, "logs")
+            os.makedirs(db_dir)
+            db = self.make_db(db_dir)
+            meter.reset_session_logs(log_dir)
+            recorder = meter.DamageMeterRecorder(1234, log_dir)
+            recorder.record_event(1, "Alice damages Acid Blob : 15 (5 acid 10 fire)", "Alice")
+            recorder.close()
+
+            events = []
+            summary = meter.analyze_session_logs(log_dir, character_db=db, progress_callback=events.append)
+
+        self.assertEqual(summary.counted_lines, 1)
+        self.assertTrue(events)
+        self.assertEqual(events[-1]["phase"], "Done")
+        self.assertEqual(events[-1]["percent"], 100.0)
+        phases = {event["phase"] for event in events}
+        self.assertIn("Counting logs", phases)
+        self.assertIn("Reading logs", phases)
+        self.assertIn("Merging duplicate views", phases)
+        self.assertIn("Classifying damage", phases)
+
     def test_multi_client_duplicate_views_count_once(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             db = self.make_db(tmpdir)

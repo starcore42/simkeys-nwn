@@ -27,7 +27,7 @@
 ## Creature data model
 
 - The HGX creature dataset is keyed by mob name and includes immunity, resistance, healing, and inheritance data.
-- SimKeys vendors a local copy of that dataset for runtime lookups.
+- HGCC vendors a local copy of that dataset for runtime lookups.
 - Paragon entries commonly inherit from a base mob using `base="..."` and only override healing fields.
 - The legacy Auto-AA scoring model uses this rule when scoring:
   - start from the target creature
@@ -35,14 +35,14 @@
   - use the live creature's resistance and healing tables
   - for `MiniBoss`, use the `Superior <base>` record for resistance/healing and apply `paragon_ranks = 2`
 
-## SimKeys implication
+## HGCC implication
 
 - We do not need the legacy parser implementation to support Auto-AA.
 - A lightweight parser over captured chat lines is sufficient, as long as it:
   - strips optional log prefixes and timestamps
   - handles attack-mode prefixes like `Sneak Attack :`
   - preserves the full attacker and defender names exactly as they appear in the log
-- The current SimKeys Auto-AA implementation mirrors the legacy scoring model and reads from the vendored creature dataset instead of requiring the HGX runtime.
+- The current HGCC Auto-AA implementation mirrors the legacy scoring model and reads from the vendored creature dataset instead of requiring the HGX runtime.
 
 ## Divine Slinger notes
 
@@ -58,7 +58,7 @@
   - `Rakshasa : Breach Negative Energy Protection`
   - `Pharaoh's Bonded : Breach Freedom of Movement`
 - Archived HGX logs did not provide a similarly reliable blind-confirmation line in the sampled data.
-- The SimKeys slinger loop therefore uses a hybrid approach:
+- The HGCC slinger loop therefore uses a hybrid approach:
   - real breach confirmation when a `Target : Breach ...` line appears
   - bounded pending windows for breach and blind so the script can advance back to bonus-damage mode instead of getting stuck forever
 - A bug in the legacy slinger implementation came from treating breach and blind as sticky secondary states without a reliable completion signal, which could leave the loop stuck in utility mode.
@@ -73,13 +73,13 @@
 - Those breakdowns are useful even when a component is fully resisted because zero-value components still appear, for example:
   - `0 Electrical`
   - `0 Fire`
-- The SimKeys `Weapon Swap` mode therefore learns weapon typing from raw `damages` lines instead of HGX feedback text.
+- The HGCC `Weapon Swap` mode therefore learns weapon typing from raw `damages` lines instead of HGX feedback text.
 - Each configured weapon is auto-classified against the supported payload families:
   - `DB`: 3 elemental types at `5d12` each and 3 exotic types at `2d12` each
   - `P1`: 1 elemental type at `9d12` and 2 exotic types at `6d12` each
   - `XR`: 2 elemental types at `11d12` each and 1 exotic type at `8d12`
 - Physical damage is intentionally treated as a shared baseline and is not used to rank weapons yet.
-- Because triggering the same quickbar weapon twice will unequip it, the SimKeys weapon mode keeps explicit state for:
+- Because triggering the same quickbar weapon twice will unequip it, the HGCC weapon mode keeps explicit state for:
   - the currently equipped configured weapon
   - a pending swap that should not be retriggered until the next combat round window has elapsed
 - The GUI exposes that current-weapon selector directly, and the script refuses to arm `Weapon Swap` until it has a known starting weapon.

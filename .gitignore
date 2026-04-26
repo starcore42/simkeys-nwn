@@ -25,7 +25,7 @@ __pycache__/
 *.FileListAbsolute.txt
 *.log
 
-# SimKeys generated outputs
+# HGCC generated outputs
 logs/
 bin/logs/
 src/native/SimKeysHook2/Release/

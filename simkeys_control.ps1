@@ -98,7 +98,7 @@ Write-Host "Using Python '$($python.Path)' via $($python.Source)." -ForegroundCo
 
 $srcPath = Join-Path $PSScriptRoot "src"
 if (-not (Test-Path -LiteralPath $srcPath)) {
-  throw "Could not find SimKeys source directory '$srcPath'."
+  throw "Could not find HGCC source directory '$srcPath'."
 }
 
 $previousPythonPath = $env:PYTHONPATH

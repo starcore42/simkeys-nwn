@@ -1,10 +1,10 @@
-# SimKeys for NWN Higher Ground
+# HG Control Console
 
-SimKeys is a Windows control toolkit for **Neverwinter Nights** clients running on the **Higher Ground** server. It was written by **Starcore** to drive in-game functionality without window focus, using direct in-process hooks and a named-pipe control layer instead of foreground key sending.
+HG Control Console (HGCC), formerly SimKeys, is a Windows control toolkit for **Neverwinter Nights** clients running on the **Higher Ground** server. It was written by **Starcore** to drive in-game functionality without window focus, using direct in-process hooks and a named-pipe control layer instead of foreground key sending.
 
-This public repository contains the SimKeys source, a bundled hook DLL, build files, notes, and packaged `characters.d` support data. It intentionally does not include a game install or unrelated third-party client/script folders.
+This public repository contains the HGCC source, a bundled hook DLL, build files, notes, and packaged `characters.d` support data. It intentionally does not include a game install or unrelated third-party client/script folders.
 
-![SimKeys Control Center](docs/assets/simkeys-control-center.png)
+![HG Control Console](docs/assets/simkeys-control-center.png)
 
 ## What it does
 
@@ -42,7 +42,18 @@ This public repository contains the SimKeys source, a bundled hook DLL, build fi
 - `data/followcues.d/`
   - XML follow cue phrases used by Always On / Auto Follow.
 - `docs/reverse-engineering/notes/`
-  - SimKeys-specific reverse-engineering notes.
+  - HGCC-specific reverse-engineering notes.
+
+## Legacy Internal Names
+
+The project used to be named SimKeys, and several internal names intentionally remain for compatibility:
+
+- `simkeys_gui.ps1` and `simkeys_control.ps1` are still the launcher filenames.
+- `src/simkeys_app/` is still the Python package name.
+- `bin/SimKeysHook2.dll`, `src/native/SimKeysHook2/`, and the `InitSimKeys` export are still the native hook names.
+- Injected clients still expose the compatibility pipe name `\\.\pipe\simkeys_<pid>`.
+
+Those names are implementation details. The user-facing project name is **HG Control Console**, usually abbreviated **HGCC**.
 
 ## Run the GUI
 
@@ -98,7 +109,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 chat-s
 
 ## Bundled DLL
 
-The repository includes `bin\SimKeysHook2.dll`, so users do not need Visual Studio just to run SimKeys. The GUI and CLI prefer this bundled DLL automatically.
+The repository includes `bin\SimKeysHook2.dll`, so users do not need Visual Studio just to run HGCC. The GUI and CLI prefer this bundled DLL automatically.
 
 Runtime logs are written under `logs\` in the repository root. They are ignored by git. The GUI clears and recreates `logs\damage-meter\` when it starts so the damage meter only summarizes the current GUI session.
 
@@ -173,11 +184,11 @@ Tick `Saved` beside any script you normally run for that character. Those choice
 
 ## License
 
-SimKeys is released under the MIT License. See `LICENSE`.
+HG Control Console is released under the MIT License. See `LICENSE`.
 
 ## Notes
 
 - This project is intended for use on the **Neverwinter Nights Higher Ground** server.
 - Written by **Starcore**.
-- If you build new scripts, automations, reverse-engineering findings, or quality-of-life features on top of SimKeys, please consider sharing them openly so the Higher Ground community can improve the toolset together.
+- If you build new scripts, automations, reverse-engineering findings, or quality-of-life features on top of HGCC, please consider sharing them openly so the Higher Ground community can improve the toolset together.
 - This is an unofficial project and is not affiliated with BioWare, Beamdog, or the Higher Ground server team.

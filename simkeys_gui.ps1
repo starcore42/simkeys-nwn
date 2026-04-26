@@ -45,7 +45,7 @@ function Start-SelfElevated {
     $arguments += (Quote-ProcessArgument -Value $arg)
   }
 
-  Write-Host "SimKeys GUI needs administrator access to interact with elevated NWN clients. Requesting elevation..." -ForegroundColor Yellow
+  Write-Host "HGCC GUI needs administrator access to interact with elevated NWN clients. Requesting elevation..." -ForegroundColor Yellow
   Start-Process -FilePath "powershell.exe" `
     -Verb RunAs `
     -WorkingDirectory $PSScriptRoot `
@@ -100,7 +100,7 @@ if ($null -ne $injectorPython) {
 
 $srcPath = Join-Path $PSScriptRoot "src"
 if (-not (Test-Path -LiteralPath $srcPath)) {
-  throw "Could not find SimKeys source directory '$srcPath'."
+  throw "Could not find HGCC source directory '$srcPath'."
 }
 
 $argsToPass = @("-m", "simkeys_app.simkeys_gui")
