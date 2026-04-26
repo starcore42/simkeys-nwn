@@ -1,68 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <rules>
 	<timer
-		text="Invis Purge"
-		description="Invis Purge"
-		rule="^Starcore-Ranger \[3\.0\] casts Invisibility Purge$"
-		duration="00:05:50" />
-		<timer
 		text="Rage"
 		description="Rage"
 		rule="^Starcore-Shifter \[3\.1\] enters rage\.$"
 		duration="00:06:00" />
-		<timer
-		text="SoV"
-		description="Sov"
-		rule="^Starcore-Lash \[3\.2\] casts Storm of Vengeance$"
-		duration="00:09:00" />
-		<timer
-		text="Heroism"
-		description="Heroism"
-		rule="^Starcore-Bard \[4\.1\] casts Improved Heroism$"
-		duration="00:11:00" />	
-		<timer
-		text="True Strike"
-		description="True Strike"
-		rule="^Starcore-Bard \[4\.1\] casts True Strike$"
-		duration="00:01:30" />	
-		<timer
+	<timer
 		text="Song"
 		description="Song"
 		rule="^Starcore-Bard \[4\.1\] sings\.$"
-		duration="00:16:00" />	
-		<timer
-		text="Drain"
-		description="Drain"
-		rule="^Starcore-PM-Sorc \[1\.0\] casts Energy Drain$"
-		duration="00:01:00" />	
-		<timer
-		text="SoV-Repaer"
-		description="Sov"
-		rule="^Starcore-StormReaper \[2\.0\] casts Storm of Vengeance$"
-		duration="00:09:46" />
-		<timer
-		text="Globe 12"
-		description="Globe 12"
-		rule="^Starcore-Cleric \[4\.1\] casts Globe of Invulnerability$"
-		duration="00:12:00" />
-		<timer
-		text="Globe 6"
-		description="Globe 6"
-		rule="^Starcore-Cleric \[4\.1\] casts Globe of Invulnerability$"
-		duration="00:06:00" />
-		<timer
-		text="Tenser's"
-		description="Tenser's"
-		rule="^Starcore-DSM \[1\.4\] casts Tenser's Transformation$"
-		duration="00:12:00" />
-		<timer
-		text="Shadow Evade"
-		description="Shadow Evade"
-		rule="^Starcore-SD \[3\.0\] casts Shadow Evade$"
-		duration="00:10:00" />
-		<timer
+		duration="00:16:00" />
+	<timer
 		text="Neg Wep"
 		description="Neg Wep"
 		rule="^Starcore-SD \[3\.0\] uses Shadow Rift$"
 		duration="00:10:00" />
-	</rules>
+</rules>

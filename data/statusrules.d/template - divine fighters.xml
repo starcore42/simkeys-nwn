@@ -1,62 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!--
-	This is a template file for divine fighters, i.e. Clerics, Paladins,
-	Blackguards	and Champions of Torm. Since the duration of their abilities
-	depends on the character or caster level you will need to adjust this file.
--->
 <rules>
-	<!--
-		Add your character name to the player attribute, e.g. change
-			player="^$"
-		to
-			player="My Uber Paladin"
-		
-		Add the duration of the ability (in seconds) to the duration attributue,
-		e.g. change
-			duration="0"
-		to
-			duration="120"
-			
-		If you have more than one character with these abilities then simply
-		copy all the timer elements until the next comment and change the player
-		and duration. For example you have two Divine Might timer elements then,
-		one for player="Paladin" with duration="240", the other for
-		player="Lash" with duration="180".
-	-->
-	<spellTimer
-		text="Divine Might"
-		description="Divine Might"
-		player="^$"
-		spell="Divine Might"
-		duration="0" />
-	<spellTimer
-		text="Divine Shield"
-		description="Divine Shield"
-		player="^$"
-		spell="Divine Shield"
-		duration="0" />
-	<spellTimer
-		text="Divine Favor"
-		description="Divine Favor"
-		player="^$"
-		spell="Divine Favor"
-		duration="0" />
-	<spellTimer
-		text="Death Ward"
-		description="Death Ward"
-		player="^$"
-		spell="Death Ward"
-		duration="0" />
-	<spellTimer
-		text="Lay on Hands"
-		description="Lay on Hands"
-		player="^$"
-		spell="Lay on Hands"
-		duration="0" />
-	<spellTimer
-		text="Divine Wrath"
-		description="Divine Wrath"
-		player="^$"
-		spell="Divine Wrath"
-		duration="0"  />
+	<spellTimer spell="Divine Might" effect="Divine Might" />
+	<spellTimer spell="Divine Shield" effect="Divine Shield" />
+	<spellTimer spell="Divine Favor" effect="Divine Favor" />
+	<spellTimer spell="Death Ward" effect="Death Ward" />
+	<spellTimer spell="Lay on Hands" effect="Lay on Hands" />
+	<spellTimer spell="Divine Wrath" effect="Divine Wrath" />
 </rules>

@@ -87,6 +87,9 @@ constexpr UINT kGlProjection = 0x1701;
 constexpr UINT kGlModelview = 0x1700;
 constexpr UINT kGlUnsignedByte = 0x1401;
 constexpr UINT kGlBgraExt = 0x80E1;
+constexpr UINT kGlBlend = 0x0BE2;
+constexpr UINT kGlSrcAlpha = 0x0302;
+constexpr UINT kGlOneMinusSrcAlpha = 0x0303;
 
 enum LogLevel {
   kLogError = 0,
@@ -334,6 +337,8 @@ typedef void (APIENTRY* GlGetIntegervFn)(UINT pname, int* params);
 typedef void (APIENTRY* GlBindTextureFn)(UINT target, UINT texture);
 typedef void (APIENTRY* GlRasterPos2fFn)(float x, float y);
 typedef void (APIENTRY* GlDrawPixelsFn)(int width, int height, UINT format, UINT type, const void* pixels);
+typedef BYTE (APIENTRY* GlIsEnabledFn)(UINT cap);
+typedef void (APIENTRY* GlBlendFuncFn)(UINT sfactor, UINT dfactor);
 
 GlDisableFn g_glDisable = nullptr;
 GlEnableFn g_glEnable = nullptr;
@@ -347,6 +352,8 @@ GlGetIntegervFn g_glGetIntegerv = nullptr;
 GlBindTextureFn g_glBindTexture = nullptr;
 GlRasterPos2fFn g_glRasterPos2f = nullptr;
 GlDrawPixelsFn g_glDrawPixels = nullptr;
+GlIsEnabledFn g_glIsEnabled = nullptr;
+GlBlendFuncFn g_glBlendFunc = nullptr;
 
 LRESULT CALLBACK SimKeysWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 void LogMessage(int level, const char* format, ...);
@@ -1244,11 +1251,14 @@ BOOL ResolveOpenGlFunctions() {
   g_glBindTexture = reinterpret_cast<GlBindTextureFn>(GetProcAddress(opengl, "glBindTexture"));
   g_glRasterPos2f = reinterpret_cast<GlRasterPos2fFn>(GetProcAddress(opengl, "glRasterPos2f"));
   g_glDrawPixels = reinterpret_cast<GlDrawPixelsFn>(GetProcAddress(opengl, "glDrawPixels"));
+  g_glIsEnabled = reinterpret_cast<GlIsEnabledFn>(GetProcAddress(opengl, "glIsEnabled"));
+  g_glBlendFunc = reinterpret_cast<GlBlendFuncFn>(GetProcAddress(opengl, "glBlendFunc"));
 
   if (g_glDisable == nullptr || g_glEnable == nullptr || g_glDepthMask == nullptr ||
       g_glColor3f == nullptr || g_glMatrixMode == nullptr || g_glPushMatrix == nullptr ||
       g_glPopMatrix == nullptr || g_glLoadIdentity == nullptr || g_glGetIntegerv == nullptr ||
-      g_glBindTexture == nullptr || g_glRasterPos2f == nullptr || g_glDrawPixels == nullptr) {
+      g_glBindTexture == nullptr || g_glRasterPos2f == nullptr || g_glDrawPixels == nullptr ||
+      g_glIsEnabled == nullptr || g_glBlendFunc == nullptr) {
     SetLastError(ERROR_PROC_NOT_FOUND);
     return FALSE;
   }
@@ -1526,15 +1536,45 @@ BOOL RenderTextOverlay(
 
   HGDIOBJ old_bitmap = SelectObject(dc, bitmap);
   RECT background = {0, 0, width, height};
-  HBRUSH background_brush = CreateSolidBrush(RGB(0, 0, 0));
+  const COLORREF panel_color = RGB(12, 16, 18);
+  const COLORREF header_color = RGB(24, 32, 36);
+  HBRUSH background_brush = CreateSolidBrush(panel_color);
   FillRect(dc, &background, background_brush);
   DeleteObject(background_brush);
+
+  const int header_height = font_size + (kOverlayTextPadding * 2);
+  RECT header_rect = {0, 0, width, header_height};
+  HBRUSH header_brush = CreateSolidBrush(header_color);
+  FillRect(dc, &header_rect, header_brush);
+  DeleteObject(header_brush);
+
+  HPEN border_pen = CreatePen(PS_SOLID, 1, RGB(90, 110, 120));
+  HGDIOBJ old_pen = SelectObject(dc, border_pen);
+  HGDIOBJ old_brush = SelectObject(dc, GetStockObject(NULL_BRUSH));
+  Rectangle(dc, 0, 0, width, height);
+  MoveToEx(dc, 0, header_height, nullptr);
+  LineTo(dc, width, header_height);
+  SelectObject(dc, old_brush);
+  SelectObject(dc, old_pen);
+  DeleteObject(border_pen);
 
   SetBkMode(dc, TRANSPARENT);
   SetTextColor(dc, RGB((color_rgb >> 16) & 0xFF, (color_rgb >> 8) & 0xFF, color_rgb & 0xFF));
   RECT text_rect = {kOverlayTextPadding, kOverlayTextPadding, width - kOverlayTextPadding, height - kOverlayTextPadding};
   DrawTextA(dc, text, -1, &text_rect, DT_LEFT | DT_NOPREFIX);
   GdiFlush();
+
+  BYTE* pixel = static_cast<BYTE*>(bits);
+  for (int i = 0; i < width * height; ++i) {
+    const BYTE blue = pixel[i * 4 + 0];
+    const BYTE green = pixel[i * 4 + 1];
+    const BYTE red = pixel[i * 4 + 2];
+    if ((red <= 30 && green <= 36 && blue <= 40) || (red == 90 && green == 110 && blue == 120)) {
+      pixel[i * 4 + 3] = 170;
+    } else {
+      pixel[i * 4 + 3] = 255;
+    }
+  }
 
   const DWORD pixel_bytes = static_cast<DWORD>(width * height * 4);
   const BOOL stored = StoreOverlayBitmap(id, position, offset_x, offset_y, width, height, bits, pixel_bytes);
@@ -1570,6 +1610,7 @@ void RenderOverlays() {
   g_glGetIntegerv(kGlViewport, viewport);
   g_glGetIntegerv(kGlTextureBinding2D, &texture);
   g_glGetIntegerv(kGlMatrixMode, &matrix_mode);
+  const BYTE blend_enabled = g_glIsEnabled(kGlBlend);
   const int viewport_width = viewport[2];
   const int viewport_height = viewport[3];
   if (viewport_width <= 0 || viewport_height <= 0) {
@@ -1578,6 +1619,8 @@ void RenderOverlays() {
 
   g_glDisable(kGlCullFace);
   g_glDisable(kGlDepthTest);
+  g_glEnable(kGlBlend);
+  g_glBlendFunc(kGlSrcAlpha, kGlOneMinusSrcAlpha);
   g_glDepthMask(FALSE);
   g_glColor3f(1.0f, 1.0f, 1.0f);
   g_glMatrixMode(kGlProjection);
@@ -1608,6 +1651,9 @@ void RenderOverlays() {
   g_glPopMatrix();
   g_glMatrixMode(static_cast<UINT>(matrix_mode));
   g_glDepthMask(TRUE);
+  if (!blend_enabled) {
+    g_glDisable(kGlBlend);
+  }
   g_glEnable(kGlDepthTest);
   g_glEnable(kGlCullFace);
   InterlockedIncrement(&g_state.overlay_draws);

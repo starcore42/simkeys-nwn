@@ -1,35 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!--
-	This is a template file for stormlords. Since the duration of their abilities
-	depends on the character or caster level you will need to adjust this file.
--->
 <rules>
-	<!--
-		Add your character name to the player attribute, e.g. change
-			player="^$"
-		to
-			player="My Uber Stormlord"
-		
-		Add the duration of the ability (in seconds) to the duration attributue,
-		e.g. change
-			duration="0"
-		to
-			duration="300"
-			
-		If you have more than one character with these abilities then simply
-		copy all the timer elements until the next comment and change the player
-		and duration.
-	-->
-	<spellTimer
-		text="Storm of Vengeance"
-		description="Stormlord - Storm of Vengeance"
-		player="Starcore-Lash [2.1]"
-		spell="Storm of Vengeance"
-		duration="00:09:00" />
-	<spellTimer
-		text="Nature's Balance"
-		description="Stormlord - Nature's Balance"
-		player="^$"
-		spell="Nature's Balance"
-		duration="00:02:00" />
+	<spellTimer spell="Storm of Vengeance" effect="Divine Power" />
+	<spellTimer spell="Nature's Balance" effect="Nature's Balance" />
 </rules>

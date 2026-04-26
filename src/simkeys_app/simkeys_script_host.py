@@ -203,6 +203,71 @@ def _build_var_timer_regex(rule: str) -> Pattern:
     return re.compile(pattern)
 
 
+SPELL_CAST_LINE_RE = re.compile(r"^(?P<caster>.+?) casts (?P<spell>.+?)\s*$", re.IGNORECASE)
+EFFECT_TIMER_LINE_RE = re.compile(r"^\s*#\d+\s+(?P<effect>.+?)\s+\[(?P<remaining>[^\]]+)\]\s*$", re.IGNORECASE | re.MULTILINE)
+SPELL_EFFECT_ALIASES = {
+    "storm of vengeance": "Divine Power",
+}
+
+
+def _looks_like_duration(value: object) -> bool:
+    text = str(value or "").strip().lower()
+    if not text:
+        return False
+    if ":" in text:
+        return True
+    if re.fullmatch(r"\d+(?:\.\d+)?", text):
+        return True
+    return bool(re.search(r"\d+\s*(?:h|hr|hrs|hour|hours|m|min|mins|minute|minutes|s|sec|secs|second|seconds)\b", text))
+
+
+def _parse_effect_remaining_seconds(value: object) -> float:
+    text = str(value or "").strip().lower()
+    if not text:
+        return 0.0
+    text = text.replace(",", " ")
+    text = re.sub(r"\b(left|remaining)\b", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+
+    total = 0
+    matched = False
+    for match in re.finditer(r"(\d+)\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)(?=\b|\d|$)", text):
+        matched = True
+        amount = int(match.group(1))
+        unit = match.group(2)
+        if unit.startswith("h"):
+            total += amount * 3600
+        elif unit.startswith("m"):
+            total += amount * 60
+        else:
+            total += amount
+    if matched:
+        return float(total)
+    return _parse_duration_seconds(text)
+
+
+def _timer_literal_from_regex(text: str) -> str:
+    value = str(text or "")
+    value = re.sub(r"\\(.)", r"\1", value)
+    return value.strip()
+
+
+def _extract_cast_spell_from_timer_rule(rule: str) -> str:
+    text = str(rule or "").strip()
+    if not text.startswith("^") or not text.endswith("$") or " casts " not in text:
+        return ""
+    body = text[1:-1]
+    _caster, spell = body.split(" casts ", 1)
+    spell = _timer_literal_from_regex(spell)
+    if not spell or re.search(r"[\^\$\|\(\)\[\]\{\}\*\+\?]", spell):
+        return ""
+    return spell
+
+
+def _spell_key(value: str) -> str:
+    return re.sub(r"\s+", " ", str(value or "").strip()).lower()
+
+
 @dataclass(frozen=True)
 class OverlayTimerRule:
     key: str
@@ -217,6 +282,26 @@ class OverlayTimerRule:
     source: str
 
 
+@dataclass(frozen=True)
+class SpellTimerSpec:
+    key: str
+    spell: str
+    effect: str
+    label: str
+    duration_seconds: float
+    color_rgb: int
+    source: str
+
+
+@dataclass
+class PendingSpellEffectQuery:
+    spec: SpellTimerSpec
+    cast_at: float
+    next_request_at: float
+    deadline_at: float
+    attempts: int = 0
+
+
 @dataclass
 class ActiveOverlayTimer:
     label: str
@@ -227,6 +312,135 @@ class ActiveOverlayTimer:
     disable_on_death: bool
     disable_on_rest: bool
     source: str
+
+
+def _load_hgx_spell_timer_specs(source_dir: str) -> Tuple[SpellTimerSpec, ...]:
+    by_spell: Dict[str, SpellTimerSpec] = {}
+    directory = os.path.abspath(os.path.expanduser(os.path.expandvars(str(source_dir or ""))))
+    if not os.path.isdir(directory):
+        return ()
+
+    for file_name in sorted(os.listdir(directory)):
+        if not file_name.lower().endswith(".xml"):
+            continue
+        path = os.path.join(directory, file_name)
+        try:
+            root = ET.parse(path).getroot()
+        except Exception:
+            continue
+
+        for index, element in enumerate(list(root)):
+            tag = str(element.tag or "").strip().lower()
+            spell = ""
+            duration = _parse_duration_seconds(element.get("duration"))
+            color_rgb = _timer_color_rgb(element.get("color"))
+
+            if tag == "spelltimer":
+                spell = str(element.get("spell") or element.get("text") or "").strip()
+            elif tag == "timer":
+                spell = _extract_cast_spell_from_timer_rule(str(element.get("rule") or ""))
+            if not spell:
+                continue
+            effect = str(element.get("effect") or "").strip()
+            if not effect:
+                effect = SPELL_EFFECT_ALIASES.get(_spell_key(spell), spell)
+
+            key = _spell_key(spell)
+            current = by_spell.get(key)
+            if current is not None and current.duration_seconds >= duration:
+                continue
+
+            by_spell[key] = SpellTimerSpec(
+                key=key,
+                spell=spell,
+                effect=effect,
+                label=spell,
+                duration_seconds=duration,
+                color_rgb=color_rgb,
+                source=f"{file_name}:{index}",
+            )
+
+    return tuple(sorted(by_spell.values(), key=lambda spec: spec.spell.lower()))
+
+
+def _format_spell_timer_config(specs: Tuple[SpellTimerSpec, ...]) -> str:
+    parts = []
+    for spec in specs:
+        parts.append(f"{spec.spell}={spec.effect or spec.spell}")
+    return "; ".join(parts)
+
+
+def _parse_spell_timer_config(value: object, defaults: Tuple[SpellTimerSpec, ...]) -> Tuple[SpellTimerSpec, ...]:
+    default_by_key = {spec.key: spec for spec in defaults}
+    text = str(value or "").strip()
+    if not text:
+        text = _format_spell_timer_config(defaults)
+
+    specs: List[SpellTimerSpec] = []
+    seen: Set[str] = set()
+    for raw_entry in re.split(r"[;\r\n]+", text):
+        entry = raw_entry.strip()
+        if not entry:
+            continue
+
+        label = ""
+        effect = ""
+        duration_text = ""
+        if "|" in entry:
+            parts = [part.strip() for part in entry.split("|")]
+            if len(parts) >= 4:
+                label, spell, effect, duration_text = parts[0], parts[1], parts[2], parts[3]
+            elif len(parts) == 3:
+                if _looks_like_duration(parts[2]):
+                    spell, effect, duration_text = parts[0], parts[1], parts[2]
+                else:
+                    label, spell, effect = parts[0], parts[1], parts[2]
+            elif len(parts) == 2:
+                spell = parts[0]
+                if _looks_like_duration(parts[1]):
+                    duration_text = parts[1]
+                else:
+                    effect = parts[1]
+            else:
+                spell = parts[0]
+        elif "=" in entry:
+            spell, right = [part.strip() for part in entry.split("=", 1)]
+            if "|" in right:
+                right_parts = [part.strip() for part in right.split("|") if part.strip()]
+                if right_parts and _looks_like_duration(right_parts[-1]):
+                    duration_text = right_parts[-1]
+                    effect = "|".join(right_parts[:-1]).strip()
+                else:
+                    effect = right
+            elif _looks_like_duration(right):
+                duration_text = right
+            else:
+                effect = right
+        else:
+            spell = entry
+
+        key = _spell_key(spell)
+        if not key or key in seen:
+            continue
+
+        default = default_by_key.get(key)
+        has_duration = bool(str(duration_text or "").strip())
+        duration = _parse_duration_seconds(duration_text)
+        if not has_duration and default is not None:
+            duration = default.duration_seconds
+        if not effect:
+            effect = default.effect if default is not None else SPELL_EFFECT_ALIASES.get(key, spell)
+        specs.append(SpellTimerSpec(
+            key=key,
+            spell=spell,
+            effect=effect,
+            label=label or spell,
+            duration_seconds=duration,
+            color_rgb=default.color_rgb if default is not None else 0xFFFFFF,
+            source="config",
+        ))
+        seen.add(key)
+    return tuple(specs)
 
 
 def _load_status_timer_rules(source_dir: str) -> Tuple[OverlayTimerRule, ...]:
@@ -261,6 +475,8 @@ def _load_status_timer_rules(source_dir: str) -> Tuple[OverlayTimerRule, ...]:
                 raw_rule = str(element.get("rule") or "").strip()
                 if not raw_rule:
                     continue
+                if _extract_cast_spell_from_timer_rule(raw_rule):
+                    continue
                 try:
                     pattern = re.compile(raw_rule)
                 except re.error:
@@ -274,14 +490,7 @@ def _load_status_timer_rules(source_dir: str) -> Tuple[OverlayTimerRule, ...]:
                 except re.error:
                     continue
             elif tag == "spelltimer":
-                player = str(element.get("player") or "").strip()
-                spell = str(element.get("spell") or "").strip()
-                if not player or not spell or player == "^$" or duration <= 0:
-                    continue
-                try:
-                    pattern = re.compile(rf"^{re.escape(player)} casts {re.escape(spell)}$")
-                except re.error:
-                    continue
+                continue
             else:
                 continue
 
@@ -4765,6 +4974,9 @@ class AutoCombatModeScript(ClientScriptBase):
 class InGameTimersScript(ClientScriptBase):
     script_id = "ingame_timers"
     OVERLAY_ID = 7100
+    EFFECT_REQUEST_DELAY_SECONDS = 0.50
+    EFFECT_REQUEST_RETRY_SECONDS = 5.0
+    EFFECT_REQUEST_TIMEOUT_SECONDS = 14.0
     REST_RE = re.compile(r"\b(resting|rested|rests)\b", re.IGNORECASE)
     DEATH_RE = re.compile(r"\b(you are dead|you died|you have been killed)\b", re.IGNORECASE)
 
@@ -4772,9 +4984,15 @@ class InGameTimersScript(ClientScriptBase):
         super().__init__(client, config, host)
         self.enabled = False
         self.rules: Tuple[OverlayTimerRule, ...] = ()
+        self.spell_defaults: Tuple[SpellTimerSpec, ...] = ()
+        self.spell_specs: Tuple[SpellTimerSpec, ...] = ()
+        self.spell_specs_by_key: Dict[str, SpellTimerSpec] = {}
+        self.spell_specs_by_effect_key: Dict[str, SpellTimerSpec] = {}
+        self.pending_effect_queries: Dict[str, PendingSpellEffectQuery] = {}
         self.active: Dict[str, ActiveOverlayTimer] = {}
         self.last_render_text = ""
         self.last_overlay_error = ""
+        self.last_effect_request_error = ""
         self.next_render_at = 0.0
         self.matched_count = 0
         self.cleared_count = 0
@@ -4783,24 +5001,38 @@ class InGameTimersScript(ClientScriptBase):
         super().on_start()
         self.enabled = True
         self.active.clear()
+        self.pending_effect_queries.clear()
         self.last_render_text = ""
         self.last_overlay_error = ""
+        self.last_effect_request_error = ""
         self.next_render_at = 0.0
         self.matched_count = 0
         self.cleared_count = 0
         rules_dir = self._rules_dir()
         self.rules = _load_status_timer_rules(rules_dir)
-        self.set_status(f"Loaded {len(self.rules)} rules")
+        self.spell_defaults = _load_hgx_spell_timer_specs(rules_dir)
+        self.spell_specs = _parse_spell_timer_config(self.config.get("spell_timers", ""), self.spell_defaults)
+        self.spell_specs_by_key = {spec.key: spec for spec in self.spell_specs}
+        self.spell_specs_by_effect_key = {
+            _spell_key(spec.effect): spec
+            for spec in self.spell_specs
+            if _spell_key(spec.effect)
+        }
+        self.set_status(f"Loaded {len(self.rules)} rules, {len(self.spell_specs)} spells")
         self.host.emit(
             "info",
-            f"{self.client.display_name}: In-Game Timers loaded {len(self.rules)} rules from {rules_dir}",
+            (
+                f"{self.client.display_name}: In-Game Timers loaded {len(self.rules)} rules and "
+                f"{len(self.spell_specs)} self-cast spell timers from {rules_dir}"
+            ),
             script_id=self.script_id,
         )
-        self._clear_overlay()
+        self._render_overlay(force=True)
 
     def on_stop(self):
         self.enabled = False
         self.active.clear()
+        self.pending_effect_queries.clear()
         self._clear_overlay()
         super().on_stop()
         self.host.emit("info", f"{self.client.display_name}: In-Game Timers stopped", script_id=self.script_id)
@@ -4820,6 +5052,10 @@ class InGameTimersScript(ClientScriptBase):
 
         now = time.monotonic()
         changed = False
+        if self._handle_effect_timer_line(line, now):
+            changed = True
+        if self._handle_spell_cast_line(line, now):
+            changed = True
         for rule in self.rules:
             match = rule.pattern.search(line)
             if not match:
@@ -4854,6 +5090,7 @@ class InGameTimersScript(ClientScriptBase):
         if not self.enabled:
             return
         now = time.monotonic()
+        pending_changed = self._service_pending_effect_queries(now)
         expired = [
             key
             for key, timer in self.active.items()
@@ -4863,8 +5100,8 @@ class InGameTimersScript(ClientScriptBase):
             self.active.pop(key, None)
         if expired:
             self.cleared_count += len(expired)
-        if now >= self.next_render_at or expired:
-            self._render_overlay(force=bool(expired))
+        if now >= self.next_render_at or expired or pending_changed:
+            self._render_overlay(force=bool(expired or pending_changed))
 
     def _rules_dir(self) -> str:
         value = str(self.config.get("rules_dir", "") or "").strip()
@@ -4898,6 +5135,189 @@ class InGameTimersScript(ClientScriptBase):
             self.cleared_count += len(removed)
         return bool(removed)
 
+    def _actor_keys(self, value: object) -> Set[str]:
+        text = hgx_combat.normalize_actor_name(str(value or ""))
+        if not text:
+            return set()
+        values = {text}
+        values.add(re.sub(r"\s+\[[^\]]+\]\s*$", "", text).strip())
+        return {
+            re.sub(r"\s+", " ", item).strip().lower()
+            for item in values
+            if item.strip()
+        }
+
+    def _self_actor_keys(self) -> Set[str]:
+        keys: Set[str] = set()
+        for source in (
+            getattr(self.host.client, "display_name", ""),
+            getattr(self.host.client, "character_name", ""),
+            getattr(self.client, "display_name", ""),
+            getattr(self.client, "character_name", ""),
+        ):
+            keys.update(self._actor_keys(source))
+        return keys
+
+    def _caster_matches_self(self, caster: str) -> bool:
+        caster_keys = self._actor_keys(caster)
+        return bool(caster_keys and caster_keys.intersection(self._self_actor_keys()))
+
+    def _self_target_name(self) -> str:
+        for source in (
+            getattr(self.host.client, "character_name", ""),
+            getattr(self.client, "character_name", ""),
+            getattr(self.host.client, "display_name", ""),
+            getattr(self.client, "display_name", ""),
+        ):
+            name = str(source or "").strip()
+            if name:
+                return name
+        return ""
+
+    def _handle_spell_cast_line(self, line: str, now: float) -> bool:
+        match = SPELL_CAST_LINE_RE.match(line)
+        if match is None:
+            return False
+        if not self._caster_matches_self(match.group("caster")):
+            return False
+
+        spell_name = match.group("spell").strip()
+        spec = self.spell_specs_by_key.get(_spell_key(spell_name))
+        if spec is None:
+            return False
+
+        effect_key = _spell_key(spec.effect or spec.spell)
+        self.pending_effect_queries[effect_key] = PendingSpellEffectQuery(
+            spec=spec,
+            cast_at=now,
+            next_request_at=now + self.EFFECT_REQUEST_DELAY_SECONDS,
+            deadline_at=now + self.EFFECT_REQUEST_TIMEOUT_SECONDS,
+        )
+        self.set_status(f"Checking {spec.label}")
+        return True
+
+    def _handle_effect_timer_line(self, line: str, now: float) -> bool:
+        changed = False
+        last_status = ""
+        for match in EFFECT_TIMER_LINE_RE.finditer(line):
+            effect_name = match.group("effect").strip()
+            remaining = _parse_effect_remaining_seconds(match.group("remaining"))
+            if remaining <= 0:
+                continue
+
+            effect_key = _spell_key(effect_name)
+            pending = self.pending_effect_queries.pop(effect_key, None)
+            spec = pending.spec if pending is not None else self.spell_specs_by_effect_key.get(effect_key)
+            if spec is None:
+                continue
+
+            self.active[f"spell:{spec.key}"] = ActiveOverlayTimer(
+                label=spec.label,
+                description=effect_name,
+                expires_at=now + remaining,
+                duration_seconds=remaining,
+                color_rgb=spec.color_rgb,
+                disable_on_death=True,
+                disable_on_rest=True,
+                source=spec.source,
+            )
+            self.matched_count += 1
+            last_status = f"{spec.label}: {_format_remaining(remaining)}"
+            changed = True
+
+        if last_status:
+            self.set_status(last_status)
+        return changed
+
+    def _service_pending_effect_queries(self, now: float) -> bool:
+        changed = False
+        for effect_key, pending in list(self.pending_effect_queries.items()):
+            if now >= pending.deadline_at:
+                self.pending_effect_queries.pop(effect_key, None)
+                self._fallback_pending_spell_timer(pending, now)
+                changed = True
+                continue
+
+            if now < pending.next_request_at:
+                continue
+
+            target_name = self._self_target_name()
+            if not target_name:
+                pending.next_request_at = now + 1.0
+                self.set_status(f"Waiting for character name ({pending.spec.label})")
+                changed = True
+                continue
+
+            try:
+                effects_result = self.host.send_chat("!effects", 2)
+                target_result = self.host.send_chat(f'/tell "{target_name}" !target', 2)
+            except Exception as exc:
+                error_key = f"{type(exc).__name__}:{exc}"
+                if error_key != self.last_effect_request_error:
+                    self.last_effect_request_error = error_key
+                    self.host.emit(
+                        "error",
+                        f"{self.client.display_name}: In-Game Timers effect request failed: {exc}",
+                        script_id=self.script_id,
+                    )
+                pending.next_request_at = now + self.EFFECT_REQUEST_RETRY_SECONDS
+                changed = True
+                continue
+
+            pending.attempts += 1
+            pending.next_request_at = now + self.EFFECT_REQUEST_RETRY_SECONDS
+            success = bool(effects_result.get("success") and target_result.get("success"))
+            if success:
+                if self.last_effect_request_error:
+                    self.host.emit(
+                        "info",
+                        f"{self.client.display_name}: In-Game Timers effect requests recovered",
+                        script_id=self.script_id,
+                    )
+                    self.last_effect_request_error = ""
+                self.set_status(f"Requested {pending.spec.label}")
+            else:
+                error_key = (
+                    f"{effects_result.get('rc')}:{effects_result.get('err')}:"
+                    f"{target_result.get('rc')}:{target_result.get('err')}"
+                )
+                if error_key != self.last_effect_request_error:
+                    self.last_effect_request_error = error_key
+                    self.host.emit(
+                        "error",
+                        (
+                            f"{self.client.display_name}: In-Game Timers effect request failed "
+                            f"!effects success={effects_result.get('success')} rc={effects_result.get('rc')} "
+                            f"err={effects_result.get('err')} target success={target_result.get('success')} "
+                            f"rc={target_result.get('rc')} err={target_result.get('err')}"
+                        ),
+                        script_id=self.script_id,
+                    )
+                self.set_status(f"{pending.spec.label}: request failed")
+            changed = True
+        return changed
+
+    def _fallback_pending_spell_timer(self, pending: PendingSpellEffectQuery, now: float) -> bool:
+        spec = pending.spec
+        if spec.duration_seconds <= 0:
+            self.set_status(f"{spec.label}: effect not found")
+            return False
+
+        remaining = max(spec.duration_seconds - max(now - pending.cast_at, 0.0), 1.0)
+        self.active[f"spell:{spec.key}"] = ActiveOverlayTimer(
+            label=spec.label,
+            description=spec.effect,
+            expires_at=now + remaining,
+            duration_seconds=remaining,
+            color_rgb=spec.color_rgb,
+            disable_on_death=True,
+            disable_on_rest=True,
+            source=spec.source,
+        )
+        self.matched_count += 1
+        self.set_status(f"{spec.label}: fallback")
+        return True
+
     def _format_lines(self) -> Tuple[str, ...]:
         now = time.monotonic()
         max_timers = max(int(self.config.get("max_timers", 8)), 1)
@@ -4910,16 +5330,14 @@ class InGameTimersScript(ClientScriptBase):
 
     def _render_overlay(self, force: bool = False):
         lines = self._format_lines()
-        text = "\n".join(lines)
+        if lines:
+            text = "Timers\n" + "\n".join(lines)
+        elif self.pending_effect_queries:
+            text = "Timers\nChecking..."
+        else:
+            text = "Timers\nReady"
         now = time.monotonic()
         self.next_render_at = now + 0.50
-
-        if not text:
-            if self.last_render_text or force:
-                self._clear_overlay()
-            self.last_render_text = ""
-            self.set_status("Idle")
-            return
 
         if not force and text == self.last_render_text:
             return
@@ -4950,7 +5368,11 @@ class InGameTimersScript(ClientScriptBase):
             self.host.emit("info", f"{self.client.display_name}: In-Game Timers overlay recovered", script_id=self.script_id)
             self.last_overlay_error = ""
         self.last_render_text = text
-        self.set_status(f"{len(lines)} active")
+        pending_count = len(self.pending_effect_queries)
+        if pending_count:
+            self.set_status(f"{len(lines)} active, {pending_count} pending")
+        else:
+            self.set_status(f"{len(lines)} active")
         if not result.get("success"):
             self.set_status("Overlay failed")
 
@@ -4970,7 +5392,9 @@ class InGameTimersScript(ClientScriptBase):
     def get_state_details(self) -> dict:
         return {
             "rules": len(self.rules),
+            "spell_timers": len(self.spell_specs),
             "active": len(self.active),
+            "pending_effects": len(self.pending_effect_queries),
             "matched_count": self.matched_count,
             "cleared_count": self.cleared_count,
             "rules_dir": self._rules_dir(),
@@ -4978,6 +5402,11 @@ class InGameTimersScript(ClientScriptBase):
 
 
 class ClientScriptHost:
+    PASSWORD_PROMPT_TEXT = "you must speak your password before you can continue."
+    PASSWORD_CHAT_BLOCK_SECONDS = 5.0
+    PASSWORD_PROMPT_POLL_INTERVAL = 0.25
+    PASSWORD_PROMPT_MAX_LINES = 20
+
     def __init__(self, client, event_callback: Callable[[dict], None]):
         self.client = client
         self.event_callback = event_callback
@@ -4986,6 +5415,8 @@ class ClientScriptHost:
         self.stop_event = threading.Event()
         self.scripts: Dict[str, ClientScriptBase] = {}
         self.latest_sequence = 0
+        self.password_chat_blocked_until = 0.0
+        self.run_id = 0
 
     def emit(self, level: str, message: str, script_id: Optional[str] = None):
         self.event_callback({
@@ -5015,6 +5446,10 @@ class ClientScriptHost:
 
     def start_script(self, definition: ScriptDefinition, config: Dict[str, object]):
         with self.lock:
+            if self._chat_is_locked_out():
+                raise RuntimeError(
+                    f"{self.client.display_name} just showed a password prompt; wait a few seconds before restarting scripts."
+                )
             if definition.script_id in self.scripts:
                 raise RuntimeError(f"{definition.name} is already running for pid {self.client.pid}.")
             started_at = time.perf_counter()
@@ -5034,9 +5469,17 @@ class ClientScriptHost:
             factory_elapsed = time.perf_counter() - factory_started_at
 
             self.scripts[definition.script_id] = script
-            if self.thread is None or not self.thread.is_alive():
+            if self.thread is None or not self.thread.is_alive() or self.stop_event.is_set():
                 self.stop_event = threading.Event()
-                self.thread = threading.Thread(target=self._run, name=f"SimKeysHost-{self.client.pid}", daemon=True)
+                self.run_id += 1
+                run_id = self.run_id
+                stop_event = self.stop_event
+                self.thread = threading.Thread(
+                    target=self._run,
+                    args=(run_id, stop_event),
+                    name=f"SimKeysHost-{self.client.pid}",
+                    daemon=True,
+                )
                 self.thread.start()
             on_start_started_at = time.perf_counter()
             try:
@@ -5105,9 +5548,13 @@ class ClientScriptHost:
         return f"page {page} slot {slot}"
 
     def send_console(self, text: str):
+        if self._chat_is_locked_out():
+            raise RuntimeError("chat is locked out because the client is at the password prompt")
         return runtime.send_chat(self.client, f"##{text}", 2)
 
     def send_chat(self, text: str, mode: int = 2):
+        if self._chat_is_locked_out():
+            raise RuntimeError("chat is locked out because the client is at the password prompt")
         return runtime.send_chat(self.client, text, mode)
 
     def show_overlay_text(
@@ -5155,28 +5602,60 @@ class ClientScriptHost:
                     script_id=getattr(script, "script_id", None),
                 )
 
-    def _run(self):
+    def _is_password_prompt(self, text: str) -> bool:
+        line = hgx_combat.normalize_chat_line(text).strip().lower()
+        return line == self.PASSWORD_PROMPT_TEXT
+
+    def _chat_is_locked_out(self) -> bool:
+        return time.monotonic() < self.password_chat_blocked_until
+
+    def _stop_for_password_prompt(self, sequence: int):
+        with self.lock:
+            if self._chat_is_locked_out() and not self.scripts:
+                return
+            self.password_chat_blocked_until = time.monotonic() + self.PASSWORD_CHAT_BLOCK_SECONDS
+            scripts = list(self.scripts.values())
+            self.scripts.clear()
+            self.stop_event.set()
+
+        self.emit(
+            "error",
+            (
+                f"{self.client.display_name}: password prompt seen at seq {sequence}; "
+                f"stopped all scripts and blocked script chat sends for {self.PASSWORD_CHAT_BLOCK_SECONDS:.0f}s"
+            ),
+        )
+        for script in scripts:
+            try:
+                script.on_stop()
+            except Exception as exc:
+                self.emit(
+                    "error",
+                    f"{self.client.display_name}: {type(exc).__name__} while stopping {getattr(script, 'script_id', 'script')}: {exc}",
+                    script_id=getattr(script, "script_id", None),
+                )
+        self.notify_state_changed()
+
+    def _run(self, run_id: int, stop_event: threading.Event):
         after = 0
         initialized = False
         last_poll_error = ""
         last_slow_log_at = 0.0
         last_backlog_log_at = 0.0
         try:
-            while not self.stop_event.is_set():
+            while not stop_event.is_set():
                 with self.lock:
                     scripts = list(self.scripts.values())
                     if not scripts:
                         break
                     chat_scripts = [script for script in scripts if script.needs_chat_feed()]
 
-                if not chat_scripts:
-                    initialized = False
-                    self._tick_scripts()
-                    self.stop_event.wait(0.25)
-                    continue
-
-                poll_interval = min(script.get_poll_interval() for script in chat_scripts)
-                max_lines = max(script.get_max_lines() for script in chat_scripts)
+                if chat_scripts:
+                    poll_interval = min(script.get_poll_interval() for script in chat_scripts)
+                    max_lines = max(script.get_max_lines() for script in chat_scripts)
+                else:
+                    poll_interval = self.PASSWORD_PROMPT_POLL_INTERVAL
+                    max_lines = self.PASSWORD_PROMPT_MAX_LINES
 
                 try:
                     request_after = 0 if not initialized else after
@@ -5187,7 +5666,7 @@ class ClientScriptHost:
                     if error_text != last_poll_error:
                         self.emit("error", f"{self.client.display_name}: chat poll failed: {error_text}")
                         last_poll_error = error_text
-                    self.stop_event.wait(max(poll_interval, 0.25))
+                    stop_event.wait(max(poll_interval, 0.25))
                     continue
 
                 if last_poll_error:
@@ -5198,11 +5677,17 @@ class ClientScriptHost:
                 polled_lines = list(polled.get("lines") or [])
                 self.latest_sequence = polled_latest
                 if not initialized:
+                    for line in polled_lines:
+                        if self._is_password_prompt(line.get("text", "")):
+                            self._stop_for_password_prompt(int(line.get("seq", polled_latest) or polled_latest))
+                            break
+                    if stop_event.is_set():
+                        break
                     initialized = True
                     after = polled_latest
                     self.emit("info", f"{self.client.display_name}: host connected at seq {after}")
                     self._tick_scripts()
-                    self.stop_event.wait(poll_interval)
+                    stop_event.wait(poll_interval)
                     continue
 
                 if polled_lines:
@@ -5212,6 +5697,9 @@ class ClientScriptHost:
                         line_sequence = int(line["seq"])
                         if line_sequence > returned_latest:
                             returned_latest = line_sequence
+                        if self._is_password_prompt(line["text"]):
+                            self._stop_for_password_prompt(line_sequence)
+                            break
                         with self.lock:
                             current_scripts = [script for script in self.scripts.values() if script.needs_chat_feed()]
                         for script in current_scripts:
@@ -5265,15 +5753,19 @@ class ClientScriptHost:
                     continue
 
                 self._tick_scripts()
-                self.stop_event.wait(poll_interval)
+                stop_event.wait(poll_interval)
         except Exception as exc:
             self.emit("error", f"{self.client.display_name}: host stopped after error: {exc}")
         finally:
+            should_notify = False
             with self.lock:
-                self.scripts.clear()
-                self.thread = None
-            self.notify_state_changed()
-            self.emit("info", f"{self.client.display_name}: host disconnected")
+                if run_id == self.run_id:
+                    self.scripts.clear()
+                    self.thread = None
+                    should_notify = True
+            if should_notify:
+                self.notify_state_changed()
+                self.emit("info", f"{self.client.display_name}: host disconnected")
 
 
 class ScriptManager:
@@ -5433,17 +5925,19 @@ class ScriptManager:
         )
         self.registry[auto_rsm.script_id] = auto_rsm
 
+        default_spell_timers = _format_spell_timer_config(_load_hgx_spell_timer_specs(_default_status_rules_dir()))
         ingame_timers = ScriptDefinition(
             script_id="ingame_timers",
             name="In-Game Timers",
-            description="Display HGX-style status timers inside the NWN client from combat log/status rule matches.",
+            description="Display HGX-style status timers and self-cast spell timers inside the NWN client.",
             fields=[
                 ScriptField("position", "Pos", "choice", "TR", choices=["TL", "T", "TR", "CL", "C", "CR", "BL", "B", "BR", "A"], width=5),
                 ScriptField("offset_x", "X", "int", 0, minimum=-2000, maximum=2000, step=1, width=6),
-                ScriptField("offset_y", "Y", "int", 80, minimum=-2000, maximum=2000, step=1, width=6),
+                ScriptField("offset_y", "Y", "int", 0, minimum=-2000, maximum=2000, step=1, width=6),
                 ScriptField("font_size", "Font", "int", 16, minimum=8, maximum=72, step=1, width=5),
                 ScriptField("color", "Color", "choice", "White", choices=["White", "Green", "Yellow", "Red", "Cyan", "Blue", "Orange"], width=8),
                 ScriptField("max_timers", "Max", "int", 8, minimum=1, maximum=32, step=1, width=5),
+                ScriptField("spell_timers", "Spells", "text", default_spell_timers, width=72),
                 ScriptField("rules_dir", "Rules", "text", "", width=36),
                 ScriptField("poll_interval", "Poll", "float", 0.20, minimum=0.05, maximum=2.0, step=0.05, width=6),
                 ScriptField("max_lines", "Batch", "int", 80, minimum=1, maximum=500, step=1, width=5),
