@@ -190,6 +190,13 @@ def _timer_color_rgb(value, default: int = 0xFFFFFF) -> int:
         return default
 
 
+OVERLAY_LINE_COLOR_MARKER = "\x1f"
+
+
+def _overlay_line_color_prefix(color_rgb: int) -> str:
+    return f"{OVERLAY_LINE_COLOR_MARKER}{int(color_rgb) & 0xFFFFFF:06X};"
+
+
 def _build_var_timer_regex(rule: str) -> Pattern:
     counter = {"minutes": 0, "seconds": 0}
 
@@ -4980,6 +4987,10 @@ class InGameTimersScript(ClientScriptBase):
     script_id = "ingame_timers"
     OVERLAY_ID = 7100
     LIMBO_SOURCE = "limbo"
+    LIMBO_NORMAL_COLOR = 0xFFFFFF
+    LIMBO_WARNING_COLOR = 0xFFFF66
+    LIMBO_DANGER_COLOR = 0xFF6666
+    LIMBO_RECOVERED_COLOR = 0x808080
     EFFECT_REQUEST_DELAY_SECONDS = 0.50
     EFFECT_REQUEST_RETRY_SECONDS = 5.0
     EFFECT_REQUEST_TIMEOUT_SECONDS = 14.0
@@ -5548,6 +5559,15 @@ class InGameTimersScript(ClientScriptBase):
         self.set_status(f"{timer.label}: recovered")
         return True
 
+    def _limbo_line_color(self, timer: ActiveOverlayTimer, remaining: float) -> int:
+        if timer.state == "recovered":
+            return self.LIMBO_RECOVERED_COLOR
+        if remaining <= 30.0:
+            return self.LIMBO_DANGER_COLOR
+        if remaining <= 60.0:
+            return self.LIMBO_WARNING_COLOR
+        return self.LIMBO_NORMAL_COLOR
+
     def _format_lines(self) -> Tuple[str, ...]:
         now = time.monotonic()
         max_timers = max(int(self.config.get("max_timers", 8)), 1)
@@ -5557,7 +5577,8 @@ class InGameTimersScript(ClientScriptBase):
             remaining = timer.expires_at - now
             if timer.source == self.LIMBO_SOURCE:
                 state = "safe" if timer.state == "recovered" else "limbo"
-                lines.append(f"{timer.label} {state} {_format_remaining(remaining)}")
+                line = f"{timer.label} {state} {_format_remaining(remaining)}"
+                lines.append(f"{_overlay_line_color_prefix(self._limbo_line_color(timer, remaining))}{line}")
             else:
                 lines.append(f"{timer.label} {_format_remaining(remaining)}")
         return tuple(lines)

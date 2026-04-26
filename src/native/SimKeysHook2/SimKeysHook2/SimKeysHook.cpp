@@ -77,6 +77,9 @@ constexpr int kMaxOverlays = 32;
 constexpr int kOverlayTextCapacity = 4096;
 constexpr int kOverlayMaxDimension = 1024;
 constexpr int kOverlayTextPadding = 6;
+constexpr char kOverlayLineColorMarker = '\x1F';
+constexpr int kOverlayLineColorMarkerLength = 8;
+constexpr int kOverlayMaxParsedLines = 128;
 constexpr UINT kGlCullFace = 0x0B44;
 constexpr UINT kGlDepthTest = 0x0B71;
 constexpr UINT kGlTexture2D = 0x0DE1;
@@ -1453,6 +1456,115 @@ BOOL ClearAllOverlays() {
   return TRUE;
 }
 
+struct ParsedOverlayLine {
+  int start;
+  int length;
+  uint32_t color_rgb;
+};
+
+int HexDigitValue(char value) {
+  if (value >= '0' && value <= '9') {
+    return value - '0';
+  }
+  if (value >= 'a' && value <= 'f') {
+    return 10 + (value - 'a');
+  }
+  if (value >= 'A' && value <= 'F') {
+    return 10 + (value - 'A');
+  }
+  return -1;
+}
+
+bool TryParseOverlayLineColor(const char* text, uint32_t* out_color) {
+  if (text == nullptr || out_color == nullptr || text[0] != kOverlayLineColorMarker) {
+    return false;
+  }
+
+  uint32_t color = 0;
+  for (int index = 0; index < 6; ++index) {
+    const int digit = HexDigitValue(text[index + 1]);
+    if (digit < 0) {
+      return false;
+    }
+    color = (color << 4) | static_cast<uint32_t>(digit);
+  }
+
+  if (text[7] != ';') {
+    return false;
+  }
+
+  *out_color = color & 0xFFFFFFu;
+  return true;
+}
+
+int ParseOverlayLines(
+    const char* text,
+    uint32_t default_color_rgb,
+    char* visible_text,
+    int visible_capacity,
+    ParsedOverlayLine* lines,
+    int line_capacity) {
+  if (visible_text == nullptr || visible_capacity <= 0 || lines == nullptr || line_capacity <= 0) {
+    return 0;
+  }
+
+  visible_text[0] = '\0';
+  if (text == nullptr) {
+    text = "";
+  }
+
+  int src = 0;
+  int dst = 0;
+  int line_count = 0;
+  while (text[src] != '\0' && line_count < line_capacity) {
+    uint32_t line_color = default_color_rgb & 0xFFFFFFu;
+    uint32_t parsed_color = 0;
+    if (TryParseOverlayLineColor(text + src, &parsed_color)) {
+      line_color = parsed_color;
+      src += kOverlayLineColorMarkerLength;
+    }
+
+    const int line_start = dst;
+    while (text[src] != '\0' && text[src] != '\r' && text[src] != '\n') {
+      if (dst < visible_capacity - 1) {
+        visible_text[dst++] = text[src];
+      }
+      ++src;
+    }
+
+    lines[line_count].start = line_start;
+    lines[line_count].length = dst - line_start;
+    lines[line_count].color_rgb = line_color;
+    ++line_count;
+
+    bool consumed_newline = false;
+    if (text[src] == '\r') {
+      consumed_newline = true;
+      ++src;
+      if (text[src] == '\n') {
+        ++src;
+      }
+    } else if (text[src] == '\n') {
+      consumed_newline = true;
+      ++src;
+    }
+
+    if (consumed_newline && text[src] != '\0' && dst < visible_capacity - 1) {
+      visible_text[dst++] = '\n';
+    }
+  }
+
+  if (line_count == 0) {
+    lines[0].start = 0;
+    lines[0].length = 0;
+    lines[0].color_rgb = default_color_rgb & 0xFFFFFFu;
+    line_count = 1;
+  }
+
+  visible_text[dst < visible_capacity ? dst : visible_capacity - 1] = '\0';
+  return line_count;
+}
+
 BOOL RenderTextOverlay(
     int32_t id,
     int32_t position,
@@ -1499,8 +1611,17 @@ BOOL RenderTextOverlay(
   }
 
   HGDIOBJ old_font = SelectObject(dc, font);
+  char visible_text[kOverlayTextCapacity] = {};
+  ParsedOverlayLine parsed_lines[kOverlayMaxParsedLines] = {};
+  const int parsed_line_count = ParseOverlayLines(
+      text,
+      color_rgb,
+      visible_text,
+      kOverlayTextCapacity,
+      parsed_lines,
+      kOverlayMaxParsedLines);
   RECT measure = {0, 0, kOverlayMaxDimension - (kOverlayTextPadding * 2), 0};
-  DrawTextA(dc, text, -1, &measure, DT_CALCRECT | DT_LEFT | DT_NOPREFIX);
+  DrawTextA(dc, visible_text, -1, &measure, DT_CALCRECT | DT_LEFT | DT_NOPREFIX);
 
   int width = (measure.right - measure.left) + (kOverlayTextPadding * 2);
   int height = (measure.bottom - measure.top) + (kOverlayTextPadding * 2);
@@ -1559,9 +1680,34 @@ BOOL RenderTextOverlay(
   DeleteObject(border_pen);
 
   SetBkMode(dc, TRANSPARENT);
-  SetTextColor(dc, RGB((color_rgb >> 16) & 0xFF, (color_rgb >> 8) & 0xFF, color_rgb & 0xFF));
-  RECT text_rect = {kOverlayTextPadding, kOverlayTextPadding, width - kOverlayTextPadding, height - kOverlayTextPadding};
-  DrawTextA(dc, text, -1, &text_rect, DT_LEFT | DT_NOPREFIX);
+  TEXTMETRICA text_metrics = {};
+  GetTextMetricsA(dc, &text_metrics);
+  int line_height = text_metrics.tmHeight + text_metrics.tmExternalLeading;
+  if (line_height <= 0) {
+    line_height = font_size + 4;
+  }
+  int line_top = kOverlayTextPadding;
+  for (int line_index = 0; line_index < parsed_line_count; ++line_index) {
+    const ParsedOverlayLine& line = parsed_lines[line_index];
+    const uint32_t line_color = line.color_rgb & 0xFFFFFFu;
+    SetTextColor(dc, RGB((line_color >> 16) & 0xFF, (line_color >> 8) & 0xFF, line_color & 0xFF));
+
+    RECT line_rect = {
+        kOverlayTextPadding,
+        line_top,
+        width - kOverlayTextPadding,
+        line_top + line_height
+    };
+
+    const int end = line.start + line.length;
+    if (line.start >= 0 && end >= line.start && end < kOverlayTextCapacity) {
+      const char saved = visible_text[end];
+      visible_text[end] = '\0';
+      DrawTextA(dc, visible_text + line.start, -1, &line_rect, DT_LEFT | DT_NOPREFIX | DT_SINGLELINE | DT_END_ELLIPSIS);
+      visible_text[end] = saved;
+    }
+    line_top += line_height;
+  }
   GdiFlush();
 
   BYTE* pixel = static_cast<BYTE*>(bits);
