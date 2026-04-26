@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional, Pattern, Set, Tuple
 
 from . import simKeys_Client as simkeys
+from . import simkeys_damage_meter as damage_meter
 from . import simkeys_hgx_combat as hgx_combat
 from . import simkeys_hgx_data as hgx_data
 from . import simkeys_runtime as runtime
@@ -74,12 +75,19 @@ def _build_quickbar_slot_choices() -> List[str]:
     return values
 
 
+def _build_base_quickbar_slot_choices() -> List[str]:
+    values = [WEAPON_SLOT_NONE]
+    values.extend(f"F{slot}" for slot in range(1, 13))
+    return values
+
+
 def _normalize_creature_name_key(text: str) -> str:
     cleaned = str(text or "").strip().lower().replace("'", "").replace("’", "")
     return re.sub(r"[^a-z0-9]+", " ", cleaned).strip()
 
 
 WEAPON_SLOT_CHOICES = _build_quickbar_slot_choices()
+WEAPON_BASE_SLOT_CHOICES = _build_base_quickbar_slot_choices()
 WEAPON_CURRENT_CHOICES = [WEAPON_CURRENT_UNKNOWN, *WEAPON_BINDING_KEYS]
 
 
@@ -241,6 +249,15 @@ AVERTED_DEATH_LINE_RE = re.compile(
     r"^(?P<player>.+?)\s+(?P<action>respawn|averts death)\s+:\s+(?P<method>.+?)\s+:\s+\*success\*\s*$",
     re.IGNORECASE,
 )
+SHIFTER_SHIFT_LINE_RE = re.compile(
+    r"^(?P<actor>.+?)\s+(?:shapeshifts|shifts into .+? form)\.\s*$",
+    re.IGNORECASE,
+)
+SHIFTER_ESSENCE_LINE_RE = re.compile(
+    r"^You have (?P<current>\d+)\s*/\s*(?P<maximum>\d+) essence points remaining\.\s*$",
+    re.IGNORECASE,
+)
+PLAYER_HIDE_LINE_RE = re.compile(r"^Acquired Item:\s*Player Hide\s*$", re.IGNORECASE)
 SPELL_EFFECT_ALIASES = {
     "storm of vengeance": "Divine Power",
 }
@@ -349,6 +366,173 @@ class ActiveOverlayTimer:
     disable_on_rest: bool
     source: str
     state: str = ""
+
+
+@dataclass(frozen=True)
+class ChatLineEvent:
+    sequence: int
+    raw_text: str
+    normalized: str
+    kinds: Tuple[str, ...]
+    attack: object = None
+    damage: object = None
+    weapon_feedback: str = ""
+    aa_feedback_type: Optional[int] = None
+    gi_feedback_type: Optional[int] = None
+    breach: object = None
+    target_blind: bool = False
+    spell_cast: object = None
+    effect_timer: object = None
+    shifter_shift_actor: str = ""
+    shifter_essence_current: int = 0
+    shifter_essence_maximum: int = 0
+    player_hide: bool = False
+    averted_death_player: str = ""
+    kill_killer: str = ""
+    kill_victim: str = ""
+    overlay_script_id: str = ""
+    password_prompt: bool = False
+
+    def has_kind(self, kind: str) -> bool:
+        return str(kind or "") in self.kinds
+
+
+def parse_chat_line_event(sequence: int, text: str, password_prompt_text: str = "") -> ChatLineEvent:
+    raw_text = str(text or "")
+    normalized = hgx_combat.normalize_chat_line(raw_text)
+    kinds: Set[str] = set()
+
+    attack = None
+    damage = None
+    weapon_feedback = ""
+    aa_feedback_type = None
+    gi_feedback_type = None
+    breach = None
+    target_blind = False
+    spell_cast = None
+    effect_timer = None
+    shifter_shift_actor = ""
+    shifter_essence_current = 0
+    shifter_essence_maximum = 0
+    player_hide = False
+    averted_death_player = ""
+    kill_killer = ""
+    kill_victim = ""
+    overlay_script_id = ""
+    password_prompt = False
+
+    lowered = normalized.lower()
+    if raw_text.startswith(OVERLAY_TOGGLE_EVENT_PREFIX):
+        overlay_script_id = raw_text[len(OVERLAY_TOGGLE_EVENT_PREFIX):].strip()
+        kinds.add("overlay")
+
+    if password_prompt_text and lowered == password_prompt_text.strip().lower():
+        password_prompt = True
+        kinds.add("password_prompt")
+
+    if " attacks " in lowered:
+        attack = hgx_combat.parse_attack_line(raw_text)
+        if attack is not None:
+            kinds.add("attack")
+
+    if " damages " in lowered:
+        kinds.add("damage_candidate")
+        if "(" in normalized and ")" in normalized:
+            damage = hgx_combat.parse_damage_line(raw_text)
+            if damage is not None:
+                kinds.add("damage")
+
+    if "equipped" in lowered or "weapon" in lowered:
+        weapon_feedback = hgx_combat.parse_weapon_swap_feedback(raw_text)
+        if weapon_feedback:
+            kinds.add("weapon_feedback")
+
+    if "bow set to" in lowered or "divine bullets set to" in lowered:
+        aa_feedback_type = hgx_combat.parse_damage_feedback_type(raw_text)
+        if aa_feedback_type is not None:
+            kinds.add("aa_feedback")
+
+    if "you are now using" in lowered:
+        gi_feedback_type = hgx_combat.parse_gi_feedback_type(raw_text)
+        if gi_feedback_type is not None:
+            kinds.add("gi_feedback")
+
+    if "breach" in lowered:
+        breach = hgx_combat.parse_breach_line(raw_text)
+        if breach is not None:
+            kinds.add("breach")
+
+    if "(target blind)" in lowered:
+        target_blind = hgx_combat.has_target_blind_marker(raw_text)
+        if target_blind:
+            kinds.add("target_blind")
+
+    spell_cast = SPELL_CAST_LINE_RE.match(normalized)
+    if spell_cast is not None:
+        kinds.add("spell_cast")
+
+    effect_timer = EFFECT_TIMER_LINE_RE.match(normalized)
+    if effect_timer is not None:
+        kinds.add("effect_timer")
+
+    if PLAYER_HIDE_LINE_RE.match(normalized):
+        player_hide = True
+        kinds.add("player_hide")
+        kinds.add("shifter_state")
+
+    shifter_essence = SHIFTER_ESSENCE_LINE_RE.match(normalized)
+    if shifter_essence is not None:
+        shifter_essence_current = int(shifter_essence.group("current") or "0")
+        shifter_essence_maximum = int(shifter_essence.group("maximum") or "0")
+        kinds.add("shifter_state")
+
+    shifter_shift = SHIFTER_SHIFT_LINE_RE.match(normalized)
+    if shifter_shift is not None:
+        shifter_shift_actor = hgx_combat.normalize_actor_name(shifter_shift.group("actor"))
+        kinds.add("shifter_state")
+
+    averted = AVERTED_DEATH_LINE_RE.match(normalized)
+    if averted is not None:
+        averted_death_player = hgx_combat.normalize_actor_name(averted.group("player"))
+        kinds.add("averted_death")
+        kinds.add("death")
+
+    marker = " killed "
+    marker_at = lowered.find(marker)
+    if marker_at > 0 and not normalized.startswith("You have the following accomplishments"):
+        kill_killer = hgx_combat.normalize_actor_name(normalized[:marker_at])
+        kill_victim = hgx_combat.normalize_actor_name(normalized[marker_at + len(marker):])
+        if kill_killer and kill_victim:
+            kinds.add("kill")
+            kinds.add("death")
+
+    if ":" in normalized:
+        kinds.add("speech")
+
+    return ChatLineEvent(
+        sequence=int(sequence),
+        raw_text=raw_text,
+        normalized=normalized,
+        kinds=tuple(sorted(kinds)),
+        attack=attack,
+        damage=damage,
+        weapon_feedback=weapon_feedback,
+        aa_feedback_type=aa_feedback_type,
+        gi_feedback_type=gi_feedback_type,
+        breach=breach,
+        target_blind=target_blind,
+        spell_cast=spell_cast,
+        effect_timer=effect_timer,
+        shifter_shift_actor=shifter_shift_actor,
+        shifter_essence_current=shifter_essence_current,
+        shifter_essence_maximum=shifter_essence_maximum,
+        player_hide=player_hide,
+        averted_death_player=averted_death_player,
+        kill_killer=kill_killer,
+        kill_victim=kill_victim,
+        overlay_script_id=overlay_script_id,
+        password_prompt=password_prompt,
+    )
 
 
 def _load_hgx_spell_timer_specs(source_dir: str) -> Tuple[SpellTimerSpec, ...]:
@@ -741,8 +925,20 @@ class ClientScriptBase:
     def on_chat_line(self, sequence: int, text: str):
         raise NotImplementedError
 
+    def on_chat_event(self, event: ChatLineEvent):
+        self.on_chat_line(event.sequence, event.raw_text)
+
     def needs_chat_feed(self) -> bool:
         return True
+
+    def chat_event_types(self) -> Tuple[str, ...]:
+        return ("raw",)
+
+    def wants_chat_event(self, event: ChatLineEvent) -> bool:
+        event_types = tuple(self.chat_event_types() or ())
+        if "raw" in event_types:
+            return True
+        return bool(set(event_types).intersection(event.kinds))
 
     def get_poll_interval(self) -> float:
         return max(float(self.config.get("poll_interval", 0.20)), 0.01)
@@ -1086,6 +1282,17 @@ class StopHittingScript(ClientScriptBase):
         self.interrupt_generation += 1
         self.host.emit("info", f"{self.client.display_name}: Stop Hitting stopped", script_id=self.script_id)
 
+    def chat_event_types(self) -> Tuple[str, ...]:
+        return ("damage",)
+
+    def on_chat_event(self, event: ChatLineEvent):
+        if not self.should_process(event.sequence) or not self.enabled:
+            return
+        damage_line = event.damage
+        if damage_line is None:
+            return
+        self._handle_damage_line(damage_line)
+
     def on_chat_line(self, sequence: int, text: str):
         if not self.should_process(sequence) or not self.enabled:
             return
@@ -1095,7 +1302,9 @@ class StopHittingScript(ClientScriptBase):
         damage_line = hgx_combat.parse_damage_line(text)
         if damage_line is None:
             return
+        self._handle_damage_line(damage_line)
 
+    def _handle_damage_line(self, damage_line):
         character_name = self._character_name()
         if not character_name:
             self.set_status("Waiting for character name")
@@ -1268,6 +1477,7 @@ class AutoAAScript(ClientScriptBase):
     MODE_DIVINE_SLINGER = "Divine Slinger"
     MODE_GNOMISH_INVENTOR = "Gnomish Inventor"
     MODE_WEAPON_SWAP = "Weapon Swap"
+    MODE_SHIFTER_WEAPON_SWAP = "Shifter Weapon Swap"
     MAX_WEAPON_BINDINGS = len(WEAPON_BINDING_KEYS)
     WEAPON_SIGNATURE_CONFIRM_THRESHOLD = 2
     WEAPON_LEARNING_ATTACKS_BEFORE_ROTATE = 3
@@ -1275,6 +1485,10 @@ class AutoAAScript(ClientScriptBase):
     WEAPON_ACTUAL_DAMAGE_WINDOW = 9
     WEAPON_PENDING_MAX_RETRIES = 2
     WEAPON_EQUIPPED_PROBE_INTERVAL_SECONDS = 0.50
+    SHIFTER_UNSHIFT_WAIT_SECONDS = 1.50
+    SHIFTER_WEAPON_CONFIRM_RETRY_SECONDS = 2.00
+    SHIFTER_SHIFT_FIRST_RETRY_SECONDS = 2.00
+    SHIFTER_SHIFT_RETRY_SECONDS = 1.00
     SLINGER_PENDING_SECONDS = 9.0
     SLINGER_STATE_TTL_SECONDS = 45.0
     SMALL_FETCH_TARGETS = {
@@ -1338,6 +1552,27 @@ class AutoAAScript(ClientScriptBase):
         self.weapon_last_ignored_attack_actor = ""
         self.weapon_last_ignored_damage_actor = ""
         self.weapon_pending_attack_results: List[PendingWeaponAttackResult] = []
+        self.shifter_shift_choice = WEAPON_SLOT_NONE
+        self.shifter_shift_page = 0
+        self.shifter_shift_slot = 0
+        self.shifter_shift_state = "unknown"
+        self.shifter_swap_stage = ""
+        self.shifter_sequence_started_at = 0.0
+        self.shifter_pending_target = ""
+        self.shifter_pending_reason = ""
+        self.shifter_pending_unarm = False
+        self.shifter_pending_source_key = ""
+        self.shifter_unshift_deadline_at = 0.0
+        self.shifter_next_weapon_retry_at = 0.0
+        self.shifter_next_shift_attempt_at = 0.0
+        self.shifter_shift_attempts = 0
+        self.shifter_last_shift_line = ""
+        self.shifter_last_essence_line = ""
+        self.shifter_last_player_hide_at = 0.0
+        self.shifter_last_shift_at = 0.0
+        self.shifter_resume_pending = False
+        self.shifter_lock_sent = False
+        self.shifter_last_error = ""
         self.db = hgx_data.load_default_database()
 
     def on_start(self):
@@ -1384,6 +1619,7 @@ class AutoAAScript(ClientScriptBase):
         self.weapon_last_ignored_attack_actor = ""
         self.weapon_last_ignored_damage_actor = ""
         self.weapon_pending_attack_results = []
+        self._reset_shifter_runtime(clear_observed=True)
 
         if self._is_weapon_mode():
             self._initialize_weapon_mode()
@@ -1447,22 +1683,55 @@ class AutoAAScript(ClientScriptBase):
         self.weapon_equipped_probe_error_logged = False
         self.weapon_unarmed_observations = 0
         self.weapon_pending_attack_results = []
+        self._reset_shifter_runtime(clear_observed=True)
         self.canister_stop.set()
         self.host.emit("info", f"{self.host.client.display_name}: {self._mode_label()} stopped", script_id=self.script_id)
 
+    def on_tick(self):
+        if self.enabled and self._is_shifter_weapon_mode():
+            self._tick_shifter_sequence()
+
+    def chat_event_types(self) -> Tuple[str, ...]:
+        return (
+            "aa_feedback",
+            "attack",
+            "averted_death",
+            "breach",
+            "damage",
+            "damage_candidate",
+            "death",
+            "gi_feedback",
+            "kill",
+            "player_hide",
+            "shifter_state",
+            "target_blind",
+            "weapon_feedback",
+        )
+
     def on_chat_line(self, sequence: int, text: str):
+        self.on_chat_event(parse_chat_line_event(sequence, text))
+
+    def on_chat_event(self, event: ChatLineEvent):
+        sequence = int(event.sequence)
         if not self.should_process(sequence) or not self.enabled:
             return
-        self.current_chat_sequence = int(sequence)
+        self.current_chat_sequence = sequence
 
         if self._is_weapon_mode():
-            self._observe_weapon_swap_feedback(text)
-            self._observe_weapon_damage_line(text)
+            if self._is_shifter_weapon_mode():
+                self._observe_shifter_event(event)
+            if event.weapon_feedback:
+                self._handle_weapon_swap_feedback(event.weapon_feedback)
+            if event.damage is not None:
+                self._observe_weapon_damage_event(event.damage)
+            elif event.has_kind("damage_candidate"):
+                self.weapon_damage_parse_miss_count += 1
+                self.host.notify_state_changed()
 
         if self._mode_label() == self.MODE_DIVINE_SLINGER:
-            self._observe_slinger_line(text)
+            self._observe_slinger_event(event)
 
-        feedback_type = self._parse_feedback_type(text)
+        feedback_type = self._parse_feedback_type_from_event(event)
         if feedback_type is not None:
             self.current_damage_type = feedback_type
             if self._mode_label() == self.MODE_DIVINE_SLINGER:
@@ -1471,10 +1740,13 @@ class AutoAAScript(ClientScriptBase):
             self.set_status(f"Current {selection_name}")
             return
 
-        attack = hgx_combat.parse_attack_line(text)
+        attack = event.attack
         if attack is None:
             return
 
+        self._handle_attack_event(attack)
+
+    def _handle_attack_event(self, attack):
         if self._is_weapon_mode():
             self.weapon_attack_seen_count += 1
 
@@ -1572,6 +1844,53 @@ class AutoAAScript(ClientScriptBase):
             return cached_name
         return ""
 
+    def _actor_compare_keys(self, value: object) -> Set[str]:
+        text = hgx_combat.normalize_actor_name(str(value or "")).lower()
+        text = re.sub(r"\s+", " ", text).strip()
+        if not text:
+            return set()
+        keys = {text}
+        without_suffix = re.sub(r"\s*\[[^\]]+\]\s*$", "", text).strip()
+        if without_suffix:
+            keys.add(without_suffix)
+        return keys
+
+    def _actor_is_self(self, actor_name: object) -> bool:
+        actor_keys = self._actor_compare_keys(actor_name)
+        if not actor_keys:
+            return False
+        own_keys: Set[str] = set()
+        for value in (
+            self._character_name(),
+            getattr(self.client, "character_name", ""),
+            getattr(self.host.client, "character_name", ""),
+            getattr(self.client, "display_name", ""),
+            getattr(self.host.client, "display_name", ""),
+        ):
+            own_keys.update(self._actor_compare_keys(value))
+        return bool(actor_keys.intersection(own_keys))
+
+    def _reset_shifter_runtime(self, clear_observed: bool = False):
+        self.shifter_swap_stage = ""
+        self.shifter_sequence_started_at = 0.0
+        self.shifter_pending_target = ""
+        self.shifter_pending_reason = ""
+        self.shifter_pending_unarm = False
+        self.shifter_pending_source_key = ""
+        self.shifter_unshift_deadline_at = 0.0
+        self.shifter_next_weapon_retry_at = 0.0
+        self.shifter_next_shift_attempt_at = 0.0
+        self.shifter_shift_attempts = 0
+        self.shifter_resume_pending = False
+        self.shifter_lock_sent = False
+        self.shifter_last_error = ""
+        if clear_observed:
+            self.shifter_shift_state = "unknown"
+            self.shifter_last_shift_line = ""
+            self.shifter_last_essence_line = ""
+            self.shifter_last_player_hide_at = 0.0
+            self.shifter_last_shift_at = 0.0
+
     def _mode_label(self) -> str:
         mode = str(self.config.get("mode", self.MODE_ARCANE_ARCHER)).strip()
         if mode in (
@@ -1580,12 +1899,16 @@ class AutoAAScript(ClientScriptBase):
             self.MODE_DIVINE_SLINGER,
             self.MODE_GNOMISH_INVENTOR,
             self.MODE_WEAPON_SWAP,
+            self.MODE_SHIFTER_WEAPON_SWAP,
         ):
             return mode
         return self.MODE_ARCANE_ARCHER
 
     def _is_weapon_mode(self) -> bool:
-        return self._mode_label() == self.MODE_WEAPON_SWAP
+        return self._mode_label() in (self.MODE_WEAPON_SWAP, self.MODE_SHIFTER_WEAPON_SWAP)
+
+    def _is_shifter_weapon_mode(self) -> bool:
+        return self._mode_label() == self.MODE_SHIFTER_WEAPON_SWAP
 
     def _weapon_binding_keys(self) -> Tuple[str, ...]:
         if not self._is_weapon_mode():
@@ -1606,6 +1929,11 @@ class AutoAAScript(ClientScriptBase):
             parsed = _parse_quickbar_slot_choice(choice)
             if parsed is None:
                 raise RuntimeError(f"{binding_key} uses an invalid quickbar selector: {choice}")
+            if parsed[0] != 0:
+                raise RuntimeError(
+                    f"{binding_key} uses {choice}, but weapon swap slots must be on the base F1-F12 quickbar. "
+                    "Move the weapon to a base slot and update Auto Damage."
+                )
             if choice in used_choices:
                 raise RuntimeError(f"{binding_key} duplicates {used_choices[choice]} ({choice}).")
 
@@ -1633,6 +1961,17 @@ class AutoAAScript(ClientScriptBase):
         }
         self.current_weapon_key = current_weapon_key
 
+        self.shifter_shift_choice = WEAPON_SLOT_NONE
+        self.shifter_shift_page = 0
+        self.shifter_shift_slot = 0
+        if self._is_shifter_weapon_mode():
+            shift_choice = str(self.config.get("shift_slot", WEAPON_SLOT_NONE)).strip() or WEAPON_SLOT_NONE
+            parsed_shift_slot = _parse_quickbar_slot_choice(shift_choice)
+            if parsed_shift_slot is None:
+                raise RuntimeError(f"{self.MODE_SHIFTER_WEAPON_SWAP} requires a shift ability quickbar slot.")
+            self.shifter_shift_choice = shift_choice
+            self.shifter_shift_page, self.shifter_shift_slot = parsed_shift_slot
+
         if len(bindings) < self.MAX_WEAPON_BINDINGS:
             self.host.emit(
                 "info",
@@ -1652,6 +1991,372 @@ class AutoAAScript(ClientScriptBase):
         if binding is None:
             return str(binding_key or WEAPON_CURRENT_UNKNOWN)
         return f"{binding.key}/{binding.label}"
+
+    def _shifter_shift_display(self) -> str:
+        if not self.shifter_shift_slot:
+            return WEAPON_SLOT_NONE
+        return self.host.format_slot(self.shifter_shift_page, self.shifter_shift_slot)
+
+    def _mark_shifter_unshifted(self, reason: str):
+        now = time.monotonic()
+        previous = self.shifter_shift_state
+        self.shifter_shift_state = "unshifted"
+        if "Player Hide" in reason:
+            self.shifter_last_player_hide_at = now
+        if previous != "unshifted":
+            self.host.emit(
+                "info",
+                f"{self.host.client.display_name}: {self._mode_label()} saw unshifted state ({reason})",
+                script_id=self.script_id,
+            )
+        self.host.notify_state_changed()
+
+    def _mark_shifter_shifted(self, reason: str):
+        now = time.monotonic()
+        previous = self.shifter_shift_state
+        self.shifter_shift_state = "shifted"
+        self.shifter_last_shift_at = now
+        if previous != "shifted":
+            self.host.emit(
+                "info",
+                f"{self.host.client.display_name}: {self._mode_label()} saw shifted state ({reason})",
+                script_id=self.script_id,
+            )
+        if self.shifter_swap_stage == "reshifting":
+            self._finish_shifter_sequence("shift confirmed")
+        else:
+            self.host.notify_state_changed()
+
+    def _observe_shifter_state_line(self, text: str):
+        self._observe_shifter_event(parse_chat_line_event(self.current_chat_sequence, text))
+
+    def _observe_shifter_event(self, event: ChatLineEvent):
+        if not event.normalized:
+            return
+
+        if event.player_hide:
+            self._mark_shifter_unshifted("Player Hide")
+            return
+
+        if event.shifter_essence_maximum > 0:
+            self.shifter_last_essence_line = event.normalized
+            self._mark_shifter_shifted(event.normalized)
+            return
+
+        if event.shifter_shift_actor and self._actor_is_self(event.shifter_shift_actor):
+            self.shifter_last_shift_line = event.normalized
+            self._mark_shifter_shifted(event.normalized)
+            return
+
+        if event.averted_death_player and self._actor_is_self(event.averted_death_player):
+            self._mark_shifter_unshifted("death averted")
+            return
+
+        if event.kill_victim and self._actor_is_self(event.kill_victim):
+            self._mark_shifter_unshifted("death")
+
+    def _shifter_send_lock(self):
+        if self.shifter_lock_sent or not bool(self.config.get("shifter_lock_target", True)):
+            return
+        try:
+            result = self.host.send_chat("!lock opponent", 2)
+            if not result.get("success"):
+                self.host.emit(
+                    "error",
+                    (
+                        f"{self.host.client.display_name}: {self._mode_label()} !lock opponent failed "
+                        f"rc={result.get('rc')} err={result.get('err')}"
+                    ),
+                    script_id=self.script_id,
+                )
+            else:
+                self.shifter_lock_sent = True
+        except Exception as exc:
+            self.host.emit(
+                "error",
+                f"{self.host.client.display_name}: {self._mode_label()} !lock opponent failed: {exc}",
+                script_id=self.script_id,
+            )
+
+    def _shifter_send_resume_attack(self):
+        if not self.shifter_resume_pending or not bool(self.config.get("shifter_resume_attack", True)):
+            self.shifter_resume_pending = False
+            return
+        self.shifter_resume_pending = False
+        try:
+            result = self.host.send_chat("!action attack locked", 2)
+            if not result.get("success"):
+                self.host.emit(
+                    "error",
+                    (
+                        f"{self.host.client.display_name}: {self._mode_label()} !action attack locked failed "
+                        f"rc={result.get('rc')} err={result.get('err')}"
+                    ),
+                    script_id=self.script_id,
+                )
+        except Exception as exc:
+            self.host.emit(
+                "error",
+                f"{self.host.client.display_name}: {self._mode_label()} !action attack locked failed: {exc}",
+                script_id=self.script_id,
+            )
+
+    def _begin_shifter_sequence(self, binding: WeaponBinding, target_name: str, reason: str, unarm: bool = False) -> bool:
+        if self.shifter_swap_stage:
+            self.set_status(f"{target_name}: shifter busy {self.shifter_swap_stage}")
+            self.host.notify_state_changed()
+            return True
+
+        self.shifter_pending_source_key = binding.key
+        self.shifter_pending_target = str(target_name or "").strip()
+        self.shifter_pending_reason = str(reason or "").strip()
+        self.shifter_pending_unarm = bool(unarm)
+        self.shifter_sequence_started_at = time.monotonic()
+        self.shifter_resume_pending = True
+        self.shifter_lock_sent = False
+        self.shifter_last_error = ""
+        self._shifter_send_lock()
+
+        if self.shifter_shift_state == "unshifted":
+            return self._trigger_shifter_weapon_slot("already unshifted")
+
+        try:
+            result = self.host.send_chat("!cancel poly", 2)
+        except Exception as exc:
+            self.shifter_last_error = str(exc)
+            self._reset_shifter_runtime(clear_observed=False)
+            self.set_status(f"{target_name}: unshift failed")
+            self.host.emit(
+                "error",
+                f"{self.host.client.display_name}: {self._mode_label()} !cancel poly failed: {exc}",
+                script_id=self.script_id,
+            )
+            return False
+
+        if not result.get("success"):
+            self.shifter_last_error = f"rc={result.get('rc')} err={result.get('err')}"
+            self._reset_shifter_runtime(clear_observed=False)
+            self.set_status(f"{target_name}: unshift failed")
+            self.host.emit(
+                "error",
+                (
+                    f"{self.host.client.display_name}: {self._mode_label()} !cancel poly failed "
+                    f"rc={result.get('rc')} err={result.get('err')}"
+                ),
+                script_id=self.script_id,
+            )
+            return False
+
+        self.shifter_swap_stage = "unshifting"
+        self.shifter_unshift_deadline_at = time.monotonic() + self.SHIFTER_UNSHIFT_WAIT_SECONDS
+        action = "unarm" if unarm else self._binding_display(binding.key)
+        self.set_status(f"{target_name}: unshifting for {reason} {action}")
+        self.host.emit(
+            "info",
+            (
+                f"{self.host.client.display_name}: {self._mode_label()} locked target and sent !cancel poly "
+                f"for '{target_name}' reason={reason} weapon={action}"
+            ),
+            script_id=self.script_id,
+        )
+        self.host.notify_state_changed()
+        return True
+
+    def _trigger_shifter_weapon_slot(self, reason: str, preserve_retry_count: bool = False) -> bool:
+        binding = self.weapon_bindings.get(self.shifter_pending_source_key)
+        target_name = self.shifter_pending_target or "target"
+        if binding is None:
+            self.set_status(f"{target_name}: shifter weapon source missing")
+            self._begin_shifter_reshift("weapon source missing")
+            return False
+
+        try:
+            result = self.host.trigger_slot(binding.slot, page=binding.page)
+        except Exception as exc:
+            self.shifter_last_error = str(exc)
+            self.set_status(f"{target_name}: shifter swap failed")
+            self.host.emit(
+                "error",
+                f"{self.host.client.display_name}: {self._mode_label()} trigger failed for {self._binding_display(binding.key)}: {exc}",
+                script_id=self.script_id,
+            )
+            self._begin_shifter_reshift("weapon trigger failed")
+            return False
+
+        if not result.get("success"):
+            self.shifter_last_error = f"rc={result.get('rc')} err={result.get('err')}"
+            self.set_status(f"{target_name}: shifter swap failed")
+            self.host.emit(
+                "error",
+                (
+                    f"{self.host.client.display_name}: {self._mode_label()} trigger failed for "
+                    f"{self._binding_display(binding.key)} rc={result.get('rc')} aux={result.get('aux_rc')} "
+                    f"path={result.get('path')} err={result.get('err')}"
+                ),
+                script_id=self.script_id,
+            )
+            self._begin_shifter_reshift("weapon trigger failed")
+            return False
+
+        now = time.monotonic()
+        self.pending_weapon_key = binding.key
+        self.pending_weapon_unarm = bool(self.shifter_pending_unarm)
+        self.pending_weapon_ready_at = now + self._weapon_swap_cooldown_seconds()
+        self.pending_weapon_requested_at = now
+        self.pending_weapon_retry_count = self.pending_weapon_retry_count if preserve_retry_count else 0
+        self.pending_weapon_request_sequence = self.current_chat_sequence
+        self.pending_weapon_feedback_seen = False
+        self.pending_weapon_equipped_feedback_seen = False
+        self.pending_weapon_feedback_sequence = 0
+        self.pending_weapon_conceal_seen = False
+        self.pending_weapon_conceal_sequence = 0
+        self.pending_weapon_ignored_damage_count = 0
+        self.weapon_equipped_key = ""
+        self.weapon_equipped_keys = ()
+        self.weapon_equipped_probe_at = 0.0
+        self.shifter_swap_stage = "weapon_pending"
+        self.shifter_next_weapon_retry_at = now + self.SHIFTER_WEAPON_CONFIRM_RETRY_SECONDS
+
+        pending_display = self._pending_weapon_display()
+        self.set_status(f"{target_name}: {self.shifter_pending_reason} {pending_display}; re-shift pending")
+        self.host.emit(
+            "info",
+            (
+                f"{self.host.client.display_name}: {self._mode_label()} triggered {pending_display} "
+                f"after unshift ({reason}) success={result.get('success')} rc={result.get('rc')} "
+                f"aux={result.get('aux_rc')} path={result.get('path')} err={result.get('err')}"
+            ),
+            script_id=self.script_id,
+        )
+        self.host.notify_state_changed()
+        return True
+
+    def _confirm_shifter_weapon_ready(self, reason: str) -> bool:
+        if self.shifter_swap_stage != "weapon_pending" or not self.pending_weapon_key:
+            return False
+        pending_display = self._pending_weapon_display()
+        if not self._confirm_pending_weapon(reason):
+            return False
+        self.host.emit(
+            "info",
+            f"{self.host.client.display_name}: {self._mode_label()} confirmed {pending_display}; shifting back",
+            script_id=self.script_id,
+        )
+        self._begin_shifter_reshift(reason)
+        return True
+
+    def _begin_shifter_reshift(self, reason: str):
+        self.shifter_swap_stage = "reshifting"
+        self.shifter_shift_attempts = 0
+        self.shifter_next_shift_attempt_at = 0.0
+        self._trigger_shifter_shift(reason)
+
+    def _trigger_shifter_shift(self, reason: str) -> bool:
+        target_name = self.shifter_pending_target or "target"
+        if not self.shifter_shift_slot:
+            self.shifter_last_error = "no shift slot configured"
+            self.set_status(f"{target_name}: no shifter slot")
+            self.host.notify_state_changed()
+            return False
+
+        try:
+            result = self.host.trigger_slot(self.shifter_shift_slot, page=self.shifter_shift_page)
+        except Exception as exc:
+            self.shifter_last_error = str(exc)
+            result = {"success": False, "rc": 0, "aux_rc": 0, "path": 0, "err": str(exc)}
+
+        now = time.monotonic()
+        self.shifter_shift_attempts += 1
+        first_retry = self.SHIFTER_SHIFT_FIRST_RETRY_SECONDS
+        retry = self.SHIFTER_SHIFT_RETRY_SECONDS
+        self.shifter_next_shift_attempt_at = now + (first_retry if self.shifter_shift_attempts == 1 else retry)
+
+        if result.get("success"):
+            self.set_status(
+                f"{target_name}: shifting back via {self._shifter_shift_display()} "
+                f"(try {self.shifter_shift_attempts})"
+            )
+        else:
+            self.shifter_last_error = f"rc={result.get('rc')} err={result.get('err')}"
+            self.set_status(
+                f"{target_name}: shift retry pending via {self._shifter_shift_display()} "
+                f"(try {self.shifter_shift_attempts})"
+            )
+            self.host.emit(
+                "error",
+                (
+                    f"{self.host.client.display_name}: {self._mode_label()} shift trigger failed "
+                    f"slot={self._shifter_shift_display()} rc={result.get('rc')} aux={result.get('aux_rc')} "
+                    f"path={result.get('path')} err={result.get('err')}"
+                ),
+                script_id=self.script_id,
+            )
+        self.host.notify_state_changed()
+        return bool(result.get("success"))
+
+    def _finish_shifter_sequence(self, reason: str):
+        target_name = self.shifter_pending_target or "target"
+        self._shifter_send_resume_attack()
+        self._reset_shifter_runtime(clear_observed=False)
+        self.set_status(f"{target_name}: shifted; attack resumed")
+        self.host.emit(
+            "info",
+            f"{self.host.client.display_name}: {self._mode_label()} finished ({reason}) and resumed locked target",
+            script_id=self.script_id,
+        )
+        self.host.notify_state_changed()
+
+    def _tick_shifter_sequence(self):
+        if not self._is_shifter_weapon_mode() or not self.shifter_swap_stage:
+            return
+
+        now = time.monotonic()
+        if self.shifter_swap_stage == "unshifting":
+            if self.shifter_shift_state == "unshifted" or now >= self.shifter_unshift_deadline_at:
+                reason = "Player Hide" if self.shifter_shift_state == "unshifted" else "unshift wait elapsed"
+                self._trigger_shifter_weapon_slot(reason)
+            return
+
+        if self.shifter_swap_stage == "weapon_pending":
+            if self.pending_weapon_key:
+                matches = self._query_equipped_binding_keys(force=True)
+                if self.pending_weapon_unarm:
+                    if self.weapon_equipped_probe_at > 0.0 and self.pending_weapon_key not in matches:
+                        self._confirm_shifter_weapon_ready("equipped mask shows unarmed")
+                        return
+                elif self.pending_weapon_key in matches:
+                    self._confirm_shifter_weapon_ready("equipped quickbar mask")
+                    return
+
+                if now >= self.shifter_next_weapon_retry_at and self.pending_weapon_retry_count < self.WEAPON_PENDING_MAX_RETRIES:
+                    binding = self.weapon_bindings.get(self.pending_weapon_key)
+                    if binding is not None:
+                        self.pending_weapon_retry_count += 1
+                        self.shifter_next_weapon_retry_at = now + self.SHIFTER_WEAPON_CONFIRM_RETRY_SECONDS
+                        self.host.emit(
+                            "info",
+                            (
+                                f"{self.host.client.display_name}: {self._mode_label()} retrying "
+                                f"{self._pending_weapon_display()} before re-shift "
+                                f"({self.pending_weapon_retry_count}/{self.WEAPON_PENDING_MAX_RETRIES})"
+                            ),
+                            script_id=self.script_id,
+                        )
+                        self._trigger_shifter_weapon_slot("weapon confirmation retry", preserve_retry_count=True)
+                        return
+
+                self.set_status(f"{self.shifter_pending_target}: waiting for {self._pending_weapon_display()} before re-shift")
+                return
+
+            self._begin_shifter_reshift("weapon pending cleared")
+            return
+
+        if self.shifter_swap_stage == "reshifting":
+            if self.shifter_shift_state == "shifted":
+                self._finish_shifter_sequence("already shifted")
+                return
+            if now >= self.shifter_next_shift_attempt_at:
+                self._trigger_shifter_shift("retry")
 
     def _clear_pending_weapon_state(self):
         self.pending_weapon_key = ""
@@ -1768,6 +2473,9 @@ class AutoAAScript(ClientScriptBase):
         self.host.notify_state_changed()
         return matches
 
+    def _shifter_equipped_mask_is_authoritative(self) -> bool:
+        return not (self._is_shifter_weapon_mode() and self.shifter_shift_state == "shifted")
+
     def _set_current_weapon_from_equipped_key(self, binding_key: str, reason: str) -> bool:
         if binding_key not in self.weapon_profiles:
             return False
@@ -1793,6 +2501,8 @@ class AutoAAScript(ClientScriptBase):
     def _reconcile_current_weapon_from_equipped_mask(self, force: bool = False) -> str:
         if self.pending_weapon_key or self.weapon_external_unknown:
             return ""
+        if not self._shifter_equipped_mask_is_authoritative():
+            return ""
 
         matches = self._query_equipped_binding_keys(force=force)
         if len(matches) != 1:
@@ -1804,6 +2514,8 @@ class AutoAAScript(ClientScriptBase):
 
     def _equipped_mask_confirms_binding(self, binding_key: str, force: bool = False) -> Optional[bool]:
         matches = self._query_equipped_binding_keys(force=force)
+        if not self._shifter_equipped_mask_is_authoritative():
+            return True if binding_key in matches else None
         if matches:
             return binding_key in matches
         if self.weapon_equipped_probe_at > 0.0 and not self.weapon_equipped_probe_error:
@@ -1860,6 +2572,9 @@ class AutoAAScript(ClientScriptBase):
                 continue
             if tuple(profile.stable_signature) == signature:
                 return profile
+
+        if self._is_shifter_weapon_mode():
+            return None
 
         dynamic_matches = [
             profile
@@ -2029,6 +2744,8 @@ class AutoAAScript(ClientScriptBase):
         return tuple(sorted((elemental[0][1], elemental[1][1], exotic[0][1])))
 
     def _profile_requires_p2_verification(self, profile: Optional[WeaponLearningProfile]) -> bool:
+        if self._is_shifter_weapon_mode():
+            return False
         if profile is None or self._profile_is_p2(profile):
             return False
         signature = tuple(profile.stable_signature)
@@ -2262,6 +2979,8 @@ class AutoAAScript(ClientScriptBase):
     def _special_weapon_name_for_profile(self, profile: Optional[WeaponLearningProfile]) -> str:
         if self._profile_is_p2(profile):
             return P2_SPECIAL_NAME
+        if self._is_shifter_weapon_mode():
+            return ""
         if self._is_mammon_wrath_profile(profile):
             return "Mammon's Wrath"
         return ""
@@ -2414,6 +3133,12 @@ class AutoAAScript(ClientScriptBase):
     def _weapon_swap_min_gain_percent(self) -> float:
         return max(float(self.config.get("min_swap_gain_percent", 6.0)), 0.0)
 
+    def _shifter_swap_min_gain_percent(self) -> float:
+        return max(float(self.config.get("shifter_min_swap_gain_percent", 300.0)), 0.0)
+
+    def _shifter_healing_only(self) -> bool:
+        return _parse_bool(self.config.get("shifter_healing_only", False), False)
+
     def _pending_weapon_retry_seconds(self) -> float:
         return max(self._weapon_swap_cooldown_seconds() * 2.0, 12.0)
 
@@ -2515,7 +3240,9 @@ class AutoAAScript(ClientScriptBase):
         feedback = hgx_combat.parse_weapon_swap_feedback(text)
         if not feedback:
             return
+        self._handle_weapon_swap_feedback(feedback)
 
+    def _handle_weapon_swap_feedback(self, feedback: str):
         self.weapon_last_swap_feedback = feedback
         if not self.pending_weapon_key:
             self._mark_external_weapon_unknown(feedback)
@@ -2533,6 +3260,9 @@ class AutoAAScript(ClientScriptBase):
             self.pending_weapon_equipped_feedback_seen = bool(self.pending_weapon_key) or self.pending_weapon_equipped_feedback_seen
             if self.pending_weapon_key:
                 self.pending_weapon_feedback_sequence = self.current_chat_sequence
+            if self._is_shifter_weapon_mode() and self.shifter_swap_stage == "weapon_pending":
+                self._confirm_shifter_weapon_ready("weapon equipped feedback")
+                return
             if self.pending_weapon_key:
                 if time.monotonic() >= self.pending_weapon_ready_at:
                     self.set_status(f"awaiting {self._pending_weapon_display()} damage")
@@ -2874,6 +3604,8 @@ class AutoAAScript(ClientScriptBase):
         profile: WeaponLearningProfile,
         observed_types: Set[int],
     ) -> bool:
+        if self._is_shifter_weapon_mode():
+            return False
         signature = self._damage_signature(observed_types)
         if not signature:
             return False
@@ -2885,6 +3617,8 @@ class AutoAAScript(ClientScriptBase):
         return self._is_p2_signature(stable_signature) and self._is_p2_signature(signature)
 
     def _update_profile_dynamic_kind(self, profile: WeaponLearningProfile) -> bool:
+        if self._is_shifter_weapon_mode():
+            return False
         if self._profile_is_p2(profile):
             return False
         distinct_p2_signatures = [
@@ -3077,8 +3811,11 @@ class AutoAAScript(ClientScriptBase):
         damage_line = hgx_combat.parse_damage_line(text)
         if damage_line is None:
             return
+        self._observe_weapon_damage_event(damage_line, counted_candidate=True)
 
-        self.weapon_damage_parse_miss_count = max(self.weapon_damage_parse_miss_count - 1, 0)
+    def _observe_weapon_damage_event(self, damage_line, counted_candidate: bool = False):
+        if counted_candidate:
+            self.weapon_damage_parse_miss_count = max(self.weapon_damage_parse_miss_count - 1, 0)
         self.weapon_damage_seen_count += 1
         character_name = self._character_name()
         character_key = hgx_combat.normalize_actor_name(character_name).lower() if character_name else ""
@@ -3515,6 +4252,9 @@ class AutoAAScript(ClientScriptBase):
         )
 
     def _request_weapon_swap(self, binding: WeaponBinding, target_name: str, reason: str) -> bool:
+        if self._is_shifter_weapon_mode():
+            return self._request_shifter_weapon_swap(binding, target_name, reason)
+
         equipped_keys = self._query_equipped_binding_keys(force=True)
         if binding.key in equipped_keys:
             self._cancel_pending_weapon(f"{self._binding_display(binding.key)} is already equipped")
@@ -3603,6 +4343,9 @@ class AutoAAScript(ClientScriptBase):
             self.host.notify_state_changed()
             return False
 
+        if self._is_shifter_weapon_mode():
+            return self._begin_shifter_sequence(binding, target_name, reason, unarm=True)
+
         try:
             result = self.host.trigger_slot(binding.slot, page=binding.page)
         except Exception as exc:
@@ -3677,6 +4420,16 @@ class AutoAAScript(ClientScriptBase):
             )
         return ", ".join(parts) if parts else "Unknown"
 
+    def _request_shifter_weapon_swap(self, binding: WeaponBinding, target_name: str, reason: str) -> bool:
+        equipped_keys = self._query_equipped_binding_keys(force=True)
+        if binding.key in equipped_keys:
+            self._cancel_pending_weapon(f"{self._binding_display(binding.key)} is already equipped")
+            self._set_current_weapon_from_equipped_key(binding.key, "already equipped before shifter swap")
+            self.set_status(f"{target_name}: already using {self._binding_display(binding.key)}")
+            self.host.notify_state_changed()
+            return True
+        return self._begin_shifter_sequence(binding, target_name, reason, unarm=False)
+
     def _target_stat_entries(self, values: Tuple[int, ...], include_values: bool = True) -> List[dict]:
         entries = []
         for damage_type, value in enumerate(values):
@@ -3724,16 +4477,54 @@ class AutoAAScript(ClientScriptBase):
             "resistance": self._target_stat_entries(profile.resistance),
             "healing": self._target_stat_entries(profile.healing, include_values=False),
         })
-        if self._is_mammons_tear_target(profile.matched_name):
+        if (not self._is_shifter_weapon_mode()) and self._is_mammons_tear_target(profile.matched_name):
             analysis["special_target_rule"] = "Mammon's Wrath is the only allowed weapon for this target."
 
         candidates = self._weapon_candidates_for_target(target_name)
         safe_candidates = [candidate for candidate in candidates if not candidate.healing_types]
-        protected_target = self._is_mammons_tear_target(profile.matched_name)
+        protected_target = (not self._is_shifter_weapon_mode()) and self._is_mammons_tear_target(profile.matched_name)
         recommendation = None
         best_candidate = None
         current_candidate = None
-        if protected_target:
+        if self._is_shifter_weapon_mode():
+            current_candidate = self._current_weapon_candidate(candidates)
+            if current_candidate is None:
+                analysis["special_target_rule"] = "Shifter mode is holding because the current weapon is unknown."
+            elif not safe_candidates:
+                analysis["special_target_rule"] = "Current shifter weapon heals this target and no configured weapon is safe."
+            else:
+                best_candidate = self._choose_best_weapon(safe_candidates)
+                if current_candidate.healing_types:
+                    recommendation = best_candidate
+                    analysis["special_target_rule"] = "Current shifter weapon heals this target; swapping is allowed."
+                elif self._shifter_healing_only():
+                    recommendation = current_candidate
+                    best_candidate = current_candidate
+                    analysis["special_target_rule"] = "Shifter mode is set to only swap for healing targets."
+                elif best_candidate is None or best_candidate.binding.key == current_candidate.binding.key:
+                    recommendation = current_candidate
+                    analysis["special_target_rule"] = (
+                        f"Shifter mode holds unless a safe alternate exceeds +{self._shifter_swap_min_gain_percent():.1f}%."
+                    )
+                else:
+                    gain_percent = self._weapon_swap_gain_percent(current_candidate, best_candidate)
+                    threshold = self._shifter_swap_min_gain_percent()
+                    if gain_percent is not None and gain_percent >= threshold:
+                        recommendation = best_candidate
+                        analysis["special_target_rule"] = (
+                            f"Safe alternate exceeds shifter threshold (+{gain_percent:.1f}% >= {threshold:.1f}%)."
+                        )
+                    else:
+                        recommendation = current_candidate
+                        if gain_percent is None:
+                            analysis["special_target_rule"] = (
+                                f"Shifter mode holds unless a safe alternate exceeds +{threshold:.1f}%."
+                            )
+                        else:
+                            analysis["special_target_rule"] = (
+                                f"Shifter mode holding: best alternate is +{gain_percent:.1f}% under the +{threshold:.1f}% threshold."
+                            )
+        elif protected_target:
             recommendation, best_candidate, current_candidate = self._recommend_weapon_for_target(
                 safe_candidates,
                 protected_target=True,
@@ -3892,8 +4683,9 @@ class AutoAAScript(ClientScriptBase):
             self.set_status(self._weapon_learning_status(attack.defender))
             return
 
+        current_any_candidate = self._current_weapon_candidate(candidates)
         safe_candidates = [candidate for candidate in candidates if not candidate.healing_types]
-        protected_target = self._is_mammons_tear_target(attack.defender)
+        protected_target = (not self._is_shifter_weapon_mode()) and self._is_mammons_tear_target(attack.defender)
         if protected_target:
             recommendation, best_candidate, current_candidate = self._recommend_weapon_for_target(
                 safe_candidates,
@@ -3906,6 +4698,47 @@ class AutoAAScript(ClientScriptBase):
             recommendation = None
             best_candidate = None
             current_candidate = None
+
+        if self._is_shifter_weapon_mode():
+            if current_any_candidate is None:
+                self.set_status(f"{attack.defender}: current weapon unknown; shifter hold")
+                self.host.notify_state_changed()
+                return
+            if not current_any_candidate.healing_types:
+                if self._shifter_healing_only():
+                    summary = self._weapon_recommendation_summary(current_any_candidate)
+                    self.set_status(
+                        f"{attack.defender}: keep {self._binding_display(current_any_candidate.binding.key)} "
+                        f"{summary} (healing-only)"
+                    )
+                    self.host.notify_state_changed()
+                    return
+
+                best_candidate = self._choose_best_weapon(safe_candidates)
+                if best_candidate is None or best_candidate.binding.key == current_any_candidate.binding.key:
+                    summary = self._weapon_recommendation_summary(current_any_candidate)
+                    self.set_status(f"{attack.defender}: keep {self._binding_display(current_any_candidate.binding.key)} {summary}")
+                    self.host.notify_state_changed()
+                    return
+
+                gain_percent = self._weapon_swap_gain_percent(current_any_candidate, best_candidate)
+                threshold = self._shifter_swap_min_gain_percent()
+                if gain_percent is None or gain_percent < threshold:
+                    if gain_percent is None:
+                        self.set_status(
+                            f"{attack.defender}: keep {self._binding_display(current_any_candidate.binding.key)} "
+                            f"(shifter threshold {threshold:.1f}%)"
+                        )
+                    else:
+                        self.set_status(
+                            f"{attack.defender}: keep {self._binding_display(current_any_candidate.binding.key)} "
+                            f"(+{gain_percent:.1f}% < {threshold:.1f}%)"
+                        )
+                    self.host.notify_state_changed()
+                    return
+
+                recommendation = best_candidate
+                current_candidate = current_any_candidate
 
         if not safe_candidates:
             unsafe_candidate = self._choose_best_weapon(candidates)
@@ -4042,6 +4875,14 @@ class AutoAAScript(ClientScriptBase):
             "unarmed_observations": self.weapon_unarmed_observations,
             "pending_conceal_seen": self.pending_weapon_conceal_seen,
             "pending_ignored_damage": self.pending_weapon_ignored_damage_count,
+            "shifter_mode": self._is_shifter_weapon_mode(),
+            "shifter_state": self.shifter_shift_state,
+            "shifter_stage": self.shifter_swap_stage,
+            "shifter_shift_slot": self._shifter_shift_display(),
+            "shifter_shift_attempts": self.shifter_shift_attempts,
+            "shifter_last_shift": self.shifter_last_shift_line,
+            "shifter_last_essence": self.shifter_last_essence_line,
+            "shifter_last_error": self.shifter_last_error,
             "combat": {
                 "attack_seen": self.weapon_attack_seen_count,
                 "attack_matched": self.weapon_attack_matched_count,
@@ -4067,6 +4908,16 @@ class AutoAAScript(ClientScriptBase):
         if self._mode_label() == self.MODE_GNOMISH_INVENTOR:
             return hgx_combat.parse_gi_feedback_type(text)
         feedback_type = hgx_combat.parse_damage_feedback_type(text)
+        if self._mode_label() == self.MODE_DIVINE_SLINGER and feedback_type == 12:
+            return None
+        return feedback_type
+
+    def _parse_feedback_type_from_event(self, event: ChatLineEvent) -> Optional[int]:
+        if self._is_weapon_mode():
+            return None
+        if self._mode_label() == self.MODE_GNOMISH_INVENTOR:
+            return event.gi_feedback_type
+        feedback_type = event.aa_feedback_type
         if self._mode_label() == self.MODE_DIVINE_SLINGER and feedback_type == 12:
             return None
         return feedback_type
@@ -4147,11 +4998,14 @@ class AutoAAScript(ClientScriptBase):
         return max(float(self.config.get("canister_cooldown_seconds", 6.1)), 0.1)
 
     def _observe_slinger_line(self, text: str):
+        self._observe_slinger_event(parse_chat_line_event(self.current_chat_sequence, text))
+
+    def _observe_slinger_event(self, event: ChatLineEvent):
         now = time.monotonic()
         self._cleanup_slinger_states(now)
         self._refresh_slinger_state_timeouts(now)
 
-        breach = hgx_combat.parse_breach_line(text)
+        breach = event.breach
         if breach is not None:
             state = self._get_slinger_state(breach.target)
             state.last_seen_at = now
@@ -4165,10 +5019,10 @@ class AutoAAScript(ClientScriptBase):
                         f"{self.host.client.display_name}: Divine Slinger breach confirmed "
                         f"target='{breach.target}' effect='{breach.effect}'"
                     ),
-                    script_id=self.script_id,
-                )
+                        script_id=self.script_id,
+                    )
 
-        if self.current_secondary_mode == "blind" and hgx_combat.has_target_blind_marker(text):
+        if self.current_secondary_mode == "blind" and event.target_blind:
             target_name = (self.current_target or "").strip()
             if target_name:
                 state = self._get_slinger_state(target_name)
@@ -4867,6 +5721,17 @@ class AutoCombatModeScript(ClientScriptBase):
         self._close_process_handle()
         self.host.emit("info", f"{self.host.client.display_name}: Auto Combat Mode stopped", script_id=self.script_id)
 
+    def chat_event_types(self) -> Tuple[str, ...]:
+        return ("attack",)
+
+    def on_chat_event(self, event: ChatLineEvent):
+        if not self.should_process(event.sequence) or not self.enabled:
+            return
+        attack = event.attack
+        if attack is None:
+            return
+        self._handle_attack_event(attack)
+
     def on_chat_line(self, sequence: int, text: str):
         if not self.should_process(sequence) or not self.enabled:
             return
@@ -4874,7 +5739,9 @@ class AutoCombatModeScript(ClientScriptBase):
         attack = hgx_combat.parse_attack_line(text)
         if attack is None:
             return
+        self._handle_attack_event(attack)
 
+    def _handle_attack_event(self, attack):
         character_name = self._character_name()
         if not character_name:
             self.set_status("Waiting for character name")
@@ -5739,6 +6606,8 @@ class ClientScriptHost:
     PASSWORD_CHAT_BLOCK_SECONDS = 5.0
     PASSWORD_PROMPT_POLL_INTERVAL = 0.25
     PASSWORD_PROMPT_MAX_LINES = 20
+    DAMAGE_METER_POLL_INTERVAL = 0.10
+    DAMAGE_METER_MAX_LINES = 200
 
     def __init__(self, client, event_callback: Callable[[dict], None]):
         self.client = client
@@ -5753,6 +6622,9 @@ class ClientScriptHost:
         self.overlay_controls_enabled = False
         self.overlay_controls_dirty = False
         self.last_overlay_controls_text = ""
+        self.last_slow_event_log_at = 0.0
+        self.damage_meter_recorder = damage_meter.DamageMeterRecorder(self.client.pid)
+        self.last_damage_meter_error = ""
 
     def emit(self, level: str, message: str, script_id: Optional[str] = None):
         self.event_callback({
@@ -5999,6 +6871,68 @@ class ClientScriptHost:
                 )
         self._render_overlay_controls()
 
+    def _parse_chat_event(self, sequence: int, text: str) -> ChatLineEvent:
+        return parse_chat_line_event(sequence, text, password_prompt_text=self.PASSWORD_PROMPT_TEXT)
+
+    def _record_damage_meter_event(self, event: ChatLineEvent):
+        try:
+            self.damage_meter_recorder.record_event(event.sequence, event.raw_text, self.client.display_name)
+            self.last_damage_meter_error = ""
+        except Exception as exc:
+            error_text = str(exc)
+            if error_text != self.last_damage_meter_error:
+                self.last_damage_meter_error = error_text
+                self.emit("error", f"{self.client.display_name}: damage meter log write failed: {error_text}")
+
+    def _dispatch_chat_event(self, event: ChatLineEvent):
+        with self.lock:
+            current_scripts = [
+                script
+                for script in self.scripts.values()
+                if script.needs_chat_feed() and script.wants_chat_event(event)
+            ]
+        for script in current_scripts:
+            line_started_at = time.perf_counter()
+            try:
+                script.on_chat_event(event)
+            except Exception as exc:
+                script.set_status(f"Error: {exc}")
+                self.emit(
+                    "error",
+                    f"{self.client.display_name}: {type(exc).__name__}: {exc}",
+                    script_id=getattr(script, "script_id", None),
+                )
+            finally:
+                line_elapsed = time.perf_counter() - line_started_at
+                now_perf = time.perf_counter()
+                if line_elapsed > 0.50 and now_perf - self.last_slow_event_log_at > 10.0:
+                    self.last_slow_event_log_at = now_perf
+                    self.emit(
+                        "error",
+                        (
+                            f"{self.client.display_name}: slow {getattr(script, 'script_id', 'script')} "
+                            f"chat event handler took {line_elapsed:.2f}s at seq {event.sequence}"
+                        ),
+                        script_id=getattr(script, "script_id", None),
+                    )
+
+    def _process_chat_event(self, event: ChatLineEvent, dispatch: bool = True) -> bool:
+        if event.overlay_script_id:
+            self.event_callback({
+                "type": "overlay-script-toggle",
+                "client_pid": self.client.pid,
+                "client_name": self.client.display_name,
+                "script_id": event.overlay_script_id,
+                "sequence": event.sequence,
+            })
+            return False
+        if event.password_prompt:
+            self._stop_for_password_prompt(event.sequence)
+            return True
+        if dispatch:
+            self._dispatch_chat_event(event)
+        return False
+
     def _is_password_prompt(self, text: str) -> bool:
         line = hgx_combat.normalize_chat_line(text).strip().lower()
         return line == self.PASSWORD_PROMPT_TEXT
@@ -6065,11 +6999,17 @@ class ClientScriptHost:
                     chat_scripts = [script for script in scripts if script.needs_chat_feed()]
 
                 if chat_scripts:
-                    poll_interval = min(script.get_poll_interval() for script in chat_scripts)
-                    max_lines = max(script.get_max_lines() for script in chat_scripts)
+                    poll_interval = min(
+                        self.DAMAGE_METER_POLL_INTERVAL,
+                        *(script.get_poll_interval() for script in chat_scripts),
+                    )
+                    max_lines = max(
+                        self.DAMAGE_METER_MAX_LINES,
+                        *(script.get_max_lines() for script in chat_scripts),
+                    )
                 else:
-                    poll_interval = self.PASSWORD_PROMPT_POLL_INTERVAL
-                    max_lines = self.PASSWORD_PROMPT_MAX_LINES
+                    poll_interval = min(self.PASSWORD_PROMPT_POLL_INTERVAL, self.DAMAGE_METER_POLL_INTERVAL)
+                    max_lines = max(self.PASSWORD_PROMPT_MAX_LINES, self.DAMAGE_METER_MAX_LINES)
 
                 try:
                     request_after = 0 if not initialized else after
@@ -6092,10 +7032,9 @@ class ClientScriptHost:
                 self.latest_sequence = polled_latest
                 if not initialized:
                     for line in polled_lines:
-                        if self._handle_overlay_event(int(line.get("seq", polled_latest) or polled_latest), line.get("text", "")):
-                            continue
-                        if self._is_password_prompt(line.get("text", "")):
-                            self._stop_for_password_prompt(int(line.get("seq", polled_latest) or polled_latest))
+                        line_sequence = int(line.get("seq", polled_latest) or polled_latest)
+                        event = self._parse_chat_event(line_sequence, line.get("text", ""))
+                        if self._process_chat_event(event, dispatch=False):
                             break
                     if stop_event.is_set():
                         break
@@ -6113,37 +7052,10 @@ class ClientScriptHost:
                         line_sequence = int(line["seq"])
                         if line_sequence > returned_latest:
                             returned_latest = line_sequence
-                        if self._handle_overlay_event(line_sequence, line["text"]):
-                            continue
-                        if self._is_password_prompt(line["text"]):
-                            self._stop_for_password_prompt(line_sequence)
+                        event = self._parse_chat_event(line_sequence, line["text"])
+                        self._record_damage_meter_event(event)
+                        if self._process_chat_event(event, dispatch=True):
                             break
-                        with self.lock:
-                            current_scripts = [script for script in self.scripts.values() if script.needs_chat_feed()]
-                        for script in current_scripts:
-                            line_started_at = time.perf_counter()
-                            try:
-                                script.on_chat_line(line["seq"], line["text"])
-                            except Exception as exc:
-                                script.set_status(f"Error: {exc}")
-                                self.emit(
-                                    "error",
-                                    f"{self.client.display_name}: {type(exc).__name__}: {exc}",
-                                    script_id=getattr(script, "script_id", None),
-                                )
-                            finally:
-                                line_elapsed = time.perf_counter() - line_started_at
-                                now_perf = time.perf_counter()
-                                if line_elapsed > 0.50 and now_perf - last_slow_log_at > 10.0:
-                                    last_slow_log_at = now_perf
-                                    self.emit(
-                                        "error",
-                                        (
-                                            f"{self.client.display_name}: slow {getattr(script, 'script_id', 'script')} "
-                                            f"chat handler took {line_elapsed:.2f}s at seq {line_sequence}"
-                                        ),
-                                        script_id=getattr(script, "script_id", None),
-                                    )
                     after = returned_latest
                     batch_elapsed = time.perf_counter() - batch_started_at
                     if batch_elapsed > 1.0 and time.perf_counter() - last_slow_log_at > 10.0:
@@ -6181,6 +7093,7 @@ class ClientScriptHost:
                     self.scripts.clear()
                     self.thread = None
                     should_notify = True
+            self.damage_meter_recorder.close()
             if should_notify:
                 self.notify_state_changed()
                 self.emit("info", f"{self.client.display_name}: host disconnected")
@@ -6248,18 +7161,22 @@ class ScriptManager:
                         AutoAAScript.MODE_DIVINE_SLINGER,
                         AutoAAScript.MODE_GNOMISH_INVENTOR,
                         AutoAAScript.MODE_WEAPON_SWAP,
+                        AutoAAScript.MODE_SHIFTER_WEAPON_SWAP,
                     ],
-                    width=16,
+                    width=20,
                 ),
                 ScriptField("current_weapon", "Cur", "choice", WEAPON_CURRENT_UNKNOWN, choices=WEAPON_CURRENT_CHOICES, width=8),
-                ScriptField("weapon_slot_1", "W1", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
-                ScriptField("weapon_slot_2", "W2", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
-                ScriptField("weapon_slot_3", "W3", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
-                ScriptField("weapon_slot_4", "W4", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
-                ScriptField("weapon_slot_5", "W5", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
-                ScriptField("weapon_slot_6", "W6", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
+                ScriptField("weapon_slot_1", "W1", "choice", WEAPON_SLOT_NONE, choices=WEAPON_BASE_SLOT_CHOICES, width=6),
+                ScriptField("weapon_slot_2", "W2", "choice", WEAPON_SLOT_NONE, choices=WEAPON_BASE_SLOT_CHOICES, width=6),
+                ScriptField("weapon_slot_3", "W3", "choice", WEAPON_SLOT_NONE, choices=WEAPON_BASE_SLOT_CHOICES, width=6),
+                ScriptField("weapon_slot_4", "W4", "choice", WEAPON_SLOT_NONE, choices=WEAPON_BASE_SLOT_CHOICES, width=6),
+                ScriptField("weapon_slot_5", "W5", "choice", WEAPON_SLOT_NONE, choices=WEAPON_BASE_SLOT_CHOICES, width=6),
+                ScriptField("weapon_slot_6", "W6", "choice", WEAPON_SLOT_NONE, choices=WEAPON_BASE_SLOT_CHOICES, width=6),
+                ScriptField("shift_slot", "Shift", "choice", WEAPON_SLOT_NONE, choices=WEAPON_SLOT_CHOICES, width=6),
                 ScriptField("swap_cooldown_seconds", "Swap", "float", 6.2, minimum=0.1, maximum=20.0, step=0.1, width=6),
                 ScriptField("min_swap_gain_percent", "Gain %", "float", 6.0, minimum=0.0, maximum=100.0, step=0.5, width=6),
+                ScriptField("shifter_min_swap_gain_percent", "Shift Gain %", "float", 300.0, minimum=0.0, maximum=10000.0, step=10.0, width=7),
+                ScriptField("shifter_healing_only", "Heal Only", "bool", False),
                 ScriptField("elemental_dice", "Dice", "int", 10, minimum=1, maximum=30, step=1, width=5),
                 ScriptField("auto_canister", "Canister", "bool", True),
                 ScriptField("canister_cooldown_seconds", "Can CD", "float", 6.1, minimum=0.1, maximum=30.0, step=0.1, width=6),

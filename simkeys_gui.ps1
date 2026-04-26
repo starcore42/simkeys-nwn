@@ -7,6 +7,56 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Test-IsAdministrator {
+  $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+  $principal = New-Object Security.Principal.WindowsPrincipal $identity
+  return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function Quote-ProcessArgument {
+  param([AllowEmptyString()][string]$Value)
+
+  if ($null -eq $Value) {
+    return '""'
+  }
+
+  $escaped = $Value.Replace('`', '``').Replace('"', '`"')
+  return '"' + $escaped + '"'
+}
+
+function Start-SelfElevated {
+  $arguments = @(
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    (Quote-ProcessArgument -Value $PSCommandPath)
+  )
+
+  if (-not [string]::IsNullOrWhiteSpace($PythonExe)) {
+    $arguments += @("-PythonExe", (Quote-ProcessArgument -Value $PythonExe))
+  }
+
+  if (-not [string]::IsNullOrWhiteSpace($InjectPython)) {
+    $arguments += @("-InjectPython", (Quote-ProcessArgument -Value $InjectPython))
+  }
+
+  foreach ($arg in @($GuiArgs)) {
+    $arguments += (Quote-ProcessArgument -Value $arg)
+  }
+
+  Write-Host "SimKeys GUI needs administrator access to interact with elevated NWN clients. Requesting elevation..." -ForegroundColor Yellow
+  Start-Process -FilePath "powershell.exe" `
+    -Verb RunAs `
+    -WorkingDirectory $PSScriptRoot `
+    -ArgumentList ($arguments -join " ")
+}
+
+if (-not (Test-IsAdministrator)) {
+  Start-SelfElevated
+  exit 0
+}
+
 function Resolve-AnyPython {
   param([string]$RequestedPath)
 

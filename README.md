@@ -13,6 +13,8 @@ This public repository contains the SimKeys source, a bundled hook DLL, build fi
 - Triggers quickbar slots directly through game functions, including Base, Shift, and Control quickbar banks.
 - Sends chat through an unfocused client path.
 - Provides a desktop GUI for multi-client script control.
+- Uses one chat watcher per client, parses each line once, and routes typed events to the scripts that need them.
+- Records a fresh per-GUI-session chat log for the out-of-game damage meter.
 - Displays an in-game clickable script control strip for injected clients plus a timer overlay when In-Game Timers is running.
 - Includes automations for AutoDrink, Stop Hitting, Auto Damage, Auto Attack, Auto Follow, Auto Action, and Auto RSM.
 
@@ -98,7 +100,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_control.ps1 chat-s
 
 The repository includes `bin\SimKeysHook2.dll`, so users do not need Visual Studio just to run SimKeys. The GUI and CLI prefer this bundled DLL automatically.
 
-Runtime logs are written under `logs\` in the repository root. They are ignored by git.
+Runtime logs are written under `logs\` in the repository root. They are ignored by git. The GUI clears and recreates `logs\damage-meter\` when it starts so the damage meter only summarizes the current GUI session.
 
 ## Rebuild the DLL
 
@@ -118,6 +120,8 @@ The repository includes `data\characters.d\` so Auto Damage works out of the box
 
 The GUI script panel runs these automations per injected client. Chat-driven scripts only process new lines by default; enable `Backlog` if you intentionally want a script to inspect older buffered combat lines when it starts.
 
+Tick `Saved` beside any script you normally run for that character. Those choices are stored with the character's script settings, and `Start Saved` starts the saved set across all injected clients. `Stop All Scripts` stops every running script without removing the injected overlay controls.
+
 - **AutoDrink**
   - Watches combat activity involving the client, reads the character HP directly from NWN memory, and fires a configured quickbar slot when HP falls at or below the configured percentage.
   - The potion slot can be on the Base, Shift, or Control quickbar bank. By default it uses slot 2, locks the current opponent before drinking, waits for the drink cooldown, then resumes with `!action attack locked`.
@@ -134,8 +138,16 @@ The GUI script panel runs these automations per injected client. Chat-driven scr
   - Watches your attack and damage log lines, identifies the current target, and uses `characters.d` immunity, resistance, healing, and paragon data to choose the safest/highest expected damage option without needing game focus.
   - `Arcane Archer` mode selects the best `!dam*` type for AA-style damage. `Zen Ranger` mode accounts for linked elemental/exotic damage pairs. `Divine Slinger` mode selects elemental/divine damage and can also sequence breach (`!dambr`) or blind (`!dambd`) for known targets that need those effects.
   - `Gnomish Inventor` mode selects the best `!gi bolt` type, resets to zappers before non-zapper bolt changes when needed, and can keep a canister loop running for the current target. Small fetch-style targets use `!gi canister 4`; other targets use `!gi canister 2`.
-  - `Weapon Swap` mode learns configured weapon quickbar slots from observed damage components, matches those learned profiles against target defenses, avoids weapons that would heal the target, and swaps to the best safe weapon. The target analysis panel shows learned weapon profiles, expected damage, healing warnings, and the recommended slot.
+  - `Weapon Swap` mode learns configured base quickbar weapon slots from observed damage components, matches those learned profiles against target defenses, avoids weapons that would heal the target, and swaps to the best safe weapon. Shift/Ctrl weapon slots are intentionally not supported because NWN's equipped-slot mask is unreliable there. `Shifter Weapon Swap` adds a shift quickbar slot and only unshifts for initial learning, when the current weapon heals the target, or when a safe alternate beats the shifter gain threshold, which defaults to +300%. Enable `Heal Only` to keep the older healing-only shifter behavior. The shifter flow locks the target, sends `!cancel poly`, waits for Player Hide, swaps, then retries the shift slot until the form is confirmed. The target analysis panel shows learned weapon profiles, expected damage, healing warnings, and the recommended slot.
   - The `Dice`, poll, batch, echo, backlog, and weapon-swap cooldown settings tune how quickly it reacts and how much detail it reports.
+
+- **Damage Meter**
+  - Records new chat lines from injected clients into `logs\damage-meter\` for the current GUI session.
+  - Press `Calculate` in the Damage Meter panel to summarize saved combat lines. Party members are treated as anything not present in `characters.d`; damage by party members against `characters.d` enemies is counted.
+  - Merges matching damage views from all clients so one hit seen by several windows is counted once, while hits seen by only one client are still included.
+  - If one client sees `someone` but another nearby client saw the same damage total and element breakdown with real names, the named line is used as the canonical event. Unresolved `someone` attackers against known enemies are counted under `Unknown`.
+  - Enemy healing is split out separately: if a defender has a `healing` multiplier for a damage type, that component is counted as `component * multiplier` healing instead of damage.
+  - Shows raw damage, enemy healing, net damage, and element breakdowns, with buttons to post net, raw, healing, or element summaries into chat from the selected client.
 
 - **Auto Action**
   - Runs a simple cooldown loop that repeatedly sends one selected HG action command through the injected chat path.

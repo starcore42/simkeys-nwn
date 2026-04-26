@@ -8,13 +8,14 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
 
+from . import simkeys_damage_meter as damage_meter
 from . import simkeys_runtime as runtime
 from .simkeys_script_host import (
     AutoAAScript,
     OVERLAY_SCRIPT_CONTROLS,
     ScriptManager,
+    WEAPON_BASE_SLOT_CHOICES,
     WEAPON_CURRENT_UNKNOWN,
-    WEAPON_SLOT_CHOICES,
     WEAPON_SLOT_NONE,
 )
 
@@ -103,8 +104,8 @@ SCRIPT_CARD_ACCENTS = {
 SCRIPT_ICON_LABELS = dict(OVERLAY_SCRIPT_CONTROLS)
 BANK_PAGE_TO_VALUE = {"None": 0, "Shift": 1, "Control": 2}
 BANK_VALUE_TO_PAGE = {value: label for label, value in BANK_PAGE_TO_VALUE.items()}
-WEAPON_SLOT_RENDER_ORDER = [choice for choice in WEAPON_SLOT_CHOICES if choice != WEAPON_SLOT_NONE]
-AUTO_DAMAGE_WEAPON_MODES = (AutoAAScript.MODE_WEAPON_SWAP,)
+WEAPON_SLOT_RENDER_ORDER = [choice for choice in WEAPON_BASE_SLOT_CHOICES if choice != WEAPON_SLOT_NONE]
+AUTO_DAMAGE_WEAPON_MODES = (AutoAAScript.MODE_WEAPON_SWAP, AutoAAScript.MODE_SHIFTER_WEAPON_SWAP)
 SCRIPT_CONFIG_SOURCE_DEFAULT = "default"
 SCRIPT_CONFIG_SOURCE_CHARACTER = "character"
 SCRIPT_CONFIG_SOURCE_MANUAL = "manual"
@@ -120,7 +121,7 @@ def _weapon_choice_display(choice):
 
 
 def _weapon_mode_limit(mode):
-    if str(mode or "").strip() != AutoAAScript.MODE_WEAPON_SWAP:
+    if str(mode or "").strip() not in AUTO_DAMAGE_WEAPON_MODES:
         return 0
     return int(AutoAAScript.MAX_WEAPON_BINDINGS)
 
@@ -187,7 +188,7 @@ class ScriptCard:
 
         header = ttk.Frame(self.frame)
         header.grid(row=0, column=1, sticky="ew")
-        header.columnconfigure(2, weight=1)
+        header.columnconfigure(3, weight=1)
 
         accent_color = SCRIPT_CARD_ACCENTS.get(definition.script_id, "#868e96")
         self.icon_label = tk.Label(
@@ -205,11 +206,20 @@ class ScriptCard:
         self.name_label = ttk.Label(header, text=definition.name)
         self.name_label.grid(row=0, column=1, sticky="w")
 
+        self.auto_start_var = tk.BooleanVar(value=False)
+        self.auto_start_check = ttk.Checkbutton(
+            header,
+            text="Saved",
+            variable=self.auto_start_var,
+            command=self.on_auto_start_changed,
+        )
+        self.auto_start_check.grid(row=0, column=2, padx=(12, 0), sticky="w")
+
         self.status_var = tk.StringVar(value="Stopped")
         self.status_label = ttk.Label(header, textvariable=self.status_var)
-        self.status_label.grid(row=0, column=2, padx=(12, 10), sticky="w")
+        self.status_label.grid(row=0, column=3, padx=(12, 10), sticky="w")
 
-        next_column = 3
+        next_column = 4
         if self.definition.script_id == "auto_aa":
             self._create_header_mode_control(header, next_column, on_change=self.on_auto_damage_mode_changed)
             next_column += 2
@@ -325,6 +335,9 @@ class ScriptCard:
 
         self._create_field_holder(weapon_top, "swap_cooldown_seconds", row=0, column=0)
         self._create_field_holder(weapon_top, "min_swap_gain_percent", row=0, column=1)
+        self._create_field_holder(weapon_top, "shift_slot", row=0, column=2)
+        self._create_field_holder(weapon_top, "shifter_min_swap_gain_percent", row=1, column=1)
+        self._create_field_holder(weapon_top, "shifter_healing_only", row=1, column=2)
 
         self.weapon_limit_var = tk.StringVar(value="")
         self.weapon_limit_label = ttk.Label(self.weapon_section, textvariable=self.weapon_limit_var, justify="left", wraplength=520)
@@ -358,7 +371,7 @@ class ScriptCard:
 
         self.weapon_slot_hint_label = ttk.Label(
             self.weapon_section,
-            text="Tick the slots that contain weapons you want Auto Damage to use.",
+            text="Tick the base quickbar slots that contain weapons you want Auto Damage to use. Shift/Ctrl weapon slots are not used because NWN's equipped-slot mask is unreliable there.",
             justify="left",
             wraplength=520,
         )
@@ -377,20 +390,14 @@ class ScriptCard:
             ttk.Label(grid, text=str(slot), width=4, anchor="center").grid(row=0, column=slot, padx=1, pady=(0, 2))
 
         self.weapon_slot_vars = {}
-        for bank_row, bank_name in enumerate(("Base", "Shift", "Ctrl"), start=1):
-            ttk.Label(grid, text=bank_name, width=7).grid(row=bank_row, column=0, padx=(0, 8), sticky="w")
-            for slot in range(1, 13):
-                if bank_name == "Base":
-                    choice = f"F{slot}"
-                elif bank_name == "Shift":
-                    choice = f"S+F{slot}"
-                else:
-                    choice = f"C+F{slot}"
-                var = tk.BooleanVar(value=False)
-                widget = ttk.Checkbutton(grid, variable=var, command=self.on_weapon_slots_changed)
-                widget.grid(row=bank_row, column=slot, padx=1, pady=1, sticky="w")
-                self.weapon_slot_vars[choice] = (var, widget)
-                self.extra_controls.append(("bool", widget))
+        ttk.Label(grid, text="Base", width=7).grid(row=1, column=0, padx=(0, 8), sticky="w")
+        for slot in range(1, 13):
+            choice = f"F{slot}"
+            var = tk.BooleanVar(value=False)
+            widget = ttk.Checkbutton(grid, variable=var, command=self.on_weapon_slots_changed)
+            widget.grid(row=1, column=slot, padx=1, pady=1, sticky="w")
+            self.weapon_slot_vars[choice] = (var, widget)
+            self.extra_controls.append(("bool", widget))
 
         self.advanced_toggle_var = tk.StringVar(value="Show Advanced")
         ttk.Button(
@@ -453,6 +460,7 @@ class ScriptCard:
 
     def load_for_client(self, client_pid):
         self.loaded_client_pid = client_pid
+        self.auto_start_var.set(self.app.get_script_autostart(client_pid, self.definition.script_id))
         config = self.app.get_script_config(client_pid, self.definition.script_id)
         if self.definition.script_id == "auto_aa":
             self._load_auto_damage_config(config)
@@ -468,10 +476,15 @@ class ScriptCard:
         except Exception:
             return False
         current = self.app.get_script_config(client_pid, self.definition.script_id)
-        if config == current:
-            return False
-        self.app.set_script_config(client_pid, self.definition.script_id, config)
-        return True
+        changed = False
+        if config != current:
+            self.app.set_script_config(client_pid, self.definition.script_id, config)
+            changed = True
+        desired_auto_start = bool(self.auto_start_var.get())
+        if desired_auto_start != self.app.get_script_autostart(client_pid, self.definition.script_id):
+            self.app.set_script_autostart(client_pid, self.definition.script_id, desired_auto_start)
+            changed = True
+        return changed
 
     def _load_standard_config(self, config):
         for field, var, _widget in self.vars.values():
@@ -495,6 +508,9 @@ class ScriptCard:
             "canister_cooldown_seconds",
             "swap_cooldown_seconds",
             "min_swap_gain_percent",
+            "shift_slot",
+            "shifter_min_swap_gain_percent",
+            "shifter_healing_only",
             "poll_interval",
             "max_lines",
             "echo_console",
@@ -525,6 +541,7 @@ class ScriptCard:
             self._set_widget_state(widget, field.kind, enabled)
         for control_kind, widget in self.extra_controls:
             self._set_widget_state(widget, control_kind, enabled)
+        self.auto_start_check.configure(state=button_state)
         self.toggle_button.configure(state=button_state)
         if not enabled:
             self.status_var.set("Unavailable")
@@ -578,6 +595,9 @@ class ScriptCard:
             "canister_cooldown_seconds",
             "swap_cooldown_seconds",
             "min_swap_gain_percent",
+            "shift_slot",
+            "shifter_min_swap_gain_percent",
+            "shifter_healing_only",
             "poll_interval",
             "max_lines",
             "echo_console",
@@ -625,6 +645,8 @@ class ScriptCard:
                 )
             if len(selected) > max_bindings:
                 raise RuntimeError(f"{mode} supports at most {max_bindings} weapon quickbar buttons.")
+            if mode == AutoAAScript.MODE_SHIFTER_WEAPON_SWAP and config.get("shift_slot") == WEAPON_SLOT_NONE:
+                raise RuntimeError("Shifter Weapon Swap needs the quickbar slot for your shift ability.")
         return config
 
     def refresh_state(self):
@@ -675,10 +697,23 @@ class ScriptCard:
         equipped_display = str(details.get("equipped_display") or "").strip()
         if equipped_display:
             state_line += f", hook equipped {equipped_display}"
+        if details.get("shifter_mode"):
+            shifter_state = details.get("shifter_state") or "unknown"
+            shifter_slot = details.get("shifter_shift_slot") or "-"
+            state_line += f", shifter {shifter_state} ({shifter_slot})"
+            shifter_stage = details.get("shifter_stage") or ""
+            if shifter_stage:
+                state_line += f", stage {shifter_stage}"
+            shift_attempts = int(details.get("shifter_shift_attempts") or 0)
+            if shift_attempts:
+                state_line += f", shift tries {shift_attempts}"
         lines.append(state_line)
         equipped_error = str(details.get("equipped_probe_error") or "").strip()
         if equipped_error:
             lines.append(f"Equipped probe error: {equipped_error}")
+        shifter_error = str(details.get("shifter_last_error") or "").strip()
+        if shifter_error:
+            lines.append(f"Shifter error: {shifter_error}")
         last_swap_feedback = str(details.get("last_swap_feedback") or "").replace("_", " ")
         if last_swap_feedback:
             lines.append(f"Last swap feedback: {last_swap_feedback}")
@@ -727,19 +762,29 @@ class ScriptCard:
     def on_auto_damage_mode_changed(self, _event=None):
         mode = str(self.vars["mode"][1].get()).strip()
         is_weapon = mode in AUTO_DAMAGE_WEAPON_MODES
+        is_shifter = mode == AutoAAScript.MODE_SHIFTER_WEAPON_SWAP
         is_gi = mode == AutoAAScript.MODE_GNOMISH_INVENTOR
 
         if is_weapon:
             max_bindings = _weapon_mode_limit(mode)
-            self.mode_hint_var.set(
-                f"{mode} swaps weapons by quickbar and learns each weapon's damage profile from combat log lines, including adaptive P2-style signatures and rolling damage estimates. "
-                f"Select up to {max_bindings} weapon buttons. The starting weapon is assumed Unknown and reconciled from combat."
-            )
-            self.weapon_limit_var.set(
-                "Round delay: the swap lands at the start of the next combat round. "
-                "The script keeps the current weapon unless another clears the configured Gain % margin, "
-                "and treats one-off type changes as swap/boundary noise first."
-            )
+            if is_shifter:
+                self.mode_hint_var.set(
+                    f"{mode} learns weapon damage from combat and unshifts for initial learning, healing avoidance, or a safe weapon that beats the Shift Gain threshold. "
+                    f"Select up to {max_bindings} base weapon buttons and the quickbar button that shifts back into form."
+                )
+                self.weapon_limit_var.set(
+                    "Shifter flow: lock the current target, !cancel poly, wait for Player Hide, swap the weapon, then retry the shift slot once per second until the form is confirmed. Enable Heal Only to ignore damage gain and keep the old healing-only behavior."
+                )
+            else:
+                self.mode_hint_var.set(
+                    f"{mode} swaps weapons by quickbar and learns each weapon's damage profile from combat log lines, including adaptive P2-style signatures and rolling damage estimates. "
+                    f"Select up to {max_bindings} weapon buttons. The starting weapon is assumed Unknown and reconciled from combat."
+                )
+                self.weapon_limit_var.set(
+                    "Round delay: the swap lands at the start of the next combat round. "
+                    "The script keeps the current weapon unless another clears the configured Gain % margin, "
+                    "and treats one-off type changes as swap/boundary noise first."
+                )
             self.command_section.grid_remove()
             self.weapon_section.grid()
         else:
@@ -756,6 +801,10 @@ class ScriptCard:
 
         self._set_holder_visible("auto_canister", is_gi)
         self._set_holder_visible("canister_cooldown_seconds", is_gi)
+        self._set_holder_visible("shift_slot", is_shifter)
+        self._set_holder_visible("shifter_min_swap_gain_percent", is_shifter)
+        self._set_holder_visible("shifter_healing_only", is_shifter)
+        self._set_holder_visible("min_swap_gain_percent", is_weapon and not is_shifter)
         self._update_weapon_selector_ui()
 
     def _set_holder_visible(self, field_key, visible):
@@ -796,11 +845,24 @@ class ScriptCard:
                 self.weapon_limit_var.set(
                     f"Selected {len(selected)} weapon buttons, but {mode} only supports {max_bindings}. Trim the selection before starting."
                 )
+            elif mode == AutoAAScript.MODE_SHIFTER_WEAPON_SWAP:
+                self.weapon_limit_var.set(
+                    "Shifter mode unshifts for healing avoidance, initial learning, or a safe weapon above Shift Gain %, then uses the Shift slot until a shift message or essence line confirms the form."
+                )
             else:
                 self.weapon_limit_var.set(
                     "Round delay: the swap lands at the start of the next combat round. "
                     "From Unknown, the script probes from combat, treats physical-only hits as Unarmed, and builds approximate per-type damage estimates over time."
                 )
+
+    def on_auto_start_changed(self):
+        if self.loaded_client_pid is None:
+            return
+        self.app.set_script_autostart(
+            self.loaded_client_pid,
+            self.definition.script_id,
+            bool(self.auto_start_var.get()),
+        )
 
     def on_toggle(self):
         try:
@@ -820,14 +882,21 @@ class SimKeysDesktopApp:
         self.root.minsize(1240, 780)
 
         self.event_queue = queue.Queue()
+        try:
+            self.damage_meter_log_dir = damage_meter.reset_session_logs()
+        except Exception as exc:
+            self.damage_meter_log_dir = damage_meter.session_log_dir()
+            self.log(f"Damage meter session log reset failed: {exc}", "error")
         self.script_manager = ScriptManager(self.enqueue_event)
         self.clients = []
         self.clients_by_pid = {}
         self.selected_pid = None
         self.refresh_in_progress = False
         self.script_configs = {}
+        self.script_autostart = {}
         self.script_toggles_in_progress = {}
         self.character_script_configs = {}
+        self.character_script_autostart = {}
         self.character_display_names = {}
         self.auto_loaded_character_keys = {}
         self.character_defaults_path = os.path.join(runtime.root_dir(), "data", "character_defaults.user.json")
@@ -841,12 +910,18 @@ class SimKeysDesktopApp:
         self.manual_controls_toggle_var = tk.StringVar(value="Show Test Controls")
         self.target_analysis_expanded = False
         self.target_analysis_toggle_var = tk.StringVar(value="Show Target Analysis")
+        self.damage_meter_expanded = False
+        self.damage_meter_toggle_var = tk.StringVar(value="Show Damage Meter")
+        self.damage_meter_status_var = tk.StringVar(value="No damage calculated.")
+        self.damage_meter_summary = None
         self.activity_log_expanded = False
         self.activity_log_toggle_var = tk.StringVar(value="Show Activity Log")
         self.target_analysis_text = None
+        self.damage_meter_text = None
         self.log_text = None
         self.analysis_paned = None
         self.target_analysis_frame = None
+        self.damage_meter_frame = None
         self.target_analysis_last_height = 300
         self.activity_log_frame = None
         self.activity_log_last_height = 260
@@ -864,6 +939,7 @@ class SimKeysDesktopApp:
 
     def _load_character_defaults_store(self):
         self.character_script_configs = {}
+        self.character_script_autostart = {}
         self.character_display_names = {}
         path = self.character_defaults_path
         if not os.path.isfile(path):
@@ -886,27 +962,47 @@ class SimKeysDesktopApp:
             name = str(entry.get("name") or key).strip()
             scripts = entry.get("scripts", {})
             if not isinstance(scripts, dict):
-                continue
+                scripts = {}
             cleaned = {}
             for script_id, config in scripts.items():
                 if script_id not in self.script_manager.registry or not isinstance(config, dict):
                     continue
                 cleaned[script_id] = dict(config)
-            if not cleaned:
+
+            auto_start = entry.get("auto_start", [])
+            if isinstance(auto_start, dict):
+                auto_start_items = [script_id for script_id, enabled in auto_start.items() if enabled]
+            elif isinstance(auto_start, list):
+                auto_start_items = auto_start
+            else:
+                auto_start_items = []
+            cleaned_auto_start = {
+                str(script_id)
+                for script_id in auto_start_items
+                if str(script_id) in self.script_manager.registry
+            }
+
+            if not cleaned and not cleaned_auto_start:
                 continue
             self.character_script_configs[normalized] = cleaned
+            self.character_script_autostart[normalized] = cleaned_auto_start
             self.character_display_names[normalized] = name
 
     def _save_character_defaults_store(self):
-        payload = {"version": 1, "characters": {}}
-        for key in sorted(self.character_script_configs.keys()):
+        payload = {"version": 2, "characters": {}}
+        character_keys = set(self.character_script_configs.keys()) | set(self.character_script_autostart.keys())
+        for key in sorted(character_keys):
             scripts = self.character_script_configs.get(key) or {}
-            if not scripts:
+            auto_start = sorted(self.character_script_autostart.get(key) or set())
+            if not scripts and not auto_start:
                 continue
-            payload["characters"][key] = {
+            entry = {
                 "name": self.character_display_names.get(key, key),
                 "scripts": scripts,
             }
+            if auto_start:
+                entry["auto_start"] = auto_start
+            payload["characters"][key] = entry
 
         os.makedirs(os.path.dirname(self.character_defaults_path), exist_ok=True)
         with open(self.character_defaults_path, "w", encoding="utf-8") as handle:
@@ -925,10 +1021,15 @@ class SimKeysDesktopApp:
         for script_id in self.script_manager.registry.keys():
             scripts[script_id] = self.get_script_config(client_pid, script_id)
 
-        if self.character_script_configs.get(character_key) == scripts:
+        auto_start = set(self.get_script_autostart_ids(client_pid))
+        if (
+            self.character_script_configs.get(character_key) == scripts
+            and set(self.character_script_autostart.get(character_key) or set()) == auto_start
+        ):
             return False
 
         self.character_script_configs[character_key] = scripts
+        self.character_script_autostart[character_key] = auto_start
         self.character_display_names[character_key] = client.character_name
         self._save_character_defaults_store()
         return True
@@ -944,9 +1045,12 @@ class SimKeysDesktopApp:
         if self.auto_loaded_character_keys.get(record.pid) == character_key:
             return False
 
-        scripts = self.character_script_configs.get(character_key)
+        scripts = self.character_script_configs.get(character_key) or {}
+        auto_start = set(self.character_script_autostart.get(character_key) or set())
         self.auto_loaded_character_keys[record.pid] = character_key
-        if not scripts:
+        for script_id in self.script_manager.registry.keys():
+            self.script_autostart[(record.pid, script_id)] = script_id in auto_start
+        if not scripts and not auto_start:
             return False
 
         for script_id, config in scripts.items():
@@ -972,15 +1076,17 @@ class SimKeysDesktopApp:
 
         toolbar = ttk.Frame(outer)
         toolbar.grid(row=0, column=0, sticky="ew", pady=(0, 10))
-        toolbar.columnconfigure(6, weight=1)
+        toolbar.columnconfigure(8, weight=1)
 
         ttk.Button(toolbar, text="Refresh Clients", command=self.refresh_clients_async).grid(row=0, column=0, padx=(0, 8))
         ttk.Button(toolbar, text="Inject Next", command=self.inject_next_async).grid(row=0, column=1, padx=(0, 8))
         ttk.Button(toolbar, text="Inject All", command=self.inject_all_async).grid(row=0, column=2, padx=(0, 8))
-        ttk.Checkbutton(toolbar, text="Auto Refresh", variable=self.auto_refresh_var).grid(row=0, column=3, padx=(0, 8))
-        ttk.Label(toolbar, text="Selection:").grid(row=0, column=4, padx=(8, 4))
-        ttk.Label(toolbar, textvariable=self.selected_name_var).grid(row=0, column=5, sticky="w")
-        ttk.Label(toolbar, text=f"Inject Python: {self.args.inject_python or os.path.basename(sys.executable)}").grid(row=0, column=7, sticky="e")
+        ttk.Button(toolbar, text="Start Saved", command=self.start_saved_scripts_all_async).grid(row=0, column=3, padx=(0, 8))
+        ttk.Button(toolbar, text="Stop All Scripts", command=self.stop_all_scripts_async).grid(row=0, column=4, padx=(0, 8))
+        ttk.Checkbutton(toolbar, text="Auto Refresh", variable=self.auto_refresh_var).grid(row=0, column=5, padx=(0, 8))
+        ttk.Label(toolbar, text="Selection:").grid(row=0, column=6, padx=(8, 4))
+        ttk.Label(toolbar, textvariable=self.selected_name_var).grid(row=0, column=7, sticky="w")
+        ttk.Label(toolbar, text=f"Inject Python: {self.args.inject_python or os.path.basename(sys.executable)}").grid(row=0, column=9, sticky="e")
 
         paned = ttk.Panedwindow(outer, orient="horizontal")
         paned.grid(row=1, column=0, sticky="nsew")
@@ -1020,7 +1126,7 @@ class SimKeysDesktopApp:
 
         right = ttk.Frame(paned)
         right.columnconfigure(0, weight=1)
-        right.rowconfigure(2, weight=1)
+        right.rowconfigure(3, weight=1)
         paned.add(right, weight=5)
         self.root.after(250, self._set_initial_pane_sizes)
 
@@ -1092,8 +1198,33 @@ class SimKeysDesktopApp:
 
         self._apply_manual_controls_state()
 
+        damage_frame = ttk.LabelFrame(right, text="Damage Meter", padding=10)
+        self.damage_meter_frame = damage_frame
+        damage_frame.grid(row=2, column=0, sticky="ew", pady=(0, 10))
+        damage_frame.columnconfigure(0, weight=1)
+        damage_header = ttk.Frame(damage_frame)
+        damage_header.grid(row=0, column=0, sticky="ew", pady=(0, 6))
+        damage_header.columnconfigure(0, weight=1)
+        ttk.Label(damage_header, textvariable=self.damage_meter_status_var).grid(row=0, column=0, sticky="w")
+        ttk.Button(damage_header, text="Calculate", command=self.calculate_damage_meter_async, width=12).grid(row=0, column=1, padx=(8, 0))
+        ttk.Button(damage_header, text="Post Net", command=lambda: self.post_damage_meter_async("net"), width=10).grid(row=0, column=2, padx=(6, 0))
+        ttk.Button(damage_header, text="Post Raw", command=lambda: self.post_damage_meter_async("raw"), width=10).grid(row=0, column=3, padx=(6, 0))
+        ttk.Button(damage_header, text="Post Healing", command=lambda: self.post_damage_meter_async("healing"), width=12).grid(row=0, column=4, padx=(6, 0))
+        ttk.Button(damage_header, text="Post Elements", command=lambda: self.post_damage_meter_async("breakdown"), width=13).grid(row=0, column=5, padx=(6, 0))
+        ttk.Button(
+            damage_header,
+            textvariable=self.damage_meter_toggle_var,
+            command=self.toggle_damage_meter,
+            width=18,
+        ).grid(row=0, column=6, padx=(12, 0), sticky="e")
+        self.damage_meter_text = ScrolledText(damage_frame, wrap="word", height=9, font=("Consolas", 9))
+        self.damage_meter_text.grid(row=1, column=0, sticky="ew")
+        self.damage_meter_text.configure(state="disabled")
+        self._set_damage_meter_text("Press Calculate to summarize this SimKeys GUI session.")
+        self._apply_damage_meter_state()
+
         analysis_paned = ttk.Panedwindow(right, orient="vertical")
-        analysis_paned.grid(row=2, column=0, sticky="nsew")
+        analysis_paned.grid(row=3, column=0, sticky="nsew")
         self.analysis_paned = analysis_paned
 
         target = ttk.LabelFrame(analysis_paned, text="Target Analysis", padding=10)
@@ -1170,6 +1301,68 @@ class SimKeysDesktopApp:
         else:
             self.manual_controls_body.grid_remove()
             self.manual_controls_toggle_var.set("Show Test Controls")
+
+    def toggle_damage_meter(self):
+        self.damage_meter_expanded = not self.damage_meter_expanded
+        self._apply_damage_meter_state()
+
+    def _apply_damage_meter_state(self):
+        if self.damage_meter_text is None:
+            return
+        if self.damage_meter_expanded:
+            self.damage_meter_text.grid()
+            self.damage_meter_toggle_var.set("Hide Damage Meter")
+        else:
+            self.damage_meter_text.grid_remove()
+            self.damage_meter_toggle_var.set("Show Damage Meter")
+
+    def _set_damage_meter_text(self, text):
+        if self.damage_meter_text is None:
+            return
+        self.damage_meter_text.configure(state="normal")
+        self.damage_meter_text.delete("1.0", "end")
+        self.damage_meter_text.insert("1.0", str(text or ""))
+        self.damage_meter_text.configure(state="disabled")
+
+    def calculate_damage_meter_async(self):
+        self.damage_meter_status_var.set("Calculating damage...")
+
+        def worker():
+            try:
+                summary = damage_meter.analyze_session_logs(self.damage_meter_log_dir)
+                text = damage_meter.format_summary_text(summary)
+                self.enqueue_event({
+                    "type": "damage-meter-result",
+                    "summary": summary,
+                    "text": text,
+                })
+            except Exception as exc:
+                self.enqueue_event({
+                    "type": "damage-meter-error",
+                    "message": f"Damage meter failed: {exc}",
+                })
+
+        threading.Thread(target=worker, name="SimKeysDamageMeter", daemon=True).start()
+
+    def post_damage_meter_async(self, report_type):
+        client = self.selected_client()
+        if client is None or not client.injected:
+            messagebox.showwarning("SimKeys", "Select an injected client first.")
+            return
+        if self.damage_meter_summary is None:
+            messagebox.showwarning("SimKeys", "Calculate the damage meter first.")
+            return
+
+        lines = damage_meter.chat_report_lines(self.damage_meter_summary, report_type)
+        if not lines:
+            return
+
+        def action():
+            for line in lines:
+                runtime.send_chat(client, line, 2)
+            return f"{client.display_name}: posted damage meter {report_type}"
+
+        self.run_background(f"Post Damage Meter {report_type}", action)
 
     def toggle_target_analysis(self):
         if self.target_analysis_expanded:
@@ -1347,6 +1540,21 @@ class SimKeysDesktopApp:
             return
         if event_type == "overlay-script-toggle":
             self.handle_overlay_script_toggle(event)
+            return
+        if event_type == "damage-meter-result":
+            self.damage_meter_summary = event.get("summary")
+            self._set_damage_meter_text(event.get("text", ""))
+            if self.damage_meter_summary is not None:
+                self.damage_meter_status_var.set(
+                    f"Damage: net {self.damage_meter_summary.net:,}   raw {self.damage_meter_summary.raw_damage:,}   healing {self.damage_meter_summary.raw_healing:,}"
+                )
+            self.damage_meter_expanded = True
+            self._apply_damage_meter_state()
+            return
+        if event_type == "damage-meter-error":
+            message = event.get("message", "Damage meter failed.")
+            self.damage_meter_status_var.set(message)
+            self.append_log(message, "error")
             return
         if event_type == "log":
             self.append_log(event.get("message", ""), event.get("level", "info"))
@@ -1797,6 +2005,25 @@ class SimKeysDesktopApp:
         self.script_configs[(client_pid, script_id)] = dict(config)
         self._save_character_defaults_for_client(client_pid)
 
+    def get_script_autostart(self, client_pid, script_id):
+        return bool(self.script_autostart.get((client_pid, script_id), False))
+
+    def set_script_autostart(self, client_pid, script_id, enabled):
+        key = (client_pid, script_id)
+        enabled = bool(enabled)
+        changed = bool(self.script_autostart.get(key, False)) != enabled
+        self.script_autostart[key] = enabled
+        if changed:
+            self._save_character_defaults_for_client(client_pid)
+        return changed
+
+    def get_script_autostart_ids(self, client_pid):
+        return [
+            script_id
+            for script_id in self.script_manager.registry.keys()
+            if self.get_script_autostart(client_pid, script_id)
+        ]
+
     def inject_next_async(self):
         def action():
             records = runtime.discover_clients(process_name=self.args.process_name)
@@ -1835,6 +2062,72 @@ class SimKeysDesktopApp:
             return "Injected clients: " + "; ".join(messages)
 
         self.run_background("Inject All", action, refresh_after=True)
+
+    def start_saved_scripts_all_async(self):
+        self.persist_loaded_configs(self.selected_pid)
+        clients = [record for record in self.clients if record.injected]
+        if not clients:
+            messagebox.showwarning("SimKeys", "No injected clients are available.")
+            return
+
+        def action():
+            started = []
+            already_running = 0
+            skipped_clients = []
+            errors = []
+
+            for client in clients:
+                script_ids = self.get_script_autostart_ids(client.pid)
+                if not script_ids:
+                    skipped_clients.append(client.display_name)
+                    continue
+
+                for script_id in script_ids:
+                    definition = self.script_manager.registry.get(script_id)
+                    if definition is None:
+                        continue
+                    state = self.script_manager.get_state(client.pid, script_id)
+                    if state.get("running"):
+                        already_running += 1
+                        continue
+                    try:
+                        self.script_manager.start_script(client, script_id, self.get_script_config(client.pid, script_id))
+                        started.append(f"{client.display_name}: {definition.name}")
+                    except Exception as exc:
+                        errors.append(f"{client.display_name}: {definition.name}: {exc}")
+
+            parts = []
+            if started:
+                parts.append("Started " + ", ".join(started))
+            if already_running:
+                parts.append(f"{already_running} already running")
+            if skipped_clients:
+                parts.append("No saved scripts for " + ", ".join(skipped_clients))
+            if errors:
+                parts.append("Errors: " + " | ".join(errors))
+            return "; ".join(parts) if parts else "No saved scripts were selected."
+
+        self.run_background("Start Saved Scripts", action)
+
+    def stop_all_scripts_async(self):
+        self.persist_loaded_configs(self.selected_pid)
+
+        def action():
+            stopped = []
+            for pid, host in list(self.script_manager.hosts.items()):
+                client = self.clients_by_pid.get(pid)
+                display_name = client.display_name if client is not None else f"pid={pid}"
+                for script_id in host.running_script_ids():
+                    definition = self.script_manager.registry.get(script_id)
+                    script_name = definition.name if definition is not None else script_id
+                    self.script_manager.stop_script(pid, script_id)
+                    stopped.append(f"{display_name}: {script_name}")
+
+            if not stopped:
+                return "No running scripts to stop."
+            return "Stopped " + ", ".join(stopped)
+
+        self.run_background("Stop All Scripts", action)
 
     def trigger_slot_async(self, slot, page=0, bank_label="Base"):
         client = self.selected_client()
