@@ -1,73 +1,26 @@
 # HG Control Console
 
-HG Control Console (HGCC), formerly SimKeys, is a Windows control and automation toolkit for **Neverwinter Nights Diamond** clients running on the **Higher Ground** server. It controls NWN clients without requiring foreground focus by injecting a small native hook into each `nwmain.exe` process and exposing a per-client named pipe to the Python GUI and CLI tools.
+HG Control Console (HGCC) is a Windows control and automation toolkit for **Neverwinter Nights Diamond** clients running on the **Higher Ground** server. It controls NWN clients without requiring foreground focus by injecting a small native hook into each `nwmain.exe` process and exposing a per-client named pipe to the Python GUI and CLI tools.
 
 The project is aimed at multi-client play, combat automation, damage analysis, and Higher Ground quality-of-life workflows. It is not a key-sender wrapper: quickbar activation, chat send, chat capture, overlays, player identity, and quickbar state are handled through in-process client paths.
 
 ![HG Control Console](docs/assets/simkeys-control-center.png)
 
-## Scope
+## Features
 
-HGCC can:
-
-- Discover running `nwmain.exe` clients and inject one or all uninjected clients.
-- Query injected clients for player identity, window details, quickbar state, and hook diagnostics.
+- Discover and inject running `nwmain.exe` clients.
 - Trigger Base, Shift, and Ctrl quickbar slots through NWN quickbar functions.
-- Send chat and HG commands through an injected client, even when that client is not focused.
-- Capture rendered chat/log lines from each injected client and route them to automation scripts.
-- Display a clickable in-game script control strip for injected clients.
-- Display in-game timer overlays for status rules, self-cast effects, and Limbo tracking.
+- Send chat and HG commands through injected clients without focusing them.
+- Capture rendered chat/log lines and route them to automation scripts.
 - Run per-character automation scripts from the desktop GUI.
-- Save per-character script settings and start the saved set across all injected clients.
-- Record per-session chat logs and calculate an out-of-game multi-client damage meter.
+- Save per-character script settings and start saved scripts across all injected clients.
+- Display in-game script controls and timer overlays.
+- Calculate a multi-client damage meter from the current GUI session.
 - Learn and operate weapon-swap profiles for tank-style weapon sets and shifter weapon sets.
-
-## Requirements
-
-- Windows.
-- Neverwinter Nights Diamond, using the 32-bit `nwmain.exe` client.
-- Python for the GUI, CLI, and injector scripts. The launchers look for `python`, the `py` launcher, and common Python 3.11-3.13 install locations. The runtime code uses the Python standard library and Tkinter.
-- Administrator rights when NWN is running elevated. The GUI launcher requests elevation automatically; the CLI should be run from an elevated PowerShell if the target clients require it.
-- Visual Studio 2022 Build Tools with the C++ workload only if rebuilding `SimKeysHook2.dll`.
-
-The repository includes a prebuilt 32-bit hook DLL at `bin\SimKeysHook2.dll`, so Visual Studio is not required for normal use.
-
-## Repository Layout
-
-- `simkeys_gui.ps1`
-  - Main desktop GUI launcher.
-- `simkeys_control.ps1`
-  - CLI launcher for discovery, injection, quickbar, chat, and chat-watch commands.
-- `bin/SimKeysHook2.dll`
-  - Bundled native hook DLL used by default.
-- `src/simkeys_app/`
-  - Python GUI, CLI controller, injector, pipe client, runtime helpers, damage meter, and automation host.
-- `src/native/SimKeysHook2/`
-  - Native hook source, Visual Studio solution, and build wrapper.
-- `data/characters.d/`
-  - Packaged Higher Ground creature data used by Auto Damage, Stop Hitting, weapon analysis, Limbo filtering, and the damage meter.
-- `data/followcues.d/`
-  - XML follow cue phrases used by Always On follow behavior.
-- `data/statusrules.d/`
-  - XML timer/status rules used by In-Game Timers.
-- `docs/reverse-engineering/notes/`
-  - Notes for the confirmed NWN chat, identity, quickbar, and Auto Damage paths.
-
-## Legacy Internal Names
-
-The project used to be named SimKeys. Several names intentionally remain unchanged because they are part of the local compatibility surface:
-
-- `simkeys_gui.ps1` and `simkeys_control.ps1` are still the launcher filenames.
-- `src/simkeys_app/` is still the Python package name.
-- `bin/SimKeysHook2.dll`, `src/native/SimKeysHook2/`, and `InitSimKeys` are still the native hook DLL, project, and export names.
-- Injected clients still expose `\\.\pipe\simkeys_<pid>`.
-- Some internal class, thread, and C++ symbol names still include `SimKeys`.
-
-Use **HG Control Console** or **HGCC** for user-facing documentation and discussion. Use the legacy names only when referring to actual filenames, modules, exports, symbols, or pipe names.
 
 ## Quick Start
 
-1. Start one or more NWN Diamond clients.
+1. Launch one or more NWN Diamond clients.
 2. Open PowerShell in the repository root.
 3. Start the GUI:
 
@@ -75,92 +28,46 @@ Use **HG Control Console** or **HGCC** for user-facing documentation and discuss
 powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_gui.ps1
 ```
 
-4. Press `Refresh Clients`.
-5. Press `Inject Next` or `Inject All`.
-6. Select an injected client in the left pane.
-7. Configure and start scripts from the `Automation` panel.
+4. Press `Inject All`.
+5. Select a client and start the scripts you want from the `Automation` panel.
 
-The GUI auto-refreshes by default. Each injected client gets an in-game script control strip, and the GUI keeps script state synchronized with the client list.
+The GUI launcher requests administrator access if needed. Most users should start here; the CLI is mainly for testing, scripting, and troubleshooting.
 
-## GUI Launcher
+## Requirements
 
-The GUI launcher resolves Python, sets `PYTHONPATH` to `src`, and runs `simkeys_app.simkeys_gui`. If the current PowerShell is not elevated, it restarts itself with administrator rights before launching the GUI.
+- Windows.
+- Neverwinter Nights Diamond, using the 32-bit `nwmain.exe` client.
+- Python for the GUI, CLI, and injector scripts. The launchers look for `python`, the `py` launcher, and common Python 3.11-3.13 install locations.
+- Visual Studio 2022 Build Tools with the C++ workload only if rebuilding `SimKeysHook2.dll`.
 
-Basic launch:
+The repository includes a prebuilt 32-bit hook DLL at `bin\SimKeysHook2.dll`, so Visual Studio is not required for normal use.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_gui.ps1
-```
+## Files
 
-Use an explicit Python interpreter for the GUI:
+- `simkeys_gui.ps1`: desktop GUI launcher.
+- `simkeys_control.ps1`: CLI launcher.
+- `bin/SimKeysHook2.dll`: bundled native hook DLL.
+- `src/simkeys_app/`: Python GUI, CLI, injector, runtime helpers, damage meter, and script host.
+- `src/native/SimKeysHook2/`: native hook source and build wrapper.
+- `data/characters.d/`: Higher Ground creature data.
+- `data/followcues.d/`: Always On follow cues.
+- `data/statusrules.d/`: In-Game Timers rules.
+- `docs/reverse-engineering/notes/`: notes for confirmed NWN client paths.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_gui.ps1 -PythonExe "C:\Users\you\AppData\Local\Programs\Python\Python313\python.exe"
-```
+Some filenames and internal identifiers still use the old SimKeys name. This is intentional for compatibility with the existing launchers, DLL, Python package, native export, and pipe name.
 
-Use a different Python interpreter for injection:
+## GUI
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_gui.ps1 -InjectPython "C:\Users\you\AppData\Local\Programs\Python\Python313\python.exe"
-```
+The GUI is the normal way to use HGCC. Launch NWN, launch the GUI, press `Inject All`, then start scripts from the `Automation` panel.
 
-Additional GUI arguments are passed through to the Python GUI. The current Python options are:
+Useful controls:
 
-- `--process-name`
-  - Process image name to discover. Default: `nwmain.exe`.
-- `--dll`
-  - Hook DLL path. Default: newest available `bin\SimKeysHook2.dll` or local native build output.
-- `--export`
-  - Hook initialization export. Default: `InitSimKeys`.
-- `--inject-python`
-  - Alternate Python interpreter used by the injection subprocess.
-- `--refresh-ms`
-  - GUI auto-refresh interval in milliseconds. Default: `2500`.
+- `Start Saved`: starts scripts marked `Saved` for each injected client.
+- `Stop All Scripts`: stops running scripts without unloading the injected clients.
+- `Manual Test Controls`: quickbar and chat-send testing.
+- `Damage Meter`: calculates the current GUI session's damage logs.
 
-Example:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\simkeys_gui.ps1 --refresh-ms 1000
-```
-
-## GUI Workflow
-
-### Client List
-
-The left pane lists discovered clients in launch order. Each row shows ordinal, PID, injected state, resolved character name, window title, start time, and running script count. HGCC resolves character identity from NWN client memory after injection rather than relying on the window title.
-
-The selected client controls the details panel, manual controls, target analysis, and automation rows.
-
-### Injection
-
-`Inject Next` injects the first uninjected client in launch order. `Inject All` injects every uninjected discovered client. Injection loads `SimKeysHook2.dll` into the target process, calls `InitSimKeys`, installs the hook, and starts the per-client pipe server.
-
-The injector validates that the target process and DLL are both 32-bit. `SimKeysHook2.dll` is intended for the 32-bit NWN Diamond client.
-
-### Manual Test Controls
-
-Manual controls are intended for testing and reverse engineering. They expose:
-
-- Base quickbar slots, equivalent to `F1..F12`.
-- Shift quickbar slots, equivalent to `Shift+F1..Shift+F12`.
-- Ctrl quickbar slots, equivalent to `Ctrl+F1..Ctrl+F12`.
-- Raw chat send through the injected client chat path.
-
-These controls use the same runtime helpers as the scripts.
-
-### Saved Per-Character Settings
-
-Each automation row has a `Saved` checkbox. HGCC stores per-character script settings and saved-script selections in:
-
-```text
-data\character_defaults.user.json
-```
-
-That file is ignored by git. When a character is seen again, HGCC loads the saved settings for that character. `Start Saved` starts the saved scripts across all injected clients. `Stop All Scripts` stops currently running scripts while leaving injected clients and overlay controls in place.
-
-### In-Game Controls
-
-Injected clients receive a small clickable script control strip rendered inside the NWN frame. Clicking a script control toggles that script for the client. HGCC blocks automation chat sends briefly if it detects the password prompt text, to avoid scripts sending commands while a client is at login/password entry.
+Per-character script settings are saved to `data\character_defaults.user.json`, which is ignored by git.
 
 ## CLI Controller
 
