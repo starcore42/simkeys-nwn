@@ -205,6 +205,10 @@ def _build_var_timer_regex(rule: str) -> Pattern:
 
 SPELL_CAST_LINE_RE = re.compile(r"^(?P<caster>.+?) casts (?P<spell>.+?)\s*$", re.IGNORECASE)
 EFFECT_TIMER_LINE_RE = re.compile(r"^\s*#\d+\s+(?P<effect>.+?)\s+\[(?P<remaining>[^\]]+)\]\s*$", re.IGNORECASE | re.MULTILINE)
+AVERTED_DEATH_LINE_RE = re.compile(
+    r"^(?P<player>.+?)\s+(?P<action>respawn|averts death)\s+:\s+(?P<method>.+?)\s+:\s+\*success\*\s*$",
+    re.IGNORECASE,
+)
 SPELL_EFFECT_ALIASES = {
     "storm of vengeance": "Divine Power",
 }
@@ -312,6 +316,7 @@ class ActiveOverlayTimer:
     disable_on_death: bool
     disable_on_rest: bool
     source: str
+    state: str = ""
 
 
 def _load_hgx_spell_timer_specs(source_dir: str) -> Tuple[SpellTimerSpec, ...]:
@@ -4974,6 +4979,7 @@ class AutoCombatModeScript(ClientScriptBase):
 class InGameTimersScript(ClientScriptBase):
     script_id = "ingame_timers"
     OVERLAY_ID = 7100
+    LIMBO_SOURCE = "limbo"
     EFFECT_REQUEST_DELAY_SECONDS = 0.50
     EFFECT_REQUEST_RETRY_SECONDS = 5.0
     EFFECT_REQUEST_TIMEOUT_SECONDS = 14.0
@@ -4989,25 +4995,35 @@ class InGameTimersScript(ClientScriptBase):
         self.spell_specs_by_key: Dict[str, SpellTimerSpec] = {}
         self.spell_specs_by_effect_key: Dict[str, SpellTimerSpec] = {}
         self.pending_effect_queries: Dict[str, PendingSpellEffectQuery] = {}
+        self.limbo_actor_keys: Set[str] = set()
+        self.character_db = None
         self.active: Dict[str, ActiveOverlayTimer] = {}
         self.last_render_text = ""
         self.last_overlay_error = ""
         self.last_effect_request_error = ""
+        self.last_limbo_db_error = ""
         self.next_render_at = 0.0
         self.matched_count = 0
         self.cleared_count = 0
+        self.limbo_count = 0
+        self.limbo_recovered_count = 0
 
     def on_start(self):
         super().on_start()
         self.enabled = True
         self.active.clear()
         self.pending_effect_queries.clear()
+        self.limbo_actor_keys = self._configured_limbo_actor_keys()
+        self.last_limbo_db_error = ""
+        self.character_db = self._load_limbo_character_database() if self._limbo_enabled() else None
         self.last_render_text = ""
         self.last_overlay_error = ""
         self.last_effect_request_error = ""
         self.next_render_at = 0.0
         self.matched_count = 0
         self.cleared_count = 0
+        self.limbo_count = 0
+        self.limbo_recovered_count = 0
         rules_dir = self._rules_dir()
         self.rules = _load_status_timer_rules(rules_dir)
         self.spell_defaults = _load_hgx_spell_timer_specs(rules_dir)
@@ -5023,7 +5039,9 @@ class InGameTimersScript(ClientScriptBase):
             "info",
             (
                 f"{self.client.display_name}: In-Game Timers loaded {len(self.rules)} rules and "
-                f"{len(self.spell_specs)} self-cast spell timers from {rules_dir}"
+                f"{len(self.spell_specs)} self-cast spell timers from {rules_dir}; "
+                f"limbo enemy records={len(self.character_db.records) if self.character_db is not None else 0}, "
+                f"allowlist={len(self.limbo_actor_keys)}"
             ),
             script_id=self.script_id,
         )
@@ -5033,6 +5051,8 @@ class InGameTimersScript(ClientScriptBase):
         self.enabled = False
         self.active.clear()
         self.pending_effect_queries.clear()
+        self.limbo_actor_keys.clear()
+        self.character_db = None
         self._clear_overlay()
         super().on_stop()
         self.host.emit("info", f"{self.client.display_name}: In-Game Timers stopped", script_id=self.script_id)
@@ -5055,6 +5075,8 @@ class InGameTimersScript(ClientScriptBase):
         if self._handle_effect_timer_line(line, now):
             changed = True
         if self._handle_spell_cast_line(line, now):
+            changed = True
+        if self._handle_limbo_line(line, now):
             changed = True
         for rule in self.rules:
             match = rule.pattern.search(line)
@@ -5147,6 +5169,27 @@ class InGameTimersScript(ClientScriptBase):
             if item.strip()
         }
 
+    def _actor_primary_key(self, value: object) -> str:
+        text = hgx_combat.normalize_actor_name(str(value or ""))
+        if not text:
+            return ""
+        return re.sub(r"\s+", " ", text).strip().lower()
+
+    def _actor_name_variants(self, value: object) -> Tuple[str, ...]:
+        text = hgx_combat.normalize_actor_name(str(value or ""))
+        if not text:
+            return ()
+        values = [text, re.sub(r"\s+\[[^\]]+\]\s*$", "", text).strip()]
+        seen = set()
+        variants = []
+        for item in values:
+            key = re.sub(r"\s+", " ", item).strip()
+            lowered = key.lower()
+            if key and lowered not in seen:
+                seen.add(lowered)
+                variants.append(key)
+        return tuple(variants)
+
     def _self_actor_keys(self) -> Set[str]:
         keys: Set[str] = set()
         for source in (
@@ -5173,6 +5216,80 @@ class InGameTimersScript(ClientScriptBase):
             if name:
                 return name
         return ""
+
+    def _iter_limbo_names(self, value: object) -> Tuple[str, ...]:
+        if isinstance(value, (list, tuple, set)):
+            names: List[str] = []
+            for item in value:
+                names.extend(self._iter_limbo_names(item))
+            return tuple(names)
+
+        text = str(value or "").strip()
+        if not text:
+            return ()
+        return tuple(part.strip() for part in re.split(r"[;\r\n]+", text) if part.strip())
+
+    def _configured_limbo_actor_keys(self) -> Set[str]:
+        keys: Set[str] = set()
+        for config_key in ("limbo_auto_names", "limbo_names"):
+            for name in self._iter_limbo_names(self.config.get(config_key, "")):
+                keys.update(self._actor_keys(name))
+
+        for source in (
+            getattr(self.host.client, "display_name", ""),
+            getattr(self.host.client, "character_name", ""),
+            getattr(self.client, "display_name", ""),
+            getattr(self.client, "character_name", ""),
+        ):
+            keys.update(self._actor_keys(source))
+        return keys
+
+    def _limbo_enabled(self) -> bool:
+        value = self.config.get("enable_limbo", True)
+        if isinstance(value, str):
+            return _parse_bool(value, True)
+        return bool(value)
+
+    def _limbo_duration_seconds(self) -> float:
+        try:
+            return max(float(self.config.get("limbo_duration_seconds", 300.0)), 1.0)
+        except (TypeError, ValueError):
+            return 300.0
+
+    def _load_limbo_character_database(self):
+        try:
+            return hgx_data.load_character_database(hgx_data.default_character_data_dir())
+        except Exception as exc:
+            self.last_limbo_db_error = str(exc)
+            self.host.emit(
+                "error",
+                (
+                    f"{self.client.display_name}: In-Game Timers could not load characters.d "
+                    f"for Limbo filtering: {exc}"
+                ),
+                script_id=self.script_id,
+            )
+            return None
+
+    def _limbo_actor_is_known_enemy(self, value: object) -> bool:
+        if self.character_db is None:
+            return False
+        for name in self._actor_name_variants(value):
+            if self.character_db.lookup(name) is not None:
+                return True
+        return False
+
+    def _is_limbo_actor(self, value: object) -> bool:
+        if not self._limbo_enabled():
+            return False
+        actor_keys = self._actor_keys(value)
+        if not actor_keys:
+            return False
+        if actor_keys.intersection(self.limbo_actor_keys):
+            return True
+        if self.character_db is None:
+            return False
+        return not self._limbo_actor_is_known_enemy(value)
 
     def _handle_spell_cast_line(self, line: str, now: float) -> bool:
         match = SPELL_CAST_LINE_RE.match(line)
@@ -5318,6 +5435,93 @@ class InGameTimersScript(ClientScriptBase):
         self.set_status(f"{spec.label}: fallback")
         return True
 
+    def _handle_limbo_line(self, line: str, now: float) -> bool:
+        if not self._limbo_enabled():
+            return False
+
+        changed = False
+        for raw_line in str(line or "").splitlines():
+            event_line = raw_line.strip()
+            if not event_line:
+                continue
+
+            averted = AVERTED_DEATH_LINE_RE.match(event_line)
+            if averted is not None:
+                player = hgx_combat.normalize_actor_name(averted.group("player"))
+                method = hgx_combat.normalize_actor_name(averted.group("method"))
+                changed = self._mark_limbo_recovered(player, method) or changed
+                continue
+
+            parsed_kill = self._parse_limbo_kill_line(event_line)
+            if parsed_kill is None:
+                continue
+            killer, victim = parsed_kill
+            if not self._is_limbo_actor(victim):
+                continue
+            self._start_limbo_timer(victim, killer, now)
+            changed = True
+
+        return changed
+
+    def _parse_limbo_kill_line(self, line: str) -> Optional[Tuple[str, str]]:
+        text = str(line or "").strip()
+        if not text:
+            return None
+        if text.startswith("You have the following accomplishments"):
+            return None
+        if "You cannot gain experience, tags, or random loot from monsters killed in a different area." in text:
+            return None
+
+        marker = " killed "
+        marker_at = text.lower().find(marker)
+        if marker_at <= 0:
+            return None
+
+        killer = hgx_combat.normalize_actor_name(text[:marker_at])
+        victim = hgx_combat.normalize_actor_name(text[marker_at + len(marker):])
+        if not killer or not victim:
+            return None
+        return killer, victim
+
+    def _start_limbo_timer(self, victim: str, killer: str, now: float):
+        key = f"{self.LIMBO_SOURCE}:{self._actor_primary_key(victim)}"
+        duration = self._limbo_duration_seconds()
+        self.active[key] = ActiveOverlayTimer(
+            label=victim,
+            description=f"killed by {killer}",
+            expires_at=now + duration,
+            duration_seconds=duration,
+            color_rgb=0xFFFFFF,
+            disable_on_death=False,
+            disable_on_rest=False,
+            source=self.LIMBO_SOURCE,
+            state="limbo",
+        )
+        self.limbo_count += 1
+        self.matched_count += 1
+        self.set_status(f"{victim}: limbo")
+
+    def _mark_limbo_recovered(self, player: str, method: str) -> bool:
+        if not self._is_limbo_actor(player):
+            return False
+
+        player_keys = self._actor_keys(player)
+        matches = [
+            timer
+            for timer in self.active.values()
+            if timer.source == self.LIMBO_SOURCE and self._actor_keys(timer.label).intersection(player_keys)
+        ]
+        if not matches:
+            return False
+
+        timer = max(matches, key=lambda item: item.expires_at)
+        timer.state = "recovered"
+        timer.description = method or "recovered"
+        timer.color_rgb = 0x808080
+        self.limbo_recovered_count += 1
+        self.set_status(f"{timer.label}: recovered")
+        return True
+
     def _format_lines(self) -> Tuple[str, ...]:
         now = time.monotonic()
         max_timers = max(int(self.config.get("max_timers", 8)), 1)
@@ -5325,7 +5529,11 @@ class InGameTimersScript(ClientScriptBase):
         lines = []
         for timer in timers[:max_timers]:
             remaining = timer.expires_at - now
-            lines.append(f"{timer.label} {_format_remaining(remaining)}")
+            if timer.source == self.LIMBO_SOURCE:
+                state = "safe" if timer.state == "recovered" else "limbo"
+                lines.append(f"{timer.label} {state} {_format_remaining(remaining)}")
+            else:
+                lines.append(f"{timer.label} {_format_remaining(remaining)}")
         return tuple(lines)
 
     def _render_overlay(self, force: bool = False):
@@ -5397,6 +5605,10 @@ class InGameTimersScript(ClientScriptBase):
             "pending_effects": len(self.pending_effect_queries),
             "matched_count": self.matched_count,
             "cleared_count": self.cleared_count,
+            "limbo_count": self.limbo_count,
+            "limbo_recovered_count": self.limbo_recovered_count,
+            "limbo_enemy_records": len(self.character_db.records) if self.character_db is not None else 0,
+            "limbo_allowlist": len(self.limbo_actor_keys),
             "rules_dir": self._rules_dir(),
         }
 
@@ -5938,6 +6150,9 @@ class ScriptManager:
                 ScriptField("color", "Color", "choice", "White", choices=["White", "Green", "Yellow", "Red", "Cyan", "Blue", "Orange"], width=8),
                 ScriptField("max_timers", "Max", "int", 8, minimum=1, maximum=32, step=1, width=5),
                 ScriptField("spell_timers", "Spells", "text", default_spell_timers, width=72),
+                ScriptField("enable_limbo", "Limbo", "bool", True),
+                ScriptField("limbo_duration_seconds", "Duration", "float", 300.0, minimum=1.0, maximum=1800.0, step=1.0, width=6),
+                ScriptField("limbo_names", "Always Party", "text", "", width=72),
                 ScriptField("rules_dir", "Rules", "text", "", width=36),
                 ScriptField("poll_interval", "Poll", "float", 0.20, minimum=0.05, maximum=2.0, step=0.05, width=6),
                 ScriptField("max_lines", "Batch", "int", 80, minimum=1, maximum=500, step=1, width=5),

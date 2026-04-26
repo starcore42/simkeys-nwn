@@ -77,6 +77,7 @@ SCRIPT_CARD_LAYOUTS = {
         "expanded": False,
         "sections": [
             ("Overlay", ["position", "offset_x", "offset_y", "font_size", "color", "max_timers"]),
+            ("Limbo", ["enable_limbo", "limbo_duration_seconds", "limbo_names"]),
             ("Self-Cast Spells", ["spell_timers"]),
         ],
         "advanced": ["rules_dir", "poll_interval", "max_lines", "include_backlog"],
