@@ -206,6 +206,7 @@ OVERLAY_LINE_COLOR_MARKER = "\x1f"
 OVERLAY_CONTROL_MARKER = "\x1d"
 OVERLAY_TOGGLE_EVENT_PREFIX = "\x1eSIMKEYS_OVERLAY_TOGGLE:"
 OVERLAY_CONTROLS_ID = 7099
+DEFAULT_TIMER_OVERLAY_OFFSET_Y = 88
 OVERLAY_SCRIPT_CONTROLS: Tuple[Tuple[str, str], ...] = (
     ("autodrink", "Dr"),
     ("stop_hitting", "St"),
@@ -6625,7 +6626,7 @@ class InGameTimersScript(ClientScriptBase):
                 overlay_id=self.OVERLAY_ID,
                 position=str(self.config.get("position", "TR")),
                 offset_x=int(self.config.get("offset_x", 0)),
-                offset_y=int(self.config.get("offset_y", 80)),
+                offset_y=int(self.config.get("offset_y", DEFAULT_TIMER_OVERLAY_OFFSET_Y)),
                 font_size=int(self.config.get("font_size", 16)),
                 color=_timer_color_rgb(self.config.get("color", "White")),
             )
@@ -7349,7 +7350,7 @@ class ScriptManager:
             fields=[
                 ScriptField("position", "Pos", "choice", "TR", choices=["TL", "T", "TR", "CL", "C", "CR", "BL", "B", "BR", "A"], width=5),
                 ScriptField("offset_x", "X", "int", 0, minimum=-2000, maximum=2000, step=1, width=6),
-                ScriptField("offset_y", "Y", "int", 0, minimum=-2000, maximum=2000, step=1, width=6),
+                ScriptField("offset_y", "Y", "int", DEFAULT_TIMER_OVERLAY_OFFSET_Y, minimum=-2000, maximum=2000, step=1, width=6),
                 ScriptField("font_size", "Font", "int", 16, minimum=8, maximum=72, step=1, width=5),
                 ScriptField("color", "Color", "choice", "White", choices=["White", "Green", "Yellow", "Red", "Cyan", "Blue", "Orange"], width=8),
                 ScriptField("max_timers", "Max", "int", 8, minimum=1, maximum=32, step=1, width=5),

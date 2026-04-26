@@ -81,6 +81,53 @@ def make_bulk_app():
 
 
 class GuiSavedScriptsTests(unittest.TestCase):
+    def test_timers_default_overlay_starts_below_script_controls(self):
+        manager = ScriptManager(lambda _event: None)
+        config = manager.default_config("ingame_timers")
+
+        self.assertEqual(config["position"], "TR")
+        self.assertGreaterEqual(config["offset_y"], 88)
+
+    def test_legacy_timer_zero_offset_is_migrated_below_script_controls(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, "character_defaults.user.json")
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write(
+                    """{
+  "version": 2,
+  "characters": {
+    "starcore-bob": {
+      "name": "Starcore-Bob",
+      "scripts": {
+        "ingame_timers": {
+          "position": "TR",
+          "offset_x": 0,
+          "offset_y": 0,
+          "font_size": 16,
+          "color": "White",
+          "max_timers": 8,
+          "enable_limbo": true,
+          "limbo_duration_seconds": 300.0,
+          "limbo_names": "",
+          "rules_dir": "",
+          "poll_interval": 0.2,
+          "max_lines": 80,
+          "include_backlog": false
+        }
+      }
+    }
+  }
+}
+"""
+                )
+            app = make_persistence_app(path)
+
+            app._load_character_defaults_store()
+            record = SimpleNamespace(pid=202, character_name="Starcore-Bob", display_name="Starcore-Bob")
+            self.assertTrue(app._auto_load_character_defaults(record))
+
+            self.assertGreaterEqual(app.get_script_config(202, "ingame_timers")["offset_y"], 88)
+
     def test_saved_script_flags_round_trip_with_character_defaults(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, "character_defaults.user.json")

@@ -12,6 +12,7 @@ from . import simkeys_damage_meter as damage_meter
 from . import simkeys_runtime as runtime
 from .simkeys_script_host import (
     AutoAAScript,
+    DEFAULT_TIMER_OVERLAY_OFFSET_Y,
     OVERLAY_SCRIPT_CONTROLS,
     ScriptManager,
     WEAPON_BASE_SLOT_CHOICES,
@@ -991,6 +992,10 @@ class SimKeysDesktopApp:
             self.log(f"Character defaults load failed: {exc}", "error")
             return
 
+        try:
+            payload_version = int(payload.get("version") or 0) if isinstance(payload, dict) else 0
+        except (TypeError, ValueError):
+            payload_version = 0
         characters = payload.get("characters", {}) if isinstance(payload, dict) else {}
         if not isinstance(characters, dict):
             return
@@ -1007,7 +1012,15 @@ class SimKeysDesktopApp:
             for script_id, config in scripts.items():
                 if script_id not in self.script_manager.registry or not isinstance(config, dict):
                     continue
-                cleaned[script_id] = self._clean_script_config(script_id, config)
+                cleaned_config = self._clean_script_config(script_id, config)
+                if payload_version < 3 and script_id == TIMERS_SCRIPT_ID:
+                    try:
+                        offset_y = int(cleaned_config.get("offset_y") or 0)
+                    except (TypeError, ValueError):
+                        offset_y = 0
+                    if str(cleaned_config.get("position") or "TR").upper() == "TR" and offset_y == 0:
+                        cleaned_config["offset_y"] = DEFAULT_TIMER_OVERLAY_OFFSET_Y
+                cleaned[script_id] = cleaned_config
 
             auto_start = entry.get("auto_start", [])
             disabled_auto_start = set()
@@ -1038,7 +1051,7 @@ class SimKeysDesktopApp:
             self.character_display_names[normalized] = name
 
     def _save_character_defaults_store(self):
-        payload = {"version": 2, "characters": {}}
+        payload = {"version": 3, "characters": {}}
         character_keys = (
             set(self.character_script_configs.keys())
             | set(self.character_script_autostart.keys())
