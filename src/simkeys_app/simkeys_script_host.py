@@ -195,10 +195,31 @@ def _timer_color_rgb(value, default: int = 0xFFFFFF) -> int:
 
 
 OVERLAY_LINE_COLOR_MARKER = "\x1f"
+OVERLAY_CONTROL_MARKER = "\x1d"
+OVERLAY_TOGGLE_EVENT_PREFIX = "\x1eSIMKEYS_OVERLAY_TOGGLE:"
+OVERLAY_CONTROLS_ID = 7099
+OVERLAY_SCRIPT_CONTROLS: Tuple[Tuple[str, str], ...] = (
+    ("autodrink", "Dr"),
+    ("stop_hitting", "St"),
+    ("auto_aa", "Dg"),
+    ("auto_action", "Ac"),
+    ("auto_attack", "At"),
+    ("always_on", "On"),
+    ("auto_rsm", "Md"),
+    ("ingame_timers", "Tm"),
+)
 
 
 def _overlay_line_color_prefix(color_rgb: int) -> str:
     return f"{OVERLAY_LINE_COLOR_MARKER}{int(color_rgb) & 0xFFFFFF:06X};"
+
+
+def _overlay_controls_line(running_script_ids: Set[str]) -> str:
+    parts = []
+    for script_id, label in OVERLAY_SCRIPT_CONTROLS:
+        state = "1" if script_id in running_script_ids else "0"
+        parts.append(f"{script_id}|{label}|{state}")
+    return f"{OVERLAY_CONTROL_MARKER}controls;{';'.join(parts)}"
 
 
 def _build_var_timer_regex(rule: str) -> Pattern:
@@ -5729,6 +5750,9 @@ class ClientScriptHost:
         self.latest_sequence = 0
         self.password_chat_blocked_until = 0.0
         self.run_id = 0
+        self.overlay_controls_enabled = False
+        self.overlay_controls_dirty = False
+        self.last_overlay_controls_text = ""
 
     def emit(self, level: str, message: str, script_id: Optional[str] = None):
         self.event_callback({
@@ -5781,24 +5805,13 @@ class ClientScriptHost:
             factory_elapsed = time.perf_counter() - factory_started_at
 
             self.scripts[definition.script_id] = script
-            if self.thread is None or not self.thread.is_alive() or self.stop_event.is_set():
-                self.stop_event = threading.Event()
-                self.run_id += 1
-                run_id = self.run_id
-                stop_event = self.stop_event
-                self.thread = threading.Thread(
-                    target=self._run,
-                    args=(run_id, stop_event),
-                    name=f"SimKeysHost-{self.client.pid}",
-                    daemon=True,
-                )
-                self.thread.start()
+            self._ensure_thread_locked()
             on_start_started_at = time.perf_counter()
             try:
                 script.on_start()
             except Exception as exc:
                 self.scripts.pop(definition.script_id, None)
-                if not self.scripts:
+                if not self.scripts and not self.overlay_controls_enabled:
                     self.stop_event.set()
                 elapsed = time.perf_counter() - started_at
                 self.emit(
@@ -5809,6 +5822,7 @@ class ClientScriptHost:
                 raise
             on_start_elapsed = time.perf_counter() - on_start_started_at
             elapsed = time.perf_counter() - started_at
+            self.overlay_controls_dirty = True
             self.emit(
                 "info",
                 (
@@ -5819,13 +5833,42 @@ class ClientScriptHost:
             )
         self.notify_state_changed()
 
+    def _ensure_thread_locked(self):
+        if self.thread is None or not self.thread.is_alive() or self.stop_event.is_set():
+            self.stop_event = threading.Event()
+            self.run_id += 1
+            run_id = self.run_id
+            stop_event = self.stop_event
+            self.thread = threading.Thread(
+                target=self._run,
+                args=(run_id, stop_event),
+                name=f"SimKeysHost-{self.client.pid}",
+                daemon=True,
+            )
+            self.thread.start()
+
+    def start_overlay_controls(self):
+        with self.lock:
+            self.overlay_controls_enabled = True
+            self.overlay_controls_dirty = True
+            self._ensure_thread_locked()
+
+    def stop_overlay_controls(self):
+        with self.lock:
+            self.overlay_controls_enabled = False
+            self.overlay_controls_dirty = False
+            if not self.scripts:
+                self.stop_event.set()
+        self._clear_overlay_controls()
+
     def stop_script(self, script_id: str):
         with self.lock:
             script = self.scripts.pop(script_id, None)
             if script is None:
                 return
             script.on_stop()
-            if not self.scripts:
+            self.overlay_controls_dirty = True
+            if not self.scripts and not self.overlay_controls_enabled:
                 self.stop_event.set()
         self.notify_state_changed()
 
@@ -5893,6 +5936,47 @@ class ClientScriptHost:
     def clear_overlay(self, overlay_id: int = 1000):
         return runtime.clear_overlay(self.client, overlay_id=overlay_id)
 
+    def _render_overlay_controls(self, force: bool = False):
+        with self.lock:
+            enabled = self.overlay_controls_enabled
+            text = _overlay_controls_line(set(self.scripts.keys())) if enabled else ""
+            dirty = self.overlay_controls_dirty
+
+        if not enabled:
+            if self.last_overlay_controls_text:
+                self._clear_overlay_controls()
+            return
+        if not force and not dirty and text == self.last_overlay_controls_text:
+            return
+
+        try:
+            result = self.show_overlay_text(
+                text,
+                overlay_id=OVERLAY_CONTROLS_ID,
+                position="TR",
+                offset_x=0,
+                offset_y=52,
+                font_size=14,
+                color=0xFFFFFF,
+            )
+        except Exception as exc:
+            self.emit("error", f"{self.client.display_name}: overlay controls update failed: {exc}")
+            return
+
+        if result.get("success"):
+            self.last_overlay_controls_text = text
+            with self.lock:
+                self.overlay_controls_dirty = False
+        else:
+            self.emit("error", f"{self.client.display_name}: overlay controls update failed err={result.get('err')}")
+
+    def _clear_overlay_controls(self):
+        try:
+            self.clear_overlay(OVERLAY_CONTROLS_ID)
+        except Exception as exc:
+            self.emit("error", f"{self.client.display_name}: overlay controls clear failed: {exc}")
+        self.last_overlay_controls_text = ""
+
     def _chat_poll_once(self, after: int, max_lines: int):
         pipe = runtime.open_pipe(self.client.pid, timeout_ms=750)
         try:
@@ -5913,10 +5997,27 @@ class ClientScriptHost:
                     f"{self.client.display_name}: {type(exc).__name__}: {exc}",
                     script_id=getattr(script, "script_id", None),
                 )
+        self._render_overlay_controls()
 
     def _is_password_prompt(self, text: str) -> bool:
         line = hgx_combat.normalize_chat_line(text).strip().lower()
         return line == self.PASSWORD_PROMPT_TEXT
+
+    def _handle_overlay_event(self, sequence: int, text: str) -> bool:
+        value = str(text or "")
+        if not value.startswith(OVERLAY_TOGGLE_EVENT_PREFIX):
+            return False
+
+        script_id = value[len(OVERLAY_TOGGLE_EVENT_PREFIX):].strip()
+        if script_id:
+            self.event_callback({
+                "type": "overlay-script-toggle",
+                "client_pid": self.client.pid,
+                "client_name": self.client.display_name,
+                "script_id": script_id,
+                "sequence": sequence,
+            })
+        return True
 
     def _chat_is_locked_out(self) -> bool:
         return time.monotonic() < self.password_chat_blocked_until
@@ -5958,7 +6059,8 @@ class ClientScriptHost:
             while not stop_event.is_set():
                 with self.lock:
                     scripts = list(self.scripts.values())
-                    if not scripts:
+                    overlay_controls_enabled = self.overlay_controls_enabled
+                    if not scripts and not overlay_controls_enabled:
                         break
                     chat_scripts = [script for script in scripts if script.needs_chat_feed()]
 
@@ -5990,6 +6092,8 @@ class ClientScriptHost:
                 self.latest_sequence = polled_latest
                 if not initialized:
                     for line in polled_lines:
+                        if self._handle_overlay_event(int(line.get("seq", polled_latest) or polled_latest), line.get("text", "")):
+                            continue
                         if self._is_password_prompt(line.get("text", "")):
                             self._stop_for_password_prompt(int(line.get("seq", polled_latest) or polled_latest))
                             break
@@ -6009,6 +6113,8 @@ class ClientScriptHost:
                         line_sequence = int(line["seq"])
                         if line_sequence > returned_latest:
                             returned_latest = line_sequence
+                        if self._handle_overlay_event(line_sequence, line["text"]):
+                            continue
                         if self._is_password_prompt(line["text"]):
                             self._stop_for_password_prompt(line_sequence)
                             break
@@ -6298,9 +6404,21 @@ class ScriptManager:
         if host is None:
             return
         host.stop_script(script_id)
-        if host.running_script_ids():
+        if host.running_script_ids() or host.overlay_controls_enabled:
             return
         self.hosts.pop(client_pid, None)
+
+    def enable_overlay_controls(self, client):
+        host = self._get_or_create_host(client)
+        host.start_overlay_controls()
+
+    def disable_overlay_controls(self, client_pid: int):
+        host = self.hosts.get(client_pid)
+        if host is None:
+            return
+        host.stop_overlay_controls()
+        if not host.running_script_ids():
+            self.hosts.pop(client_pid, None)
 
     def stop_all_for_client(self, client_pid: int):
         host = self.hosts.get(client_pid)
@@ -6308,8 +6426,8 @@ class ScriptManager:
             return
         for script_id in host.running_script_ids():
             host.stop_script(script_id)
-        if not host.running_script_ids():
-            self.hosts.pop(client_pid, None)
+        host.stop_overlay_controls()
+        self.hosts.pop(client_pid, None)
 
     def get_state(self, client_pid: int, script_id: str) -> dict:
         host = self.hosts.get(client_pid)

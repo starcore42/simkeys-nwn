@@ -146,9 +146,11 @@ def package_dir() -> str:
 
 def default_dll_path() -> str:
     bundled_dll = os.path.join(root_dir(), "bin", "SimKeysHook2.dll")
-    if os.path.isfile(bundled_dll):
-        return bundled_dll
-    return os.path.join(root_dir(), "src", "native", "SimKeysHook2", "Release", "SimKeysHook2.dll")
+    release_dll = os.path.join(root_dir(), "src", "native", "SimKeysHook2", "Release", "SimKeysHook2.dll")
+    candidates = [path for path in (bundled_dll, release_dll) if os.path.isfile(path)]
+    if candidates:
+        return max(candidates, key=lambda path: os.path.getmtime(path))
+    return bundled_dll
 
 
 def _probe_python_bits(path: str) -> Optional[int]:

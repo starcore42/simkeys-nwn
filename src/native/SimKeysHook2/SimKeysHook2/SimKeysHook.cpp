@@ -80,6 +80,14 @@ constexpr int kOverlayTextPadding = 6;
 constexpr char kOverlayLineColorMarker = '\x1F';
 constexpr int kOverlayLineColorMarkerLength = 8;
 constexpr int kOverlayMaxParsedLines = 128;
+constexpr char kOverlayControlMarker = '\x1D';
+constexpr char kOverlayEventMarker = '\x1E';
+constexpr int kOverlayMaxControls = 16;
+constexpr int kOverlayControlIdCapacity = 32;
+constexpr int kOverlayControlLabelCapacity = 8;
+constexpr int kOverlayControlButtonSize = 22;
+constexpr int kOverlayControlGap = 4;
+constexpr int kOverlayControlPadding = 3;
 constexpr UINT kGlCullFace = 0x0B44;
 constexpr UINT kGlDepthTest = 0x0B71;
 constexpr UINT kGlTexture2D = 0x0DE1;
@@ -214,6 +222,14 @@ struct ChatLineEntry {
   char text[kChatTextCapacity];
 };
 
+struct OverlayControlButton {
+  char script_id[kOverlayControlIdCapacity];
+  int32_t x;
+  int32_t y;
+  int32_t width;
+  int32_t height;
+};
+
 struct OverlayRecord {
   int32_t id;
   int32_t position;
@@ -221,12 +237,16 @@ struct OverlayRecord {
   int32_t offset_y;
   int32_t width;
   int32_t height;
+  int32_t pixel_x;
+  int32_t pixel_y;
   int32_t viewport_width;
   int32_t viewport_height;
   float raster_x;
   float raster_y;
   DWORD pixel_bytes;
   BYTE* pixels;
+  int32_t control_count;
+  OverlayControlButton controls[kOverlayMaxControls];
   bool enabled;
 };
 
@@ -1359,6 +1379,8 @@ void UpdateOverlayRasterPosition(OverlayRecord* record, int viewport_width, int 
 
   x += record->offset_x;
   y += record->offset_y;
+  record->pixel_x = x;
+  record->pixel_y = y;
   record->raster_x = (static_cast<float>(x) * 2.0f / static_cast<float>(viewport_width)) - 1.0f;
   record->raster_y = 1.0f - (static_cast<float>(y + record->height) * 2.0f / static_cast<float>(viewport_height));
   record->viewport_width = viewport_width;
@@ -1373,7 +1395,9 @@ BOOL StoreOverlayBitmap(
     int32_t width,
     int32_t height,
     const void* pixels,
-    DWORD pixel_bytes) {
+    DWORD pixel_bytes,
+    const OverlayControlButton* controls,
+    int32_t control_count) {
   if (!g_state.overlay_lock_ready || id < 0 || width <= 0 || height <= 0 ||
       width > kOverlayMaxDimension || height > kOverlayMaxDimension || pixels == nullptr) {
     SetLastError(ERROR_INVALID_PARAMETER);
@@ -1417,10 +1441,18 @@ BOOL StoreOverlayBitmap(
   record->height = height;
   record->viewport_width = 0;
   record->viewport_height = 0;
+  record->pixel_x = 0;
+  record->pixel_y = 0;
   record->raster_x = 0.0f;
   record->raster_y = 0.0f;
   record->pixel_bytes = pixel_bytes;
   record->pixels = copy;
+  record->control_count = 0;
+  if (controls != nullptr && control_count > 0) {
+    const int32_t count = control_count > kOverlayMaxControls ? kOverlayMaxControls : control_count;
+    CopyMemory(record->controls, controls, sizeof(OverlayControlButton) * count);
+    record->control_count = count;
+  }
   record->enabled = true;
   InterlockedExchange(&g_state.overlay_count, CountOverlaysLocked());
   LeaveCriticalSection(&g_state.overlay_lock);
@@ -1462,6 +1494,12 @@ struct ParsedOverlayLine {
   uint32_t color_rgb;
 };
 
+struct ParsedOverlayControl {
+  char script_id[kOverlayControlIdCapacity];
+  char label[kOverlayControlLabelCapacity];
+  bool active;
+};
+
 int HexDigitValue(char value) {
   if (value >= '0' && value <= '9') {
     return value - '0';
@@ -1495,6 +1533,72 @@ bool TryParseOverlayLineColor(const char* text, uint32_t* out_color) {
 
   *out_color = color & 0xFFFFFFu;
   return true;
+}
+
+const char* ParseOverlayControls(
+    const char* text,
+    ParsedOverlayControl* controls,
+    int control_capacity,
+    int* out_control_count) {
+  if (out_control_count != nullptr) {
+    *out_control_count = 0;
+  }
+  if (text == nullptr || controls == nullptr || control_capacity <= 0 || out_control_count == nullptr) {
+    return text != nullptr ? text : "";
+  }
+
+  const char prefix[] = "controls;";
+  if (text[0] != kOverlayControlMarker || strncmp(text + 1, prefix, sizeof(prefix) - 1) != 0) {
+    return text;
+  }
+
+  const char* cursor = text + 1 + (sizeof(prefix) - 1);
+  const char* line_end = cursor;
+  while (*line_end != '\0' && *line_end != '\r' && *line_end != '\n') {
+    ++line_end;
+  }
+
+  char buffer[1024] = {};
+  size_t length = static_cast<size_t>(line_end - cursor);
+  if (length >= sizeof(buffer)) {
+    length = sizeof(buffer) - 1;
+  }
+  CopyMemory(buffer, cursor, length);
+  buffer[length] = '\0';
+
+  int count = 0;
+  char* context = nullptr;
+  char* token = strtok_s(buffer, ";", &context);
+  while (token != nullptr && count < control_capacity) {
+    char* first = strchr(token, '|');
+    char* second = first != nullptr ? strchr(first + 1, '|') : nullptr;
+    if (first != nullptr && second != nullptr) {
+      *first = '\0';
+      *second = '\0';
+      const char* script_id = token;
+      const char* label = first + 1;
+      const char* state = second + 1;
+      if (script_id[0] != '\0' && label[0] != '\0') {
+        StringCchCopyA(controls[count].script_id, _countof(controls[count].script_id), script_id);
+        StringCchCopyA(controls[count].label, _countof(controls[count].label), label);
+        controls[count].active = state[0] == '1' || state[0] == 't' || state[0] == 'T';
+        ++count;
+      }
+    }
+    token = strtok_s(nullptr, ";", &context);
+  }
+
+  *out_control_count = count;
+
+  if (*line_end == '\r') {
+    ++line_end;
+    if (*line_end == '\n') {
+      ++line_end;
+    }
+  } else if (*line_end == '\n') {
+    ++line_end;
+  }
+  return line_end;
 }
 
 int ParseOverlayLines(
@@ -1565,6 +1669,56 @@ int ParseOverlayLines(
   return line_count;
 }
 
+bool FindOverlayControlAt(int mouse_x, int mouse_y, char* out_script_id, size_t out_script_id_count) {
+  if (!g_state.overlay_lock_ready || out_script_id == nullptr || out_script_id_count == 0) {
+    return false;
+  }
+
+  out_script_id[0] = '\0';
+  EnterCriticalSection(&g_state.overlay_lock);
+  for (int overlay_index = kMaxOverlays - 1; overlay_index >= 0; --overlay_index) {
+    OverlayRecord* record = &g_state.overlays[overlay_index];
+    if (!record->enabled || record->control_count <= 0) {
+      continue;
+    }
+
+    for (int control_index = record->control_count - 1; control_index >= 0; --control_index) {
+      OverlayControlButton* control = &record->controls[control_index];
+      const int left = record->pixel_x + control->x;
+      const int top = record->pixel_y + control->y;
+      const int right = left + control->width;
+      const int bottom = top + control->height;
+      if (mouse_x >= left && mouse_x < right && mouse_y >= top && mouse_y < bottom) {
+        StringCchCopyA(out_script_id, out_script_id_count, control->script_id);
+        LeaveCriticalSection(&g_state.overlay_lock);
+        return true;
+      }
+    }
+  }
+  LeaveCriticalSection(&g_state.overlay_lock);
+  return false;
+}
+
+bool HandleOverlayMouseButton(int mouse_x, int mouse_y, bool queue_click_event) {
+  char script_id[kOverlayControlIdCapacity] = {};
+  if (!FindOverlayControlAt(mouse_x, mouse_y, script_id, _countof(script_id))) {
+    return false;
+  }
+
+  if (queue_click_event) {
+    char event_text[kChatTextCapacity] = {};
+    StringCchPrintfA(
+        event_text,
+        _countof(event_text),
+        "%cSIMKEYS_OVERLAY_TOGGLE:%s",
+        kOverlayEventMarker,
+        script_id);
+    QueueChatLine(event_text);
+    LogMessage(kLogInfo, "overlay control clicked script=%s", script_id);
+  }
+  return true;
+}
+
 BOOL RenderTextOverlay(
     int32_t id,
     int32_t position,
@@ -1611,10 +1765,13 @@ BOOL RenderTextOverlay(
   }
 
   HGDIOBJ old_font = SelectObject(dc, font);
+  ParsedOverlayControl parsed_controls[kOverlayMaxControls] = {};
+  int parsed_control_count = 0;
+  const char* visible_source = ParseOverlayControls(text, parsed_controls, kOverlayMaxControls, &parsed_control_count);
   char visible_text[kOverlayTextCapacity] = {};
   ParsedOverlayLine parsed_lines[kOverlayMaxParsedLines] = {};
   const int parsed_line_count = ParseOverlayLines(
-      text,
+      visible_source,
       color_rgb,
       visible_text,
       kOverlayTextCapacity,
@@ -1623,8 +1780,19 @@ BOOL RenderTextOverlay(
   RECT measure = {0, 0, kOverlayMaxDimension - (kOverlayTextPadding * 2), 0};
   DrawTextA(dc, visible_text, -1, &measure, DT_CALCRECT | DT_LEFT | DT_NOPREFIX);
 
-  int width = (measure.right - measure.left) + (kOverlayTextPadding * 2);
-  int height = (measure.bottom - measure.top) + (kOverlayTextPadding * 2);
+  const bool has_panel = visible_text[0] != '\0';
+  const int control_area_height = parsed_control_count > 0
+      ? kOverlayControlButtonSize + (kOverlayControlPadding * 2)
+      : 0;
+  const int controls_width = parsed_control_count > 0
+      ? (kOverlayControlPadding * 2) +
+          (parsed_control_count * kOverlayControlButtonSize) +
+          ((parsed_control_count - 1) * kOverlayControlGap)
+      : 0;
+  int panel_width = has_panel ? (measure.right - measure.left) + (kOverlayTextPadding * 2) : 0;
+  int panel_height = has_panel ? (measure.bottom - measure.top) + (kOverlayTextPadding * 2) : 0;
+  int width = panel_width > controls_width ? panel_width : controls_width;
+  int height = panel_height + control_area_height;
   if (width < 8) {
     width = 8;
   }
@@ -1663,50 +1831,95 @@ BOOL RenderTextOverlay(
   FillRect(dc, &background, background_brush);
   DeleteObject(background_brush);
 
-  const int header_height = font_size + (kOverlayTextPadding * 2);
-  RECT header_rect = {0, 0, width, header_height};
-  HBRUSH header_brush = CreateSolidBrush(header_color);
-  FillRect(dc, &header_rect, header_brush);
-  DeleteObject(header_brush);
-
-  HPEN border_pen = CreatePen(PS_SOLID, 1, RGB(90, 110, 120));
-  HGDIOBJ old_pen = SelectObject(dc, border_pen);
-  HGDIOBJ old_brush = SelectObject(dc, GetStockObject(NULL_BRUSH));
-  Rectangle(dc, 0, 0, width, height);
-  MoveToEx(dc, 0, header_height, nullptr);
-  LineTo(dc, width, header_height);
-  SelectObject(dc, old_brush);
-  SelectObject(dc, old_pen);
-  DeleteObject(border_pen);
-
-  SetBkMode(dc, TRANSPARENT);
-  TEXTMETRICA text_metrics = {};
-  GetTextMetricsA(dc, &text_metrics);
-  int line_height = text_metrics.tmHeight + text_metrics.tmExternalLeading;
-  if (line_height <= 0) {
-    line_height = font_size + 4;
-  }
-  int line_top = kOverlayTextPadding;
-  for (int line_index = 0; line_index < parsed_line_count; ++line_index) {
-    const ParsedOverlayLine& line = parsed_lines[line_index];
-    const uint32_t line_color = line.color_rgb & 0xFFFFFFu;
-    SetTextColor(dc, RGB((line_color >> 16) & 0xFF, (line_color >> 8) & 0xFF, line_color & 0xFF));
-
-    RECT line_rect = {
-        kOverlayTextPadding,
-        line_top,
-        width - kOverlayTextPadding,
-        line_top + line_height
-    };
-
-    const int end = line.start + line.length;
-    if (line.start >= 0 && end >= line.start && end < kOverlayTextCapacity) {
-      const char saved = visible_text[end];
-      visible_text[end] = '\0';
-      DrawTextA(dc, visible_text + line.start, -1, &line_rect, DT_LEFT | DT_NOPREFIX | DT_SINGLELINE | DT_END_ELLIPSIS);
-      visible_text[end] = saved;
+  OverlayControlButton stored_controls[kOverlayMaxControls] = {};
+  if (parsed_control_count > 0) {
+    int button_x = width - controls_width + kOverlayControlPadding;
+    if (button_x < kOverlayControlPadding) {
+      button_x = kOverlayControlPadding;
     }
-    line_top += line_height;
+    const int button_y = kOverlayControlPadding;
+    for (int index = 0; index < parsed_control_count; ++index) {
+      ParsedOverlayControl& control = parsed_controls[index];
+      RECT button_rect = {
+          button_x,
+          button_y,
+          button_x + kOverlayControlButtonSize,
+          button_y + kOverlayControlButtonSize
+      };
+
+      const COLORREF fill_color = control.active ? RGB(16, 82, 38) : RGB(48, 36, 36);
+      const COLORREF border_color = control.active ? RGB(96, 230, 120) : RGB(210, 90, 90);
+      HBRUSH fill_brush = CreateSolidBrush(fill_color);
+      HGDIOBJ old_button_brush = SelectObject(dc, fill_brush);
+      HPEN border_pen = CreatePen(PS_SOLID, 2, border_color);
+      HGDIOBJ old_button_pen = SelectObject(dc, border_pen);
+      Ellipse(dc, button_rect.left, button_rect.top, button_rect.right, button_rect.bottom);
+      SelectObject(dc, old_button_pen);
+      SelectObject(dc, old_button_brush);
+      DeleteObject(border_pen);
+      DeleteObject(fill_brush);
+
+      SetBkMode(dc, TRANSPARENT);
+      SetTextColor(dc, control.active ? RGB(245, 255, 245) : RGB(220, 190, 190));
+      DrawTextA(dc, control.label, -1, &button_rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+
+      StringCchCopyA(stored_controls[index].script_id, _countof(stored_controls[index].script_id), control.script_id);
+      stored_controls[index].x = button_rect.left;
+      stored_controls[index].y = button_rect.top;
+      stored_controls[index].width = button_rect.right - button_rect.left;
+      stored_controls[index].height = button_rect.bottom - button_rect.top;
+
+      button_x += kOverlayControlButtonSize + kOverlayControlGap;
+    }
+  }
+
+  const int header_height = font_size + (kOverlayTextPadding * 2);
+  const int panel_y = control_area_height;
+  if (has_panel) {
+    RECT header_rect = {0, panel_y, width, panel_y + header_height};
+    HBRUSH header_brush = CreateSolidBrush(header_color);
+    FillRect(dc, &header_rect, header_brush);
+    DeleteObject(header_brush);
+
+    HPEN border_pen = CreatePen(PS_SOLID, 1, RGB(90, 110, 120));
+    HGDIOBJ old_pen = SelectObject(dc, border_pen);
+    HGDIOBJ old_brush = SelectObject(dc, GetStockObject(NULL_BRUSH));
+    Rectangle(dc, 0, panel_y, width, height);
+    MoveToEx(dc, 0, panel_y + header_height, nullptr);
+    LineTo(dc, width, panel_y + header_height);
+    SelectObject(dc, old_brush);
+    SelectObject(dc, old_pen);
+    DeleteObject(border_pen);
+
+    SetBkMode(dc, TRANSPARENT);
+    TEXTMETRICA text_metrics = {};
+    GetTextMetricsA(dc, &text_metrics);
+    int line_height = text_metrics.tmHeight + text_metrics.tmExternalLeading;
+    if (line_height <= 0) {
+      line_height = font_size + 4;
+    }
+    int line_top = panel_y + kOverlayTextPadding;
+    for (int line_index = 0; line_index < parsed_line_count; ++line_index) {
+      const ParsedOverlayLine& line = parsed_lines[line_index];
+      const uint32_t line_color = line.color_rgb & 0xFFFFFFu;
+      SetTextColor(dc, RGB((line_color >> 16) & 0xFF, (line_color >> 8) & 0xFF, line_color & 0xFF));
+
+      RECT line_rect = {
+          kOverlayTextPadding,
+          line_top,
+          width - kOverlayTextPadding,
+          line_top + line_height
+      };
+
+      const int end = line.start + line.length;
+      if (line.start >= 0 && end >= line.start && end < kOverlayTextCapacity) {
+        const char saved = visible_text[end];
+        visible_text[end] = '\0';
+        DrawTextA(dc, visible_text + line.start, -1, &line_rect, DT_LEFT | DT_NOPREFIX | DT_SINGLELINE | DT_END_ELLIPSIS);
+        visible_text[end] = saved;
+      }
+      line_top += line_height;
+    }
   }
   GdiFlush();
 
@@ -1723,7 +1936,17 @@ BOOL RenderTextOverlay(
   }
 
   const DWORD pixel_bytes = static_cast<DWORD>(width * height * 4);
-  const BOOL stored = StoreOverlayBitmap(id, position, offset_x, offset_y, width, height, bits, pixel_bytes);
+  const BOOL stored = StoreOverlayBitmap(
+      id,
+      position,
+      offset_x,
+      offset_y,
+      width,
+      height,
+      bits,
+      pixel_bytes,
+      stored_controls,
+      parsed_control_count);
   if (stored) {
     if (out_width != nullptr) {
       *out_width = width;
@@ -2612,6 +2835,15 @@ LRESULT CALLBACK SimKeysWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM l
     InterlockedExchange(&g_state.pending_identity.last_error, static_cast<LONG>(last_error));
     SetEvent(g_state.pending_identity.event);
     return 0;
+  }
+
+  if (message == WM_LBUTTONDOWN || message == WM_LBUTTONUP || message == WM_LBUTTONDBLCLK) {
+    const int mouse_x = static_cast<int>(static_cast<short>(LOWORD(lparam)));
+    const int mouse_y = static_cast<int>(static_cast<short>(HIWORD(lparam)));
+    const bool queue_click = message == WM_LBUTTONUP;
+    if (HandleOverlayMouseButton(mouse_x, mouse_y, queue_click)) {
+      return 0;
+    }
   }
 
   if (g_state.original_wndproc != nullptr) {

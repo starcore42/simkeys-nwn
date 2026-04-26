@@ -13,6 +13,7 @@ This public repository contains the SimKeys source, a bundled hook DLL, build fi
 - Triggers quickbar slots directly through game functions, including Base, Shift, and Control quickbar banks.
 - Sends chat through an unfocused client path.
 - Provides a desktop GUI for multi-client script control.
+- Displays an in-game clickable script control strip for injected clients plus a timer overlay when In-Game Timers is running.
 - Includes automations for AutoDrink, Stop Hitting, Auto Damage, Auto Attack, Auto Follow, Auto Action, and Auto RSM.
 
 ## Requirements

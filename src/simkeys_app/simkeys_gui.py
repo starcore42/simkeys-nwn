@@ -9,7 +9,14 @@ from tkinter import messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
 
 from . import simkeys_runtime as runtime
-from .simkeys_script_host import AutoAAScript, ScriptManager, WEAPON_CURRENT_UNKNOWN, WEAPON_SLOT_CHOICES, WEAPON_SLOT_NONE
+from .simkeys_script_host import (
+    AutoAAScript,
+    OVERLAY_SCRIPT_CONTROLS,
+    ScriptManager,
+    WEAPON_CURRENT_UNKNOWN,
+    WEAPON_SLOT_CHOICES,
+    WEAPON_SLOT_NONE,
+)
 
 
 def _probe_error_is_busy(text):
@@ -93,6 +100,7 @@ SCRIPT_CARD_ACCENTS = {
     "auto_rsm": "#7950f2",
     "ingame_timers": "#1971c2",
 }
+SCRIPT_ICON_LABELS = dict(OVERLAY_SCRIPT_CONTROLS)
 BANK_PAGE_TO_VALUE = {"None": 0, "Shift": 1, "Control": 2}
 BANK_VALUE_TO_PAGE = {value: label for label, value in BANK_PAGE_TO_VALUE.items()}
 WEAPON_SLOT_RENDER_ORDER = [choice for choice in WEAPON_SLOT_CHOICES if choice != WEAPON_SLOT_NONE]
@@ -179,16 +187,29 @@ class ScriptCard:
 
         header = ttk.Frame(self.frame)
         header.grid(row=0, column=1, sticky="ew")
-        header.columnconfigure(1, weight=1)
+        header.columnconfigure(2, weight=1)
+
+        accent_color = SCRIPT_CARD_ACCENTS.get(definition.script_id, "#868e96")
+        self.icon_label = tk.Label(
+            header,
+            text=SCRIPT_ICON_LABELS.get(definition.script_id, "Sk"),
+            width=3,
+            background=accent_color,
+            foreground="white",
+            font=("Segoe UI", 9, "bold"),
+            padx=4,
+            pady=2,
+        )
+        self.icon_label.grid(row=0, column=0, sticky="w", padx=(0, 8))
 
         self.name_label = ttk.Label(header, text=definition.name)
-        self.name_label.grid(row=0, column=0, sticky="w")
+        self.name_label.grid(row=0, column=1, sticky="w")
 
         self.status_var = tk.StringVar(value="Stopped")
         self.status_label = ttk.Label(header, textvariable=self.status_var)
-        self.status_label.grid(row=0, column=1, padx=(12, 10), sticky="w")
+        self.status_label.grid(row=0, column=2, padx=(12, 10), sticky="w")
 
-        next_column = 2
+        next_column = 3
         if self.definition.script_id == "auto_aa":
             self._create_header_mode_control(header, next_column, on_change=self.on_auto_damage_mode_changed)
             next_column += 2
@@ -1324,9 +1345,34 @@ class SimKeysDesktopApp:
             self.refresh_selected_client_ui()
             self.refresh_client_tree_rows()
             return
+        if event_type == "overlay-script-toggle":
+            self.handle_overlay_script_toggle(event)
+            return
         if event_type == "log":
             self.append_log(event.get("message", ""), event.get("level", "info"))
             return
+
+    def handle_overlay_script_toggle(self, event):
+        try:
+            client_pid = int(event.get("client_pid"))
+        except (TypeError, ValueError):
+            return
+
+        script_id = str(event.get("script_id") or "").strip()
+        if script_id not in self.script_manager.registry:
+            self.log(f"Overlay requested unknown script '{script_id}' for pid {client_pid}", "error")
+            return
+
+        client = self.clients_by_pid.get(client_pid)
+        if client is None:
+            host = self.script_manager.hosts.get(client_pid)
+            client = getattr(host, "client", None)
+        if client is None or not getattr(client, "injected", False):
+            self.log(f"Overlay requested {script_id}, but pid {client_pid} is not available.", "error")
+            return
+
+        config = self.get_script_config(client_pid, script_id)
+        self.toggle_script_for_client(client, script_id, config, source="Overlay")
 
     def append_log(self, message, level="info"):
         if not message:
@@ -1648,6 +1694,10 @@ class SimKeysDesktopApp:
         for record in records:
             self._auto_load_character_defaults(record)
         for record in records:
+            if record.injected:
+                self.script_manager.enable_overlay_controls(record)
+            else:
+                self.script_manager.disable_overlay_controls(record.pid)
             self.script_manager.sync_client(record)
 
         for pid in list(self.script_manager.hosts.keys()):
@@ -1832,29 +1882,43 @@ class SimKeysDesktopApp:
             messagebox.showwarning("SimKeys", "Select an injected client first.")
             return
 
+        self.toggle_script_for_client(client, script_id, config, source="GUI")
+
+    def toggle_script_for_client(self, client, script_id, config, source="GUI"):
+        if client is None or not getattr(client, "injected", False):
+            self.log(f"{source}: select an injected client first.", "error")
+            return
+
         self.set_script_config(client.pid, script_id, config)
         toggle_key = (client.pid, script_id)
         if toggle_key in self.script_toggles_in_progress:
             self.log(f"{client.display_name}: {script_id} is already changing state", "info")
+            if source == "Overlay":
+                self._send_ingame_echo(client, "SimKeys: script is already changing")
             return
 
         state = self.script_manager.get_state(client.pid, script_id)
         starting = not state["running"]
         self.script_toggles_in_progress[toggle_key] = "Starting..." if starting else "Stopping..."
 
-        row = self.script_rows.get(script_id)
+        row = self.script_rows.get(script_id) if client.pid == self.selected_pid else None
         if row is not None:
             row.status_var.set("Starting..." if starting else "Stopping...")
             row.toggle_button.configure(state="disabled", text="Starting..." if starting else "Stopping...")
 
         def action():
             try:
+                script_name = self.script_manager.registry[script_id].name
                 current_state = self.script_manager.get_state(client.pid, script_id)
                 if current_state["running"]:
                     self.script_manager.stop_script(client.pid, script_id)
+                    if source == "Overlay":
+                        self._send_ingame_echo(client, f"SimKeys: {script_name} off")
                     return f"{client.display_name}: stopped {script_id}"
 
                 self.script_manager.start_script(client, script_id, config)
+                if source == "Overlay":
+                    self._send_ingame_echo(client, f"SimKeys: {script_name} on")
                 return f"{client.display_name}: started {script_id}"
             finally:
                 self.enqueue_event({
@@ -1864,6 +1928,23 @@ class SimKeysDesktopApp:
                 })
 
         self.run_background(f"Toggle {script_id}", action)
+
+    def _send_ingame_echo(self, client, message):
+        text = str(message or "").strip()
+        if not text:
+            return
+
+        def worker():
+            try:
+                runtime.send_chat(client, f"!echo {text}", 2)
+            except Exception as exc:
+                self.enqueue_event({
+                    "type": "log",
+                    "level": "error",
+                    "message": f"{client.display_name}: !echo feedback failed: {exc}",
+                })
+
+        threading.Thread(target=worker, name=f"SimKeysEcho-{client.pid}", daemon=True).start()
 
     def on_close(self):
         try:
