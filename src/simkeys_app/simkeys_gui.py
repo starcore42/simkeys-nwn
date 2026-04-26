@@ -64,7 +64,7 @@ SCRIPT_CARD_LAYOUTS = {
             ("Follow", ["cooldown_seconds"]),
             ("Disable", ["disable_follow", "disable_wallet", "disable_spellbook_fill", "disable_fog_off"]),
         ],
-        "advanced": ["poll_interval", "max_lines", "echo_console", "include_backlog"],
+        "advanced": ["follow_cues_dir", "poll_interval", "max_lines", "echo_console", "include_backlog"],
     },
     "auto_rsm": {
         "expanded": False,

@@ -36,6 +36,8 @@ This public repository contains the SimKeys source, a bundled hook DLL, build fi
   - Visual Studio native hook source, solution, and build wrapper.
 - `data/characters.d/`
   - Packaged `characters.d` XML data used by Auto Damage scoring.
+- `data/followcues.d/`
+  - XML follow cue phrases used by Always On / Auto Follow.
 - `docs/reverse-engineering/notes/`
   - SimKeys-specific reverse-engineering notes.
 
@@ -109,7 +111,7 @@ The build wrapper rebuilds the x86 Release DLL and copies it into `bin\SimKeysHo
 
 ## Data
 
-The repository includes `data\characters.d\` so Auto Damage works out of the box with the packaged dataset.
+The repository includes `data\characters.d\` so Auto Damage works out of the box with the packaged dataset. Follow cue phrases live in `data\followcues.d\default.xml`; edit or add XML files there to change the phrases that trigger Always On follow behavior.
 
 ## Automation Notes
 
@@ -146,7 +148,7 @@ The GUI script panel runs these automations per injected client. Chat-driven scr
   - It does not parse combat chat; the only runtime setting is the repeat cooldown.
 
 - **Auto Follow**
-  - Listens for another player saying a follow cue such as `fall in`, `follow me`, or `follow my`.
+  - Listens for another player saying a follow cue loaded from `data\followcues.d\`, such as `fall in`, `follow me`, or `follow my`.
   - When a cue is seen, it sends `!action aso target` and then `/tell "<speaker>" !target`, matching the old HGXLE `autoFollow.py` behavior.
   - It ignores cues from the current character, uses a short cooldown to avoid duplicate rapid triggers, and can optionally echo successful follow actions to the in-game console.
   - This is useful for box/follower clients that should automatically target and follow the caller when the leader asks the group to fall in.

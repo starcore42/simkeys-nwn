@@ -131,6 +131,10 @@ def _default_status_rules_dir() -> str:
     return workspace_rules
 
 
+def _default_follow_cues_dir() -> str:
+    return os.path.join(_repo_root(), "data", "followcues.d")
+
+
 def _parse_duration_seconds(value) -> float:
     text = str(value or "").strip()
     if not text:
@@ -534,6 +538,36 @@ def _duration_from_var_match(match) -> float:
         elif name.startswith("SECONDS"):
             seconds = max(seconds, int(value))
     return float((minutes * 60) + seconds)
+
+
+def _load_follow_cues(source_dir: str) -> Tuple[str, ...]:
+    cues: List[str] = []
+    seen: Set[str] = set()
+    directory = os.path.abspath(os.path.expanduser(os.path.expandvars(str(source_dir or ""))))
+    if not os.path.isdir(directory):
+        return ()
+
+    for file_name in sorted(os.listdir(directory)):
+        if not file_name.lower().endswith(".xml"):
+            continue
+        path = os.path.join(directory, file_name)
+        try:
+            root = ET.parse(path).getroot()
+        except Exception:
+            continue
+
+        for element in root.iter():
+            tag = str(element.tag or "").strip().lower()
+            if tag not in ("cue", "followcue", "follow-cue"):
+                continue
+            text = str(element.get("text") or element.get("phrase") or element.text or "").strip()
+            text = re.sub(r"\s+", " ", text).strip()
+            key = text.lower()
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            cues.append(text)
+    return tuple(cues)
 
 
 def _format_remaining(seconds: float) -> str:
@@ -4496,12 +4530,13 @@ class AutoAttackScript(ClientScriptBase):
 class AutoFollowScript(ClientScriptBase):
     script_id = "auto_follow"
     script_label = "Auto Follow"
-    FOLLOW_CUES = ("fall in", "follow me", "follow my")
+    DEFAULT_FOLLOW_CUES = ("fall in", "follow me", "follow my")
     ASO_COMMAND = "!action aso target"
 
     def __init__(self, client, config: Dict[str, object], host):
         super().__init__(client, config, host)
         self.enabled = False
+        self.follow_cues: Tuple[str, ...] = ()
         self.cooldown_until = 0.0
         self.follow_count = 0
         self.last_speaker = ""
@@ -4511,17 +4546,26 @@ class AutoFollowScript(ClientScriptBase):
     def on_start(self):
         super().on_start()
         self.enabled = True
+        self.follow_cues = _load_follow_cues(self._follow_cues_dir()) or self.DEFAULT_FOLLOW_CUES
         self.cooldown_until = 0.0
         self.follow_count = 0
         self.last_speaker = ""
         self.last_message = ""
         self.last_error_key = ""
-        self.set_status("Listening for follow cues")
-        self.host.emit("info", f"{self.host.client.display_name}: {self.script_label} started", script_id=self.script_id)
+        self.set_status(f"Listening for {len(self.follow_cues)} follow cues")
+        self.host.emit(
+            "info",
+            (
+                f"{self.host.client.display_name}: {self.script_label} started "
+                f"with {len(self.follow_cues)} follow cues from {self._follow_cues_dir()}"
+            ),
+            script_id=self.script_id,
+        )
 
     def on_stop(self):
         super().on_stop()
         self.enabled = False
+        self.follow_cues = ()
         self.host.emit("info", f"{self.host.client.display_name}: {self.script_label} stopped", script_id=self.script_id)
 
     def on_chat_line(self, sequence: int, text: str):
@@ -4598,9 +4642,16 @@ class AutoFollowScript(ClientScriptBase):
             return None
 
         lowered_message = message.lower()
-        if not any(cue in lowered_message for cue in self.FOLLOW_CUES):
+        cues = self.follow_cues or self.DEFAULT_FOLLOW_CUES
+        if not any(cue.lower() in lowered_message for cue in cues):
             return None
         return speaker, message
+
+    def _follow_cues_dir(self) -> str:
+        value = str(self.config.get("follow_cues_dir", "") or "").strip()
+        if value:
+            return os.path.abspath(os.path.expanduser(os.path.expandvars(value)))
+        return _default_follow_cues_dir()
 
     def _speaker_matches_character(self, speaker: str) -> bool:
         character_name = (self.host.client.character_name or self.client.character_name or "").strip()
@@ -4622,6 +4673,8 @@ class AutoFollowScript(ClientScriptBase):
 
     def get_state_details(self) -> dict:
         return {
+            "follow_cues": len(self.follow_cues),
+            "follow_cues_dir": self._follow_cues_dir(),
             "follow_count": self.follow_count,
             "last_speaker": self.last_speaker,
             "last_message": self.last_message,
@@ -6149,6 +6202,7 @@ class ScriptManager:
                 ScriptField("disable_wallet", "Disable Wallet", "bool", False),
                 ScriptField("disable_spellbook_fill", "Disable SB Fill", "bool", False),
                 ScriptField("disable_fog_off", "Disable Fog Off", "bool", False),
+                ScriptField("follow_cues_dir", "Follow Cues", "text", "", width=36),
                 ScriptField("poll_interval", "Poll", "float", 0.05, minimum=0.01, maximum=2.0, step=0.01, width=6),
                 ScriptField("max_lines", "Batch", "int", 200, minimum=1, maximum=500, step=1, width=5),
                 ScriptField("echo_console", "Echo", "bool", False),
