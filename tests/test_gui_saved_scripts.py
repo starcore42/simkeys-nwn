@@ -15,8 +15,10 @@ def make_persistence_app(path):
     app.script_autostart = {}
     app.character_script_configs = {}
     app.character_script_autostart = {}
+    app.character_script_autostart_disabled = {}
     app.character_display_names = {}
     app.auto_loaded_character_keys = {}
+    app.default_started_scripts = set()
     app.character_defaults_path = path
     app.clients_by_pid = {}
     app.log_messages = []
@@ -27,8 +29,9 @@ def make_persistence_app(path):
 class FakeScriptManager:
     def __init__(self):
         self.registry = {
-            "always_on": SimpleNamespace(name="Always On"),
             "auto_attack": SimpleNamespace(name="Auto Attack"),
+            "always_on": SimpleNamespace(name="Basic Functions"),
+            "ingame_timers": SimpleNamespace(name="Timers"),
         }
         self.hosts = {}
         self.started = []
@@ -44,6 +47,7 @@ class FakeScriptManager:
 
     def start_script(self, client, script_id, config):
         self.started.append((client.pid, script_id, dict(config)))
+        self.running[(client.pid, script_id)] = True
 
     def stop_script(self, client_pid, script_id):
         self.stopped.append((client_pid, script_id))
@@ -55,10 +59,18 @@ def make_bulk_app():
     app.script_manager = FakeScriptManager()
     app.script_configs = {}
     app.script_autostart = {}
+    app.character_script_configs = {}
+    app.character_script_autostart = {}
+    app.character_script_autostart_disabled = {}
+    app.character_display_names = {}
+    app.auto_loaded_character_keys = {}
+    app.default_started_scripts = set()
     app.selected_pid = None
     app.clients_by_pid = {}
     app.clients = []
     app.last_background = None
+    app.log_messages = []
+    app.log = lambda message, level="info": app.log_messages.append((level, message))
     app.persist_loaded_configs = lambda _pid: None
 
     def run_background(label, fn, refresh_after=False):
@@ -89,6 +101,25 @@ class GuiSavedScriptsTests(unittest.TestCase):
             self.assertTrue(reloaded.get_script_autostart(202, "auto_attack"))
             self.assertFalse(reloaded.get_script_autostart(202, "auto_aa"))
 
+    def test_default_scripts_autostart_can_be_disabled_per_character(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = os.path.join(tmpdir, "character_defaults.user.json")
+            app = make_persistence_app(path)
+            app.clients_by_pid[101] = SimpleNamespace(character_name="Starcore-Bob")
+
+            app.set_script_autostart(101, "always_on", False)
+            app.set_script_autostart(101, "ingame_timers", False)
+
+            reloaded = make_persistence_app(path)
+            reloaded._load_character_defaults_store()
+            record = SimpleNamespace(pid=202, character_name="Starcore-Bob", display_name="Starcore-Bob")
+
+            loaded = reloaded._auto_load_character_defaults(record)
+
+            self.assertTrue(loaded)
+            self.assertFalse(reloaded.get_script_autostart(202, "always_on"))
+            self.assertFalse(reloaded.get_script_autostart(202, "ingame_timers"))
+
     def test_start_saved_scripts_starts_only_checked_scripts_for_injected_clients(self):
         app = make_bulk_app()
         app.clients = [
@@ -105,10 +136,34 @@ class GuiSavedScriptsTests(unittest.TestCase):
             app.script_manager.started,
             [
                 (1, "always_on", {"script_id": "always_on"}),
+                (1, "ingame_timers", {"script_id": "ingame_timers"}),
                 (2, "auto_attack", {"script_id": "auto_attack"}),
+                (2, "always_on", {"script_id": "always_on"}),
+                (2, "ingame_timers", {"script_id": "ingame_timers"}),
             ],
         )
         self.assertEqual(app.last_background[0], "Start Saved Scripts")
+
+    def test_default_scripts_start_once_for_injected_client(self):
+        app = make_bulk_app()
+        client = SimpleNamespace(pid=1, injected=True, display_name="Alpha")
+
+        app._ensure_default_scripts_running(client)
+        app.script_manager.stop_script(client.pid, "always_on")
+        app.script_manager.stop_script(client.pid, "ingame_timers")
+        app._ensure_default_scripts_running(client)
+
+        self.assertEqual(
+            app.script_manager.started,
+            [
+                (1, "always_on", {"script_id": "always_on"}),
+                (1, "ingame_timers", {"script_id": "ingame_timers"}),
+            ],
+        )
+        self.assertEqual(
+            app.default_started_scripts,
+            {(1, "always_on"), (1, "ingame_timers")},
+        )
 
     def test_stop_all_scripts_leaves_overlay_hosts_and_stops_running_scripts(self):
         app = make_bulk_app()

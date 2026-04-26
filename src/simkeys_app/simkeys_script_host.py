@@ -212,7 +212,7 @@ OVERLAY_SCRIPT_CONTROLS: Tuple[Tuple[str, str], ...] = (
     ("auto_aa", "Dg"),
     ("auto_action", "Ac"),
     ("auto_attack", "At"),
-    ("always_on", "On"),
+    ("always_on", "BF"),
     ("auto_rsm", "Md"),
     ("ingame_timers", "Tm"),
 )
@@ -5560,7 +5560,7 @@ class AutoFollowScript(ClientScriptBase):
 
 class AlwaysOnScript(AutoFollowScript):
     script_id = "always_on"
-    script_label = "Always On"
+    script_label = "Basic Functions"
 
     def __init__(self, client, config: Dict[str, object], host):
         super().__init__(client, config, host)
@@ -5599,7 +5599,7 @@ class AlwaysOnScript(AutoFollowScript):
                 self.set_status("Wallet refreshed")
                 self.host.emit(
                     "info",
-                    f"{self.host.client.display_name}: Always On refreshed wallet at Zerial's Workshop",
+                    f"{self.host.client.display_name}: Basic Functions refreshed wallet at Zerial's Workshop",
                     script_id=self.script_id,
                 )
             self.host.notify_state_changed()
@@ -5628,7 +5628,7 @@ class AlwaysOnScript(AutoFollowScript):
             self.set_status(f"{label} failed")
             self.host.emit(
                 "error",
-                f"{self.host.client.display_name}: Always On {label} failed: {exc}",
+                f"{self.host.client.display_name}: Basic Functions {label} failed: {exc}",
                 script_id=self.script_id,
             )
             return False
@@ -5640,7 +5640,7 @@ class AlwaysOnScript(AutoFollowScript):
         self.host.emit(
             "error",
             (
-                f"{self.host.client.display_name}: Always On {label} failed command={command} "
+                f"{self.host.client.display_name}: Basic Functions {label} failed command={command} "
                 f"rc={result['rc']} err={result['err']}"
             ),
             script_id=self.script_id,
@@ -7295,7 +7295,7 @@ class ScriptManager:
 
         always_on = ScriptDefinition(
             script_id="always_on",
-            name="Always On",
+            name="Basic Functions",
             description=(
                 "Bundle the usual background helpers: Auto Follow cues, Zerial wallet refresh, spellbook fill on rest, "
                 "and fog disable on area transitions."

@@ -20,6 +20,11 @@ from .simkeys_script_host import (
 )
 
 
+BASIC_FUNCTIONS_SCRIPT_ID = "always_on"
+TIMERS_SCRIPT_ID = "ingame_timers"
+DEFAULT_AUTO_START_SCRIPT_IDS = (BASIC_FUNCTIONS_SCRIPT_ID, TIMERS_SCRIPT_ID)
+
+
 def _probe_error_is_busy(text):
     if not text:
         return False
@@ -910,8 +915,10 @@ class SimKeysDesktopApp:
         self.script_toggles_in_progress = {}
         self.character_script_configs = {}
         self.character_script_autostart = {}
+        self.character_script_autostart_disabled = {}
         self.character_display_names = {}
         self.auto_loaded_character_keys = {}
+        self.default_started_scripts = set()
         self.character_defaults_path = os.path.join(runtime.root_dir(), "data", "character_defaults.user.json")
 
         self.status_var = tk.StringVar(value="Ready")
@@ -956,6 +963,9 @@ class SimKeysDesktopApp:
     def _normalize_character_key(self, name):
         return str(name or "").strip().casefold()
 
+    def _default_script_autostart(self, script_id):
+        return str(script_id or "") in DEFAULT_AUTO_START_SCRIPT_IDS
+
     def _clean_script_config(self, script_id, config):
         if script_id not in self.script_manager.registry or not isinstance(config, dict):
             return {}
@@ -969,6 +979,7 @@ class SimKeysDesktopApp:
     def _load_character_defaults_store(self):
         self.character_script_configs = {}
         self.character_script_autostart = {}
+        self.character_script_autostart_disabled = {}
         self.character_display_names = {}
         path = self.character_defaults_path
         if not os.path.isfile(path):
@@ -999,8 +1010,16 @@ class SimKeysDesktopApp:
                 cleaned[script_id] = self._clean_script_config(script_id, config)
 
             auto_start = entry.get("auto_start", [])
+            disabled_auto_start = set()
             if isinstance(auto_start, dict):
                 auto_start_items = [script_id for script_id, enabled in auto_start.items() if enabled]
+                disabled_auto_start = {
+                    str(script_id)
+                    for script_id, enabled in auto_start.items()
+                    if not enabled
+                    and str(script_id) in self.script_manager.registry
+                    and self._default_script_autostart(str(script_id))
+                }
             elif isinstance(auto_start, list):
                 auto_start_items = auto_start
             else:
@@ -1011,15 +1030,20 @@ class SimKeysDesktopApp:
                 if str(script_id) in self.script_manager.registry
             }
 
-            if not cleaned and not cleaned_auto_start:
+            if not cleaned and not cleaned_auto_start and not disabled_auto_start:
                 continue
             self.character_script_configs[normalized] = cleaned
             self.character_script_autostart[normalized] = cleaned_auto_start
+            self.character_script_autostart_disabled[normalized] = disabled_auto_start
             self.character_display_names[normalized] = name
 
     def _save_character_defaults_store(self):
         payload = {"version": 2, "characters": {}}
-        character_keys = set(self.character_script_configs.keys()) | set(self.character_script_autostart.keys())
+        character_keys = (
+            set(self.character_script_configs.keys())
+            | set(self.character_script_autostart.keys())
+            | set(self.character_script_autostart_disabled.keys())
+        )
         for key in sorted(character_keys):
             scripts = {
                 script_id: self._clean_script_config(script_id, config)
@@ -1027,14 +1051,26 @@ class SimKeysDesktopApp:
                 if script_id in self.script_manager.registry
             }
             auto_start = sorted(self.character_script_autostart.get(key) or set())
-            if not scripts and not auto_start:
+            disabled_auto_start = sorted(self.character_script_autostart_disabled.get(key) or set())
+            if not scripts and not auto_start and not disabled_auto_start:
                 continue
             entry = {
                 "name": self.character_display_names.get(key, key),
                 "scripts": scripts,
             }
-            if auto_start:
-                entry["auto_start"] = auto_start
+            auto_start_payload = {
+                script_id: True
+                for script_id in auto_start
+                if script_id in self.script_manager.registry
+            }
+            for script_id in disabled_auto_start:
+                if script_id in self.script_manager.registry and self._default_script_autostart(script_id):
+                    auto_start_payload[script_id] = False
+            if auto_start_payload:
+                entry["auto_start"] = {
+                    script_id: auto_start_payload[script_id]
+                    for script_id in sorted(auto_start_payload)
+                }
             payload["characters"][key] = entry
 
         os.makedirs(os.path.dirname(self.character_defaults_path), exist_ok=True)
@@ -1055,14 +1091,22 @@ class SimKeysDesktopApp:
             scripts[script_id] = self.get_script_config(client_pid, script_id)
 
         auto_start = set(self.get_script_autostart_ids(client_pid))
+        disabled_auto_start = {
+            script_id
+            for script_id in DEFAULT_AUTO_START_SCRIPT_IDS
+            if script_id in self.script_manager.registry
+            and not self.get_script_autostart(client_pid, script_id)
+        }
         if (
             self.character_script_configs.get(character_key) == scripts
             and set(self.character_script_autostart.get(character_key) or set()) == auto_start
+            and set(self.character_script_autostart_disabled.get(character_key) or set()) == disabled_auto_start
         ):
             return False
 
         self.character_script_configs[character_key] = scripts
         self.character_script_autostart[character_key] = auto_start
+        self.character_script_autostart_disabled[character_key] = disabled_auto_start
         self.character_display_names[character_key] = client.character_name
         self._save_character_defaults_store()
         return True
@@ -1080,10 +1124,17 @@ class SimKeysDesktopApp:
 
         scripts = self.character_script_configs.get(character_key) or {}
         auto_start = set(self.character_script_autostart.get(character_key) or set())
+        disabled_auto_start = set(self.character_script_autostart_disabled.get(character_key) or set())
         self.auto_loaded_character_keys[record.pid] = character_key
         for script_id in self.script_manager.registry.keys():
-            self.script_autostart[(record.pid, script_id)] = script_id in auto_start
-        if not scripts and not auto_start:
+            if script_id in disabled_auto_start:
+                enabled = False
+            elif script_id in auto_start:
+                enabled = True
+            else:
+                enabled = self._default_script_autostart(script_id)
+            self.script_autostart[(record.pid, script_id)] = enabled
+        if not scripts and not auto_start and not disabled_auto_start:
             return False
 
         for script_id, config in scripts.items():
@@ -2008,6 +2059,11 @@ class SimKeysDesktopApp:
             for pid, key in self.auto_loaded_character_keys.items()
             if pid in live_pids
         }
+        self.default_started_scripts = {
+            key
+            for key in self.default_started_scripts
+            if key[0] in live_pids
+        }
         for record in records:
             self._auto_load_character_defaults(record)
         for record in records:
@@ -2016,6 +2072,8 @@ class SimKeysDesktopApp:
             else:
                 self.script_manager.disable_overlay_controls(record.pid)
             self.script_manager.sync_client(record)
+            if record.injected:
+                self._ensure_default_scripts_running(record)
 
         for pid in list(self.script_manager.hosts.keys()):
             if pid not in live_pids:
@@ -2049,6 +2107,32 @@ class SimKeysDesktopApp:
             self.client_tree.selection_set(str(self.selected_pid))
             self.client_tree.focus(str(self.selected_pid))
         self.refresh_selected_client_ui()
+
+    def _ensure_default_scripts_running(self, record):
+        if record is None or not getattr(record, "injected", False):
+            return
+
+        for script_id in DEFAULT_AUTO_START_SCRIPT_IDS:
+            definition = self.script_manager.registry.get(script_id)
+            if definition is None:
+                continue
+            if not self.get_script_autostart(record.pid, script_id):
+                continue
+
+            key = (record.pid, script_id)
+            if key in self.default_started_scripts:
+                continue
+
+            if self.script_manager.get_state(record.pid, script_id).get("running"):
+                self.default_started_scripts.add(key)
+                continue
+
+            try:
+                self.script_manager.start_script(record, script_id, self.get_script_config(record.pid, script_id))
+                self.default_started_scripts.add(key)
+                self.log(f"{record.display_name}: started {definition.name} by default", "info")
+            except Exception as exc:
+                self.log(f"{record.display_name}: default {definition.name} start failed: {exc}", "error")
 
     def refresh_client_tree_rows(self):
         for record in self.clients:
@@ -2117,12 +2201,15 @@ class SimKeysDesktopApp:
         self._save_character_defaults_for_client(client_pid)
 
     def get_script_autostart(self, client_pid, script_id):
-        return bool(self.script_autostart.get((client_pid, script_id), False))
+        key = (client_pid, script_id)
+        if key in self.script_autostart:
+            return bool(self.script_autostart[key])
+        return self._default_script_autostart(script_id)
 
     def set_script_autostart(self, client_pid, script_id, enabled):
         key = (client_pid, script_id)
         enabled = bool(enabled)
-        changed = bool(self.script_autostart.get(key, False)) != enabled
+        changed = self.get_script_autostart(client_pid, script_id) != enabled
         self.script_autostart[key] = enabled
         if changed:
             self._save_character_defaults_for_client(client_pid)
