@@ -5065,13 +5065,13 @@ class InGameTimersScript(ClientScriptBase):
         if not line:
             return
 
+        now = time.monotonic()
+        changed = False
         if self.REST_RE.search(line):
             self._clear_flagged_timers(rest=True)
         if self.DEATH_RE.search(line):
-            self._clear_flagged_timers(death=True)
+            changed = self._clear_buff_timers() or changed
 
-        now = time.monotonic()
-        changed = False
         if self._handle_effect_timer_line(line, now):
             changed = True
         if self._handle_spell_cast_line(line, now):
@@ -5142,6 +5142,23 @@ class InGameTimersScript(ClientScriptBase):
             self.cleared_count += len(removed)
             self._render_overlay(force=True)
 
+    def _clear_buff_timers(self) -> bool:
+        removed = [
+            key
+            for key, timer in self.active.items()
+            if timer.source != self.LIMBO_SOURCE
+        ]
+        for key in removed:
+            self.active.pop(key, None)
+
+        pending_count = len(self.pending_effect_queries)
+        if pending_count:
+            self.pending_effect_queries.clear()
+
+        if removed:
+            self.cleared_count += len(removed)
+        return bool(removed or pending_count)
+
     def _clear_timer_label(self, label: str) -> bool:
         label_key = str(label or "").strip().lower()
         if not label_key:
@@ -5204,6 +5221,10 @@ class InGameTimersScript(ClientScriptBase):
     def _caster_matches_self(self, caster: str) -> bool:
         caster_keys = self._actor_keys(caster)
         return bool(caster_keys and caster_keys.intersection(self._self_actor_keys()))
+
+    def _actor_matches_self(self, actor: str) -> bool:
+        actor_keys = self._actor_keys(actor)
+        return bool(actor_keys and actor_keys.intersection(self._self_actor_keys()))
 
     def _self_target_name(self) -> str:
         for source in (
@@ -5436,9 +5457,7 @@ class InGameTimersScript(ClientScriptBase):
         return True
 
     def _handle_limbo_line(self, line: str, now: float) -> bool:
-        if not self._limbo_enabled():
-            return False
-
+        limbo_enabled = self._limbo_enabled()
         changed = False
         for raw_line in str(line or "").splitlines():
             event_line = raw_line.strip()
@@ -5449,13 +5468,20 @@ class InGameTimersScript(ClientScriptBase):
             if averted is not None:
                 player = hgx_combat.normalize_actor_name(averted.group("player"))
                 method = hgx_combat.normalize_actor_name(averted.group("method"))
-                changed = self._mark_limbo_recovered(player, method) or changed
+                if self._actor_matches_self(player):
+                    changed = self._clear_buff_timers() or changed
+                if limbo_enabled:
+                    changed = self._mark_limbo_recovered(player, method) or changed
                 continue
 
             parsed_kill = self._parse_limbo_kill_line(event_line)
             if parsed_kill is None:
                 continue
             killer, victim = parsed_kill
+            if self._actor_matches_self(victim):
+                changed = self._clear_buff_timers() or changed
+            if not limbo_enabled:
+                continue
             if not self._is_limbo_actor(victim):
                 continue
             self._start_limbo_timer(victim, killer, now)
