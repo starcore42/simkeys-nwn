@@ -208,6 +208,23 @@ class DamageMeterTests(unittest.TestCase):
         self.assertEqual(summary.raw_healing, 40)
         self.assertEqual(summary.healing_by_type, {"Electrical": 40})
 
+    def test_default_character_data_dogruuk_heals_on_cold(self):
+        db = hgx_data.load_character_database(hgx_data.default_character_data_dir())
+        profile = db._resolve_combat_profile("Dogruuk")
+        cold_type = hgx_data.DAMAGE_TYPE_NAME_TO_ID["cold"]
+
+        self.assertIsNotNone(profile)
+        self.assertEqual(profile.healing[cold_type], 4)
+
+        summary = meter.analyze_chat_records(
+            ["Alice damages Dogruuk : 10 (10 cold)"],
+            character_db=db,
+        )
+
+        self.assertEqual(summary.raw_damage, 0)
+        self.assertEqual(summary.raw_healing, 40)
+        self.assertEqual(summary.healing_by_type, {"Cold": 40})
+
 
 if __name__ == "__main__":
     unittest.main()

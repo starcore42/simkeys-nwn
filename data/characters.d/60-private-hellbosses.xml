@@ -483,6 +483,9 @@
 	</damageImmunities>
 </creature>
 <creature name="Dogruuk" base="Osyluth" type="MiniBoss" >
+	<damageImmunities>
+		<damage type="Cold" healing="4" />
+	</damageImmunities>
 </creature>
 <creature name="Gazra" base="Pit Fiend" type="MiniBoss">
 	<damageImmunities>
